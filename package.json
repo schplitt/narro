@@ -1,0 +1,24 @@
+{
+  "name": "spur-monorepo",
+  "type": "module",
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.15.1",
+  "description": "Monorepo for Spur",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "release": "bumpp -r",
+    "prerelease": "eslint . && tsc --noEmit && vitest run"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^5.2.2",
+    "changelogithub": "^13.16.0",
+    "eslint": "^9.34.0"
+  }
+}
