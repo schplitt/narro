@@ -1,4 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
+import type { CommonOptions, DefaultCommonOptions } from './common'
 
 export interface Report {
   score: number
@@ -24,8 +25,14 @@ export interface Checkable<TInput = any> {
   '~c': (input: TInput) => Promise<Report>
 }
 
-export interface BuildableSchema<TOutput = unknown> {
-  '~b': () => EvaluableSchema<TOutput>
+export interface BuildableSchema<TOutput = unknown, TInput = TOutput, TCommonOptions extends CommonOptions = DefaultCommonOptions> {
+  '@b': () => EvaluableSchema<TOutput>
+  '~types'?: {
+    // necessary to keep TS from bailing out on complex generics
+    options: TCommonOptions
+    output: TOutput
+    input: TInput
+  }
 }
 
 export interface EvaluableSchema<TOutput = unknown> extends StandardSchemaV1<unknown, TOutput> {
