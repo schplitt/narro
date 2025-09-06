@@ -5,9 +5,10 @@ import type { ExtractOutputType } from '../../types/utils'
 export type ObjectEntries = Record<string, BuildableSchema<unknown, unknown, CommonOptions>>
 
 type InferObjectOutput<T extends ObjectEntries> = {
-  [K in keyof T as T[K] extends ExtractRequiredSchema<T[K]> ? K : never]: NonNullable<ExtractOutputType<T[K]>>
+  [K in keyof T as T[K] extends ExtractRequiredSchema<T[K]> ? K : never]: ExtractOutputType<T[K]> & {}
 } & {
-  [K in keyof T as T[K] extends ExtractOptionalSchema<T[K]> ? K : never]?: NonNullable<ExtractOutputType<T[K]>>
+  //                                                                                      ! "& {}" is used in favor of "NonNullable<...>" to preserve literal types
+  [K in keyof T as T[K] extends ExtractOptionalSchema<T[K]> ? K : never]?: ExtractOutputType<T[K]> & {}
 } & {
   [K in keyof T as T[K] extends ExtractNullableSchema<T[K]> ? K : never]: ExtractOutputType<T[K]> | null
 } & {
