@@ -14,6 +14,8 @@ export type SetCommonOption<TOptions extends CommonOptions, TKey extends keyof C
 export type ExtractSchemas<T extends BuildableSchema<any, any, CommonOptions>, TKey extends keyof CommonOptions, TValue extends CommonOptions[TKey]> = T extends BuildableSchema<any, any, infer TCommonOptions> ? TCommonOptions extends { [K in TKey]: TValue } ? T : never : never
 export type ExtractOptions<T extends BuildableSchema<any, any, CommonOptions>> = T extends BuildableSchema<any, any, infer TCommonOptions> ? TCommonOptions : never
 
+export type ApplyOptionality<T, TOptions extends CommonOptions> = TOptions['optionality'] extends 'optional' ? T | undefined : TOptions['optionality'] extends 'nullable' ? T | null : TOptions['optionality'] extends 'nullish' ? T | null | undefined : T
+
 export type MakeOptional<TOptions extends CommonOptions> = SetCommonOption<TOptions, 'optionality', 'optional'>
 export type ExtractOptionalSchema<T extends BuildableSchema<any, any, CommonOptions>> = ExtractSchemas<T, 'optionality', 'optional'>
 
