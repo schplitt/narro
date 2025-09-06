@@ -15,13 +15,12 @@ type InferObjectOutput<T extends ObjectEntries> = {
 }
 
 export interface ObjectSchema<TOutput = object, TInput = object, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
-
-  optional: () => ObjectSchema<TOutput | undefined, TInput, MakeOptional<TCommonOptions>>
-  required: () => ObjectSchema<NonNullable<TOutput>, TInput, MakeRequired<TCommonOptions>>
-  nullable: () => ObjectSchema<TOutput | null, TInput, MakeNullable<TCommonOptions>>
-  nullish: () => ObjectSchema<TOutput | null | undefined, TInput, MakeNullish<TCommonOptions>>
+  optional: () => ObjectSchema<TOutput | undefined, TInput | undefined, MakeOptional<TCommonOptions>>
+  required: () => ObjectSchema<NonNullable<TOutput>, NonNullable<TInput>, MakeRequired<TCommonOptions>>
+  nullable: () => ObjectSchema<TOutput | null, TInput | null, MakeNullable<TCommonOptions>>
+  nullish: () => ObjectSchema<TOutput | null | undefined, TInput | null | undefined, MakeNullish<TCommonOptions>>
 }
 
-export function object<T extends ObjectEntries>(structure: T): ObjectSchema<InferObjectOutput<T>> {
+export function object<TEntries extends ObjectEntries>(structure: TEntries): ObjectSchema<InferObjectOutput<TEntries>> {
   return 1 as any
 }
