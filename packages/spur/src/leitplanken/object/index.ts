@@ -1,4 +1,4 @@
-import type { CommonOptions, DefaultCommonOptions, ExtractNullableSchema, ExtractNullishSchema, ExtractOptionalSchema, ExtractRequiredSchema, MakeNullable, MakeNullish, MakeOptional, MakeRequired } from '../../types/common'
+import type { CommonOptions, DefaultCommonOptions, ExtractDefaultedSchema, ExtractNullableSchema, ExtractNullishSchema, ExtractOptionalSchema, ExtractRequiredSchema, ExtractUndefinableSchema, MakeNullable, MakeNullish, MakeOptional, MakeRequired } from '../../types/common'
 import type { BuildableSchema } from '../../types/schema'
 import type { ExtractOutputType } from '../../types/utils'
 
@@ -13,6 +13,10 @@ type InferObjectOutput<T extends ObjectEntries> = {
   [K in keyof T as T[K] extends ExtractNullableSchema<T[K]> ? K : never]: ExtractOutputType<T[K]> | null
 } & {
   [K in keyof T as T[K] extends ExtractNullishSchema<T[K]> ? K : never]: ExtractOutputType<T[K]> | undefined | null
+} & {
+  [K in keyof T as T[K] extends ExtractDefaultedSchema<T[K]> ? K : never]: ExtractOutputType<T[K]> & {}
+} & {
+  [K in keyof T as T[K] extends ExtractUndefinableSchema<T[K]> ? K : never]?: ExtractOutputType<T[K]> | undefined
 }
 
 export interface ObjectSchema<TOutput = object, TInput = object, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {

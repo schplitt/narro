@@ -1,4 +1,4 @@
-import type { ApplyOptionality, CommonOptions, DefaultCommonOptions, MakeNullable, MakeNullish, MakeOptional, MakeRequired } from '../../types/common'
+import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired } from '../../types/common'
 import type { BuildableSchema } from '../../types/schema'
 
 export interface StringSchema<TOutput = string, TInput = string, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
@@ -9,10 +9,8 @@ export interface StringSchema<TOutput = string, TInput = string, TCommonOptions 
   // template literals might be possible in the future here, similar to templateLiteralSchema
   endsWith: (end: string) => StringSchema<TOutput, TInput, TCommonOptions>
   startsWith: (start: string) => StringSchema<TOutput, TInput, TCommonOptions>
-  default: (v: string) => StringSchema<string, string | undefined, TCommonOptions>
 
-  unsetDefault: () => StringSchema<ApplyOptionality<string, TCommonOptions>, ApplyOptionality<string, TCommonOptions>, TCommonOptions>
-
+  default: (v: string) => StringSchema<string, string | undefined, MakeDefaulted<TCommonOptions>>
   optional: () => StringSchema<string | undefined, string | undefined, MakeOptional<TCommonOptions>>
   required: () => StringSchema<string, string, MakeRequired<TCommonOptions>>
   nullable: () => StringSchema<string | null, string | null, MakeNullable<TCommonOptions>>

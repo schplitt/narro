@@ -1,7 +1,7 @@
 import type { BuildableSchema } from './schema'
 
 export interface CommonOptions {
-  optionality: 'optional' | 'required' | 'nullable' | 'nullish'
+  optionality: 'optional' | 'required' | 'nullable' | 'nullish' | 'defaulted' | 'undefinable'
 }
 
 export interface DefaultCommonOptions extends CommonOptions {
@@ -14,8 +14,6 @@ export type SetCommonOption<TOptions extends CommonOptions, TKey extends keyof C
 export type ExtractSchemas<T extends BuildableSchema<any, any, CommonOptions>, TKey extends keyof CommonOptions, TValue extends CommonOptions[TKey]> = T extends BuildableSchema<any, any, infer TCommonOptions> ? TCommonOptions extends { [K in TKey]: TValue } ? T : never : never
 export type ExtractOptions<T extends BuildableSchema<any, any, CommonOptions>> = T extends BuildableSchema<any, any, infer TCommonOptions> ? TCommonOptions : never
 
-export type ApplyOptionality<T, TOptions extends CommonOptions> = TOptions['optionality'] extends 'optional' ? T | undefined : TOptions['optionality'] extends 'nullable' ? T | null : TOptions['optionality'] extends 'nullish' ? T | null | undefined : T
-
 export type MakeOptional<TOptions extends CommonOptions> = SetCommonOption<TOptions, 'optionality', 'optional'>
 export type ExtractOptionalSchema<T extends BuildableSchema<any, any, CommonOptions>> = ExtractSchemas<T, 'optionality', 'optional'>
 
@@ -27,3 +25,9 @@ export type ExtractNullableSchema<T extends BuildableSchema<any, any, CommonOpti
 
 export type MakeNullish<TOptions extends CommonOptions> = SetCommonOption<TOptions, 'optionality', 'nullish'>
 export type ExtractNullishSchema<T extends BuildableSchema<any, any, CommonOptions>> = ExtractSchemas<T, 'optionality', 'nullish'>
+
+export type MakeDefaulted<TOptions extends CommonOptions> = SetCommonOption<TOptions, 'optionality', 'defaulted'>
+export type ExtractDefaultedSchema<T extends BuildableSchema<any, any, CommonOptions>> = ExtractSchemas<T, 'optionality', 'defaulted'>
+
+export type MakeUndefinable<TOptions extends CommonOptions> = SetCommonOption<TOptions, 'optionality', 'undefinable'>
+export type ExtractUndefinableSchema<T extends BuildableSchema<any, any, CommonOptions>> = ExtractSchemas<T, 'optionality', 'undefinable'>
