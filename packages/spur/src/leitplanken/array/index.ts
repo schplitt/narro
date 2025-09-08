@@ -1,9 +1,9 @@
 import type { CommonOptions, DefaultCommonOptions, MakeNullable, MakeNullish, MakeOptional, MakeRequired } from '../../types/common'
 import type { BuildableSchema } from '../../types/schema'
-import type { ExtractOutputType } from '../../types/utils'
+import type { InferOutput } from '../../types/utils'
 
-type InferArrayOutput<T extends BuildableSchema<unknown, unknown, CommonOptions>> = Array<ExtractOutputType<T>>
-type InferArrayInput<T extends BuildableSchema<unknown, unknown, CommonOptions>> = Array<ExtractOutputType<T>>
+type InferArrayOutput<T extends BuildableSchema<unknown, unknown, CommonOptions>> = Array<InferOutput<T>>
+type InferArrayInput<T extends BuildableSchema<unknown, unknown, CommonOptions>> = Array<InferOutput<T>>
 
 export interface ArraySchema<TOutput = any, TInput = any, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
   minLength: (min: number) => ArraySchema<TOutput, TInput, TCommonOptions>

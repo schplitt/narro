@@ -1,4 +1,4 @@
-import type { ExtractOutputType } from '../../types/utils'
+import type { InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -12,17 +12,17 @@ import { union } from '../../leitplanken/union'
 describe('unionSchema - basic types', () => {
   it('union of string and number', () => {
     const _schema = union([string(), number()] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number>()
   })
 
   it('union of string, number, and boolean', () => {
     const _schema = union([string(), number(), boolean()] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number | boolean>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | boolean>()
   })
 
   it('union of literals', () => {
     const _schema = union([literal('hello'), literal(42), literal('world')] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'hello' | 42 | 'world'>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | 42 | 'world'>()
   })
 
   it('union of oneOf schemas', () => {
@@ -30,7 +30,7 @@ describe('unionSchema - basic types', () => {
       oneOf(['red', 'green'] as const),
       oneOf([1, 2, 3] as const),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'red' | 'green' | 1 | 2 | 3>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'red' | 'green' | 1 | 2 | 3>()
   })
 
   it('union of mixed schema types', () => {
@@ -40,12 +40,12 @@ describe('unionSchema - basic types', () => {
       oneOf(['active', 'inactive'] as const),
       boolean(),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | 42 | 'active' | 'inactive' | boolean>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | 42 | 'active' | 'inactive' | boolean>()
   })
 
   it('single schema union', () => {
     const _schema = union([string()] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string>()
   })
 })
 
@@ -55,7 +55,7 @@ describe('unionSchema - with validation', () => {
       string().minLength(3),
       number().min(0).max(100),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number>()
   })
 
   it('union of schemas with defaults', () => {
@@ -63,7 +63,7 @@ describe('unionSchema - with validation', () => {
       string().default('hello'),
       number().default(42),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number>()
   })
 
   it('union of optional schemas', () => {
@@ -71,7 +71,7 @@ describe('unionSchema - with validation', () => {
       string().optional(),
       number().optional(),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | undefined | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined | number>()
   })
 
   it('union of nullable schemas', () => {
@@ -79,7 +79,7 @@ describe('unionSchema - with validation', () => {
       string().nullable(),
       boolean().nullable(),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | null | boolean>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | null | boolean>()
   })
 
   it('union of nullish schemas', () => {
@@ -87,51 +87,51 @@ describe('unionSchema - with validation', () => {
       literal('test').nullish(),
       literal(123).nullish(),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'test' | null | undefined | 123>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test' | null | undefined | 123>()
   })
 })
 
 describe('unionSchema - optionality', () => {
   it('optional union schema', () => {
     const _schema = union([string(), number()] as const).optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
   })
 
   it('nullable union schema', () => {
     const _schema = union([string(), boolean()] as const).nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | boolean | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | boolean | null>()
   })
 
   it('nullish union schema', () => {
     const _schema = union([literal('a'), literal(1)] as const).nullish()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'a' | 1 | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | 1 | null | undefined>()
   })
 
   it('required union schema (explicit)', () => {
     const _schema = union([string(), number()] as const).required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number>()
   })
 })
 
 describe('unionSchema - chained operations', () => {
   it('union optional then required', () => {
     const _schema = union([string(), number()] as const).optional().required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number>()
   })
 
   it('union nullable then required', () => {
     const _schema = union([boolean(), literal('test')] as const).nullable().required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean | 'test'>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | 'test'>()
   })
 
   it('union nullish then required', () => {
     const _schema = union([oneOf(['x', 'y'] as const), number()] as const).nullish().required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'x' | 'y' | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'x' | 'y' | number>()
   })
 
   it('union required then optional', () => {
     const _schema = union([string(), literal(42)] as const).required().optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | 42 | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | 42 | undefined>()
   })
 })
 
@@ -146,7 +146,7 @@ describe('unionSchema - complex scenarios', () => {
       oneOf(['red', 'green', 'blue'] as const),
       oneOf([1, 2, 3] as const),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | boolean | 'exact' | 99 | 'red' | 'green' | 'blue' | 1 | 2 | 3
     >()
   })
@@ -159,7 +159,7 @@ describe('unionSchema - complex scenarios', () => {
       literal('test').nullish(),
       oneOf(['a', 'b'] as const).default('a'),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | undefined | boolean | null | 'test' | 'a' | 'b'
     >()
   })
@@ -177,7 +177,7 @@ describe('unionSchema - complex scenarios', () => {
       literal(4),
       literal(5),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       'a' | 'b' | 'c' | 'd' | 'e' | 1 | 2 | 3 | 4 | 5
     >()
   })
@@ -188,7 +188,7 @@ describe('unionSchema - complex scenarios', () => {
       oneOf([100, 200, 300, 400, 500] as const),
       oneOf(['GET', 'POST', 'PUT', 'DELETE'] as const),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       'error' | 'warn' | 'info' | 100 | 200 | 300 | 400 | 500 | 'GET' | 'POST' | 'PUT' | 'DELETE'
     >()
   })
@@ -200,7 +200,7 @@ describe('unionSchema - complex scenarios', () => {
       literal(42),
       oneOf([42, 100] as const),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       'test' | 'other' | 42 | 100
     >()
   })
@@ -209,7 +209,7 @@ describe('unionSchema - complex scenarios', () => {
 describe('unionSchema - edge cases', () => {
   it('union with empty string and zero', () => {
     const _schema = union([literal(''), literal(0), string(), number()] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'' | 0 | string | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'' | 0 | string | number>()
   })
 
   it('union with negative numbers and special strings', () => {
@@ -219,7 +219,7 @@ describe('unionSchema - edge cases', () => {
       literal('null'),
       literal('undefined'),
     ] as const)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<-1 | -3.14 | 'null' | 'undefined'>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<-1 | -3.14 | 'null' | 'undefined'>()
   })
 
   it('union through multiple optionality changes', () => {
@@ -230,7 +230,7 @@ describe('unionSchema - edge cases', () => {
       .nullish()
       .optional()
       .required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string | number>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number>()
   })
 
   it('very large union type', () => {
@@ -248,7 +248,7 @@ describe('unionSchema - edge cases', () => {
       oneOf([10, 20, 30] as const),
     ] as const).optional()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | boolean | 'a' | 'b' | 'c' | 1 | 2 | 3 | 'x' | 'y' | 'z' | 10 | 20 | 30 | undefined
     >()
   })

@@ -1,4 +1,4 @@
-import type { ExtractOutputType } from '../../types/utils'
+import type { InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -15,28 +15,28 @@ describe('objectSchema - basic types', () => {
   it('empty object', () => {
     const _schema = object({})
     // eslint-disable-next-line ts/no-empty-object-type
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{}>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{}>()
   })
 
   it('object with required string property', () => {
     const _schema = object({
       name: string(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ name: string }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string }>()
   })
 
   it('object with required number property', () => {
     const _schema = object({
       age: number(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ age: number }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ age: number }>()
   })
 
   it('object with required boolean property', () => {
     const _schema = object({
       isActive: boolean(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ isActive: boolean }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ isActive: boolean }>()
   })
 
   it('object with multiple required properties', () => {
@@ -45,7 +45,7 @@ describe('objectSchema - basic types', () => {
       age: number(),
       isActive: boolean(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       name: string
       age: number
       isActive: boolean
@@ -56,42 +56,42 @@ describe('objectSchema - basic types', () => {
     const _schema = object({
       status: literal('active'),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ status: 'active' }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ status: 'active' }>()
   })
 
   it('object with number literal property', () => {
     const _schema = object({
       version: literal(1),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ version: 1 }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ version: 1 }>()
   })
 
   it('object with oneOf property', () => {
     const _schema = object({
       color: oneOf(['red', 'green', 'blue'] as const),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ color: 'red' | 'green' | 'blue' }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ color: 'red' | 'green' | 'blue' }>()
   })
 
   it('object with mixed oneOf property', () => {
     const _schema = object({
       value: oneOf(['none', 42, 'all'] as const),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ value: 'none' | 42 | 'all' }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ value: 'none' | 42 | 'all' }>()
   })
 
   it('object with union property', () => {
     const _schema = object({
       data: union([string(), number()] as const),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ data: string | number }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ data: string | number }>()
   })
 
   it('object with complex union property', () => {
     const _schema = object({
       field: union([literal('exact'), oneOf(['a', 'b'] as const), boolean()] as const),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ field: 'exact' | 'a' | 'b' | boolean }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ field: 'exact' | 'a' | 'b' | boolean }>()
   })
 })
 
@@ -100,21 +100,21 @@ describe('objectSchema - optional properties', () => {
     const _schema = object({
       description: string().optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ description?: string }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ description?: string }>()
   })
 
   it('object with optional number property', () => {
     const _schema = object({
       score: number().optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ score?: number }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ score?: number }>()
   })
 
   it('object with optional boolean property', () => {
     const _schema = object({
       isDraft: boolean().optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ isDraft?: boolean }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ isDraft?: boolean }>()
   })
 
   it('object with mixed required and optional properties', () => {
@@ -124,7 +124,7 @@ describe('objectSchema - optional properties', () => {
       age: number(),
       score: number().optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       name: string
       age: number
       description?: string
@@ -136,21 +136,21 @@ describe('objectSchema - optional properties', () => {
     const _schema = object({
       theme: literal('dark').optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ theme?: 'dark' }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ theme?: 'dark' }>()
   })
 
   it('object with optional oneOf property', () => {
     const _schema = object({
       priority: oneOf(['low', 'medium', 'high'] as const).optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ priority?: 'low' | 'medium' | 'high' }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ priority?: 'low' | 'medium' | 'high' }>()
   })
 
   it('object with optional union property', () => {
     const _schema = object({
       content: union([string(), number(), boolean()] as const).optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ content?: string | number | boolean }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ content?: string | number | boolean }>()
   })
 })
 
@@ -159,21 +159,21 @@ describe('objectSchema - nullable properties', () => {
     const _schema = object({
       nickname: string().nullable(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ nickname: string | null }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ nickname: string | null }>()
   })
 
   it('object with nullable number property', () => {
     const _schema = object({
       rating: number().nullable(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ rating: number | null }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ rating: number | null }>()
   })
 
   it('object with nullable boolean property', () => {
     const _schema = object({
       isVerified: boolean().nullable(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ isVerified: boolean | null }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ isVerified: boolean | null }>()
   })
 })
 
@@ -182,21 +182,21 @@ describe('objectSchema - nullish properties', () => {
     const _schema = object({
       petName: string().nullish(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ petName: string | null | undefined }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ petName: string | null | undefined }>()
   })
 
   it('object with nullish number property', () => {
     const _schema = object({
       weight: number().nullish(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ weight: number | null | undefined }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ weight: number | null | undefined }>()
   })
 
   it('object with nullish boolean property', () => {
     const _schema = object({
       isDeleted: boolean().nullish(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ isDeleted: boolean | null | undefined }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ isDeleted: boolean | null | undefined }>()
   })
 })
 
@@ -206,7 +206,7 @@ describe('objectSchema - with defaults', () => {
       age: number().default(18),
       isAdmin: boolean().default(false),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       age: number
       isAdmin: boolean
     }>()
@@ -219,7 +219,7 @@ describe('objectSchema - with defaults', () => {
       age: number().default(18),
       isActive: boolean().default(true),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       name: string
       age: number
       isActive: boolean
@@ -232,7 +232,7 @@ describe('objectSchema - with defaults', () => {
       mode: literal('development').default('development'),
       port: literal(3000).default(3000),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       mode: 'development'
       port: 3000
     }>()
@@ -243,7 +243,7 @@ describe('objectSchema - with defaults', () => {
       level: oneOf(['debug', 'info', 'warn', 'error'] as const).default('info'),
       size: oneOf([1, 2, 3, 4, 5] as const).default(3),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       level: 'debug' | 'info' | 'warn' | 'error'
       size: 1 | 2 | 3 | 4 | 5
     }>()
@@ -258,7 +258,7 @@ describe('objectSchema - nested objects', () => {
         age: number(),
       }),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       user: {
         name: string
         age: number
@@ -273,7 +273,7 @@ describe('objectSchema - nested objects', () => {
         updated: string().optional(),
       }).optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       metadata?: {
         created: string
         updated?: string
@@ -287,21 +287,21 @@ describe('objectSchema - with arrays', () => {
     const _schema = object({
       tags: array(string()),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ tags: string[] }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ tags: string[] }>()
   })
 
   it('object with optional array property', () => {
     const _schema = object({
       friends: array(string().minLength(3).maxLength(25)).optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ friends?: string[] }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ friends?: string[] }>()
   })
 
   it('object with nullable array property', () => {
     const _schema = object({
       scores: array(number().min(0).max(100)).nullable().maxLength(10),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ scores: number[] | null }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ scores: number[] | null }>()
   })
 })
 
@@ -310,28 +310,28 @@ describe('objectSchema - object optionality', () => {
     const _schema = object({
       name: string(),
     }).optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ name: string } | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | undefined>()
   })
 
   it('nullable object', () => {
     const _schema = object({
       name: string(),
     }).nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ name: string } | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | null>()
   })
 
   it('nullish object', () => {
     const _schema = object({
       name: string(),
     }).nullish()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ name: string } | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | null | undefined>()
   })
 
   it('required object (explicit)', () => {
     const _schema = object({
       name: string(),
     }).required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ name: string }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string }>()
   })
 })
 
@@ -346,7 +346,7 @@ describe('objectSchema - extensive chaining operations', () => {
       .nullable()
       .nullish()
       .required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       name: string
       age: number
     }>()
@@ -363,7 +363,7 @@ describe('objectSchema - extensive chaining operations', () => {
       .optional() // -> optional
       .nullish() // -> nullish
       .required() // -> required (but nullish?)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       value: string
     }>()
   })
@@ -401,7 +401,7 @@ describe('objectSchema - extensive chaining operations', () => {
       .nullable()
       .required()
 
-    type Output = ExtractOutputType<typeof _schema>
+    type Output = InferOutput<typeof _schema>
 
     expectTypeOf<Output>().toEqualTypeOf<{
       stringProp: string | null
@@ -427,7 +427,7 @@ describe('objectSchema - extensive chaining operations', () => {
       .nullish()
       .required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       user?: {
         name: string
         email?: string
@@ -461,7 +461,7 @@ describe('objectSchema - extensive chaining operations', () => {
       .nullable()
       .required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       level1: {
         data: string
       }
@@ -494,7 +494,7 @@ describe('objectSchema - extensive chaining operations', () => {
       .nullable()
       .required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       scores: number[] | null
       flags: boolean[] | null | undefined
       tags?: string[]
@@ -536,7 +536,7 @@ describe('objectSchema - property chaining patterns', () => {
         .optional(),
     })
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       defaultString: string | null
       defaultNumber: number
       defaultArray: string[] | null
@@ -560,7 +560,7 @@ describe('objectSchema - property chaining patterns', () => {
         .nullable(),
     })
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       confusing: string | null
     }>()
   })
@@ -596,7 +596,7 @@ describe('objectSchema - property chaining patterns', () => {
       .nullish()
       .required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       deep: {
         deeper: {
           deepest: {
@@ -625,7 +625,7 @@ describe('objectSchema - extreme chaining scenarios', () => {
       .nullish()
       .required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       value: string
     }>()
   })
@@ -669,7 +669,7 @@ describe('objectSchema - extreme chaining scenarios', () => {
       .nullish()
       .required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       arrays: {
         numbers: number[]
         booleans: boolean[]
@@ -741,7 +741,7 @@ describe('objectSchema - extreme chaining scenarios', () => {
       .optional()
       .required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       meta: {
         id: string
         version: number
@@ -780,7 +780,7 @@ describe('objectSchema - complex examples', () => {
       isDeleted: boolean().nullish(),
       isSomething: boolean().optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       name: string
       age: number
       isAdmin: boolean
@@ -805,7 +805,7 @@ describe('objectSchema - complex examples', () => {
         })),
       }).optional(),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       foo?: {
         baz: number
         nestedArray: Array<{
@@ -831,7 +831,7 @@ describe('objectSchema - ultra complex nesting', () => {
         }),
       }),
     })
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       level1: {
         level2: {
           level3: {
@@ -881,7 +881,7 @@ describe('objectSchema - ultra complex nesting', () => {
       }).optional(),
     })
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       users: Array<{
         profile: {
           personal: {
@@ -938,7 +938,7 @@ describe('objectSchema - ultra complex nesting', () => {
       }),
     })
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       id: string
       data: {
         value: number
@@ -972,7 +972,7 @@ describe('objectSchema - property optionality combinations', () => {
       nullishDefaulted: string().nullish().default('default'),
     })
 
-    type Output = ExtractOutputType<typeof _schema>
+    type Output = InferOutput<typeof _schema>
 
     interface Expected {
       required: string
@@ -993,7 +993,7 @@ describe('objectSchema - property optionality combinations', () => {
       prop: string(),
     }).optional().nullable().required()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       prop: string
     }>()
   })
@@ -1020,7 +1020,7 @@ describe('objectSchema - property optionality combinations', () => {
       }).optional(),
     })
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       stringArrays: string[][]
       numberMatrices: number[][][]
       booleanSets: boolean[] | null

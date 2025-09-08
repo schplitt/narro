@@ -1,4 +1,4 @@
-import type { ExtractOutputType } from '../../types/utils'
+import type { InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -14,195 +14,195 @@ import { union } from '../../leitplanken/union'
 describe('arraySchema - basic types', () => {
   it('array of strings', () => {
     const _schema = array(string())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array of numbers', () => {
     const _schema = array(number())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[]>()
   })
 
   it('array of booleans', () => {
     const _schema = array(boolean())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[]>()
   })
 
   it('array of string literals', () => {
     const _schema = array(literal('hello'))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'hello'[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello'[]>()
   })
 
   it('array of number literals', () => {
     const _schema = array(literal(42))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<42[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42[]>()
   })
 
   it('array of oneOf strings', () => {
     const _schema = array(oneOf(['red', 'green', 'blue'] as const))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('red' | 'green' | 'blue')[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('red' | 'green' | 'blue')[]>()
   })
 
   it('array of oneOf numbers', () => {
     const _schema = array(oneOf([1, 2, 3] as const))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<(1 | 2 | 3)[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<(1 | 2 | 3)[]>()
   })
 
   it('array of mixed oneOf', () => {
     const _schema = array(oneOf(['hello', 42, 'world'] as const))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('hello' | 42 | 'world')[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('hello' | 42 | 'world')[]>()
   })
 
   it('array of union schemas', () => {
     const _schema = array(union([string(), number()] as const))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<(string | number)[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<(string | number)[]>()
   })
 
   it('array of complex union', () => {
     const _schema = array(union([literal('test'), oneOf([1, 2, 3] as const), boolean()] as const))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('test' | 1 | 2 | 3 | boolean)[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('test' | 1 | 2 | 3 | boolean)[]>()
   })
 
   it('optional array of strings', () => {
     const _schema = array(string()).optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
   })
 
   it('nullable array of strings', () => {
     const _schema = array(string()).nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null>()
   })
 
   it('nullish array of strings', () => {
     const _schema = array(string()).nullish()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null | undefined>()
   })
 
   it('required array of strings (explicit)', () => {
     const _schema = array(string()).required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 })
 
 describe('arraySchema - with validation', () => {
   it('array with minLength', () => {
     const _schema = array(string()).minLength(1)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array with maxLength', () => {
     const _schema = array(string()).maxLength(10)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array with exact length', () => {
     const _schema = array(string()).length(5)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array with min and max length', () => {
     const _schema = array(string()).minLength(1).maxLength(10)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 })
 
 describe('arraySchema - with element validation', () => {
   it('array of optional strings', () => {
     const _schema = array(string().optional())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string | undefined>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined>>()
   })
 
   it('array of nullable strings', () => {
     const _schema = array(string().nullable())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string | null>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | null>>()
   })
 
   it('array of strings with validation', () => {
     const _schema = array(string().minLength(3).maxLength(25))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array of numbers with validation', () => {
     const _schema = array(number().min(0).max(100))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[]>()
   })
 
   it('array of booleans with default', () => {
     const _schema = array(boolean().default(false))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[]>()
   })
 
   it('array of strings with default', () => {
     const _schema = array(string().default('hello'))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array of optional literals', () => {
     const _schema = array(literal('test').optional())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<'test' | undefined>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'test' | undefined>>()
   })
 
   it('array of nullable literals', () => {
     const _schema = array(literal(42).nullable())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<42 | null>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<42 | null>>()
   })
 
   it('array of oneOf with defaults', () => {
     const _schema = array(oneOf(['a', 'b', 'c'] as const).default('a'))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
   })
 
   it('array of optional oneOf', () => {
     const _schema = array(oneOf([1, 2, 3] as const).optional())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
   it('array of nullish oneOf', () => {
     const _schema = array(oneOf(['x', 'y'] as const).nullish())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | null | undefined>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | null | undefined>>()
   })
 
   it('array of optional union', () => {
     const _schema = array(union([string(), number()] as const).optional())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string | number | undefined>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | number | undefined>>()
   })
 
   it('array of nullable union', () => {
     const _schema = array(union([literal('a'), literal(1)] as const).nullable())
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<'a' | 1 | null>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'a' | 1 | null>>()
   })
 })
 
 describe('arraySchema - chained operations', () => {
   it('optional array with validation', () => {
     const _schema = array(string().minLength(3).maxLength(25)).optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
   })
 
   it('nullable array with validation', () => {
     const _schema = array(number().min(0).max(100)).nullable().maxLength(10)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[] | null>()
   })
 
   it('nullish array with validation', () => {
     const _schema = array(string()).nullish().minLength(1).maxLength(5)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null | undefined>()
   })
 
   it('complex chaining', () => {
     const _schema = array(string().minLength(3).maxLength(25)).minLength(1).maxLength(10).optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
   })
 })
 
 describe('arraySchema - extensive chaining operations', () => {
   it('array optionality then validation then back to optionality', () => {
     const _schema = array(string()).optional().minLength(1).maxLength(10).nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null>()
   })
 
   it('array with multiple optionality state changes', () => {
     const _schema = array(string()).optional().required().nullable().nullish().required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array validation chain with optionality changes', () => {
@@ -215,7 +215,7 @@ describe('arraySchema - extensive chaining operations', () => {
       .minLength(5)
       .maxLength(15)
       .required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[]>()
   })
 
   it('array with conflicting length validations', () => {
@@ -224,12 +224,12 @@ describe('arraySchema - extensive chaining operations', () => {
       .maxLength(5)
       .length(7)
       .optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
   })
 
   it('array nullish then required then nullable', () => {
     const _schema = array(boolean()).nullish().required().nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[] | null>()
   })
 
   it('array with overriding length constraints', () => {
@@ -239,7 +239,7 @@ describe('arraySchema - extensive chaining operations', () => {
       .maxLength(20)
       .maxLength(10) // should override previous max
       .length(7) // should override both min and max
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array ultra complex chaining', () => {
@@ -255,7 +255,7 @@ describe('arraySchema - extensive chaining operations', () => {
       .length(25)
       .optional()
       .required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 })
 
@@ -274,7 +274,7 @@ describe('arraySchema - element chaining with array chaining', () => {
       .optional()
       .nullable()
       .required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array of numbers with defaults and array optionality', () => {
@@ -288,7 +288,7 @@ describe('arraySchema - element chaining with array chaining', () => {
       .optional()
       .maxLength(5)
       .nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[] | null>()
   })
 
   it('array of booleans with chaining and array state changes', () => {
@@ -302,7 +302,7 @@ describe('arraySchema - element chaining with array chaining', () => {
       .required()
       .nullable()
       .length(10)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[] | null>()
   })
 
   it('array of objects with property chaining and array chaining', () => {
@@ -319,7 +319,7 @@ describe('arraySchema - element chaining with array chaining', () => {
       .length(10)
       .nullable()
       .required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
       name: string
       active: boolean
       age?: number
@@ -338,7 +338,7 @@ describe('arraySchema - nested array chaining', () => {
       .minLength(1)
       .maxLength(10)
       .nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string[] | undefined> | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string[] | undefined> | null>()
   })
 
   it('triple nested arrays with chaining at each level', () => {
@@ -356,7 +356,7 @@ describe('arraySchema - nested array chaining', () => {
       .minLength(1)
       .maxLength(2)
       .nullish()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<Array<number[] | undefined> | null> | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<Array<number[] | undefined> | null> | null | undefined>()
   })
 
   it('mixed nested structure with extensive chaining', () => {
@@ -386,7 +386,7 @@ describe('arraySchema - nested array chaining', () => {
       .optional()
       .required()
       .nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
       metadata: {
         id: string
         version: number
@@ -416,7 +416,7 @@ describe('arraySchema - extreme chaining scenarios', () => {
       .nullable()
       .minLength(10)
       .maxLength(40)
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null>()
   })
 
   it('array state oscillation', () => {
@@ -428,7 +428,7 @@ describe('arraySchema - extreme chaining scenarios', () => {
       .optional() // -> optional
       .nullish() // -> nullish
       .required() // -> required
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[]>()
   })
 
   it('array with validation method spam', () => {
@@ -446,7 +446,7 @@ describe('arraySchema - extreme chaining scenarios', () => {
       .length(40)
       .length(30)
       .optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
   })
 
   it('complex element and array chain combination', () => {
@@ -468,34 +468,34 @@ describe('arraySchema - extreme chaining scenarios', () => {
       .nullish()
       .length(5)
       .required()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 })
 
 describe('arraySchema - nested arrays', () => {
   it('array of arrays of strings', () => {
     const _schema = array(array(string()))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[][]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[][]>()
   })
 
   it('array of arrays of numbers', () => {
     const _schema = array(array(number().min(0).max(100)))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[][]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[][]>()
   })
 
   it('optional array of optional arrays', () => {
     const _schema = array(array(string()).optional()).optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string[] | undefined> | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string[] | undefined> | undefined>()
   })
 
   it('nullable array of nullable arrays', () => {
     const _schema = array(array(string()).nullable()).nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string[] | null> | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string[] | null> | null>()
   })
 
   it('three-dimensional array', () => {
     const _schema = array(array(array(number())))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[][][]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[][][]>()
   })
 })
 
@@ -505,7 +505,7 @@ describe('arraySchema - arrays with objects', () => {
       id: number(),
       name: string(),
     }))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
       id: number
       name: string
     }>>()
@@ -518,7 +518,7 @@ describe('arraySchema - arrays with objects', () => {
       description: string().optional(),
       isActive: boolean().nullable(),
     }))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
       id: number
       name: string
       isActive: boolean | null
@@ -531,7 +531,7 @@ describe('arraySchema - arrays with objects', () => {
       id: number(),
       name: string(),
     })).optional()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
       id: number
       name: string
     }> | undefined>()
@@ -546,7 +546,7 @@ describe('arraySchema - arrays with objects', () => {
       tags: array(string()),
       scores: array(number().min(0).max(100)).optional(),
     }))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
       user: {
         id: number
         name: string
@@ -560,12 +560,12 @@ describe('arraySchema - arrays with objects', () => {
 describe('arraySchema - complex element combinations', () => {
   it('array of mixed validation elements', () => {
     const _schema = array(string().minLength(3).maxLength(25).default('hello'))
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
   })
 
   it('array with complex validation and optionality', () => {
     const _schema = array(number().min(0).max(100).default(50)).minLength(1).maxLength(10).nullable()
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[] | null>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[] | null>()
   })
 
   it('ultra complex nested structure', () => {
@@ -588,7 +588,7 @@ describe('arraySchema - complex element combinations', () => {
       }),
     ).minLength(1).maxLength(5).optional()
 
-    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
       metadata: {
         id: string
         version: number
