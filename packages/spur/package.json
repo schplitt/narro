@@ -11,16 +11,16 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "typecheck": "vitest --typecheck",
+    "test": "vitest run --typecheck",
     "build": "tsdown"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "^1.0.0"
   },
   "devDependencies": {
     "tsdown": "^0.14.2",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
-  },
-  "dependencies": {
-    "@standard-schema/spec": "^1.0.0"
   }
 }
