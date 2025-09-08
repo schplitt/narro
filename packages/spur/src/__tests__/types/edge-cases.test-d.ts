@@ -4,6 +4,8 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { array } from '../../leitplanken/array'
 import { boolean } from '../../leitplanken/boolean'
+import { oneOf } from '../../leitplanken/enum'
+import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
@@ -87,6 +89,138 @@ describe('edge cases - extreme type complexity', () => {
       nullish: { value: string } | null | undefined
       defaulted: { value: string }
       optional?: { value: string }
+    }>()
+  })
+})
+
+describe('edge cases - literal and oneOf complexity', () => {
+  it('object with all literal types', () => {
+    const _schema = object({
+      stringLit: literal('exact'),
+      numberLit: literal(42),
+      floatLit: literal(3.14),
+      zeroLit: literal(0),
+      emptyLit: literal(''),
+      negativeLit: literal(-1),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      stringLit: 'exact'
+      numberLit: 42
+      floatLit: 3.14
+      zeroLit: 0
+      emptyLit: ''
+      negativeLit: -1
+    }>()
+  })
+
+  it('object with all oneOf types', () => {
+    const _schema = object({
+      colors: oneOf(['red', 'green', 'blue'] as const),
+      numbers: oneOf([1, 2, 3, 4, 5] as const),
+      mixed: oneOf(['none', 0, 'all', 100] as const),
+      single: oneOf(['only'] as const),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      colors: 'red' | 'green' | 'blue'
+      numbers: 1 | 2 | 3 | 4 | 5
+      mixed: 'none' | 0 | 'all' | 100
+      single: 'only'
+    }>()
+  })
+
+  it('nested arrays with literal and oneOf elements', () => {
+    const _schema = array(array(object({
+      type: literal('item'),
+      status: oneOf(['active', 'inactive', 'pending'] as const),
+      priority: oneOf([1, 2, 3] as const).default(2),
+      metadata: object({
+        version: literal(1),
+        flags: array(oneOf(['read', 'write', 'execute'] as const)),
+      }).optional(),
+    })))
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<Array<{
+      type: 'item'
+      status: 'active' | 'inactive' | 'pending'
+      priority: 1 | 2 | 3
+      metadata?: {
+        version: 1
+        flags: Array<'read' | 'write' | 'execute'>
+      }
+    }>>>()
+  })
+
+  it('literal and oneOf through all optionality states', () => {
+    const _schema1 = literal('test')
+    const _schema2 = literal('test').optional()
+    const _schema3 = literal('test').optional().required()
+    const _schema4 = literal('test').nullable()
+    const _schema5 = literal('test').nullish()
+    const _schema6 = literal('test').default('test').optional()
+
+    expectTypeOf<ExtractOutputType<typeof _schema1>>().toEqualTypeOf<'test'>()
+    expectTypeOf<ExtractOutputType<typeof _schema2>>().toEqualTypeOf<'test' | undefined>()
+    expectTypeOf<ExtractOutputType<typeof _schema3>>().toEqualTypeOf<'test'>()
+    expectTypeOf<ExtractOutputType<typeof _schema4>>().toEqualTypeOf<'test' | null>()
+    expectTypeOf<ExtractOutputType<typeof _schema5>>().toEqualTypeOf<'test' | null | undefined>()
+    expectTypeOf<ExtractOutputType<typeof _schema6>>().toEqualTypeOf<'test' | undefined>()
+
+    const _enum1 = oneOf(['a', 'b'] as const)
+    const _enum2 = oneOf(['a', 'b'] as const).optional()
+    const _enum3 = oneOf(['a', 'b'] as const).nullable().required()
+    const _enum4 = oneOf(['a', 'b'] as const).default('a').nullish()
+
+    expectTypeOf<ExtractOutputType<typeof _enum1>>().toEqualTypeOf<'a' | 'b'>()
+    expectTypeOf<ExtractOutputType<typeof _enum2>>().toEqualTypeOf<'a' | 'b' | undefined>()
+    expectTypeOf<ExtractOutputType<typeof _enum3>>().toEqualTypeOf<'a' | 'b'>()
+    expectTypeOf<ExtractOutputType<typeof _enum4>>().toEqualTypeOf<'a' | 'b' | null | undefined>()
+  })
+
+  it('complex object with mixed literal, oneOf, and primitives', () => {
+    const _schema = object({
+      config: object({
+        env: literal('production'),
+        debug: boolean().default(false),
+        logLevel: oneOf(['error', 'warn', 'info', 'debug'] as const).default('info'),
+        port: oneOf([3000, 8080, 9000] as const),
+        features: object({
+          auth: boolean().default(true),
+          cache: oneOf(['redis', 'memory', 'none'] as const).optional(),
+          compression: literal('gzip').nullable(),
+        }),
+        servers: array(object({
+          name: string(),
+          type: literal('web'),
+          status: oneOf(['running', 'stopped', 'error'] as const),
+          config: object({
+            cpu: oneOf([1, 2, 4, 8] as const).default(2),
+            memory: literal('512MB'),
+          }),
+        })),
+      }),
+    })
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      config: {
+        env: 'production'
+        debug: boolean
+        logLevel: 'error' | 'warn' | 'info' | 'debug'
+        port: 3000 | 8080 | 9000
+        features: {
+          auth: boolean
+          compression: 'gzip' | null
+          cache?: 'redis' | 'memory' | 'none'
+        }
+        servers: Array<{
+          name: string
+          type: 'web'
+          status: 'running' | 'stopped' | 'error'
+          config: {
+            cpu: 1 | 2 | 4 | 8
+            memory: '512MB'
+          }
+        }>
+      }
     }>()
   })
 })

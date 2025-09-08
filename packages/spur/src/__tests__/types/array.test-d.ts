@@ -4,6 +4,8 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { array } from '../../leitplanken/array'
 import { boolean } from '../../leitplanken/boolean'
+import { oneOf } from '../../leitplanken/enum'
+import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
@@ -22,6 +24,31 @@ describe('arraySchema - basic types', () => {
   it('array of booleans', () => {
     const _schema = array(boolean())
     expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[]>()
+  })
+
+  it('array of string literals', () => {
+    const _schema = array(literal('hello'))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<'hello'[]>()
+  })
+
+  it('array of number literals', () => {
+    const _schema = array(literal(42))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<42[]>()
+  })
+
+  it('array of oneOf strings', () => {
+    const _schema = array(oneOf(['red', 'green', 'blue'] as const))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('red' | 'green' | 'blue')[]>()
+  })
+
+  it('array of oneOf numbers', () => {
+    const _schema = array(oneOf([1, 2, 3] as const))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<(1 | 2 | 3)[]>()
+  })
+
+  it('array of mixed oneOf', () => {
+    const _schema = array(oneOf(['hello', 42, 'world'] as const))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('hello' | 42 | 'world')[]>()
   })
 
   it('optional array of strings', () => {
@@ -96,6 +123,31 @@ describe('arraySchema - with element validation', () => {
   it('array of strings with default', () => {
     const _schema = array(string().default('hello'))
     expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+
+  it('array of optional literals', () => {
+    const _schema = array(literal('test').optional())
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<'test' | undefined>>()
+  })
+
+  it('array of nullable literals', () => {
+    const _schema = array(literal(42).nullable())
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<42 | null>>()
+  })
+
+  it('array of oneOf with defaults', () => {
+    const _schema = array(oneOf(['a', 'b', 'c'] as const).default('a'))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
+  })
+
+  it('array of optional oneOf', () => {
+    const _schema = array(oneOf([1, 2, 3] as const).optional())
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
+  })
+
+  it('array of nullish oneOf', () => {
+    const _schema = array(oneOf(['x', 'y'] as const).nullish())
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | null | undefined>>()
   })
 })
 

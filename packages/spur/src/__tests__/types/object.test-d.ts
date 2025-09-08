@@ -4,6 +4,8 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { array } from '../../leitplanken/array'
 import { boolean } from '../../leitplanken/boolean'
+import { oneOf } from '../../leitplanken/enum'
+import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
@@ -48,6 +50,34 @@ describe('objectSchema - basic types', () => {
       isActive: boolean
     }>()
   })
+
+  it('object with literal property', () => {
+    const _schema = object({
+      status: literal('active'),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ status: 'active' }>()
+  })
+
+  it('object with number literal property', () => {
+    const _schema = object({
+      version: literal(1),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ version: 1 }>()
+  })
+
+  it('object with oneOf property', () => {
+    const _schema = object({
+      color: oneOf(['red', 'green', 'blue'] as const),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ color: 'red' | 'green' | 'blue' }>()
+  })
+
+  it('object with mixed oneOf property', () => {
+    const _schema = object({
+      value: oneOf(['none', 42, 'all'] as const),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ value: 'none' | 42 | 'all' }>()
+  })
 })
 
 describe('objectSchema - optional properties', () => {
@@ -85,6 +115,20 @@ describe('objectSchema - optional properties', () => {
       description?: string
       score?: number
     }>()
+  })
+
+  it('object with optional literal property', () => {
+    const _schema = object({
+      theme: literal('dark').optional(),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ theme?: 'dark' }>()
+  })
+
+  it('object with optional oneOf property', () => {
+    const _schema = object({
+      priority: oneOf(['low', 'medium', 'high'] as const).optional(),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ priority?: 'low' | 'medium' | 'high' }>()
   })
 })
 
@@ -158,6 +202,28 @@ describe('objectSchema - with defaults', () => {
       age: number
       isActive: boolean
       description?: string
+    }>()
+  })
+
+  it('object with literal defaults', () => {
+    const _schema = object({
+      mode: literal('development').default('development'),
+      port: literal(3000).default(3000),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      mode: 'development'
+      port: 3000
+    }>()
+  })
+
+  it('object with oneOf defaults', () => {
+    const _schema = object({
+      level: oneOf(['debug', 'info', 'warn', 'error'] as const).default('info'),
+      size: oneOf([1, 2, 3, 4, 5] as const).default(3),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      level: 'debug' | 'info' | 'warn' | 'error'
+      size: 1 | 2 | 3 | 4 | 5
     }>()
   })
 })
