@@ -121,6 +121,284 @@ describe('arraySchema - chained operations', () => {
   })
 })
 
+describe('arraySchema - extensive chaining operations', () => {
+  it('array optionality then validation then back to optionality', () => {
+    const _schema = array(string()).optional().minLength(1).maxLength(10).nullable()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | null>()
+  })
+
+  it('array with multiple optionality state changes', () => {
+    const _schema = array(string()).optional().required().nullable().nullish().required()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+
+  it('array validation chain with optionality changes', () => {
+    const _schema = array(number())
+      .minLength(1)
+      .maxLength(20)
+      .optional()
+      .length(10)
+      .nullable()
+      .minLength(5)
+      .maxLength(15)
+      .required()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[]>()
+  })
+
+  it('array with conflicting length validations', () => {
+    const _schema = array(string())
+      .minLength(10)
+      .maxLength(5)
+      .length(7)
+      .optional()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('array nullish then required then nullable', () => {
+    const _schema = array(boolean()).nullish().required().nullable()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[] | null>()
+  })
+
+  it('array with overriding length constraints', () => {
+    const _schema = array(string())
+      .minLength(1)
+      .minLength(5) // should override previous min
+      .maxLength(20)
+      .maxLength(10) // should override previous max
+      .length(7) // should override both min and max
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+
+  it('array ultra complex chaining', () => {
+    const _schema = array(string().minLength(1).maxLength(50))
+      .minLength(1)
+      .maxLength(100)
+      .optional()
+      .minLength(2)
+      .nullable()
+      .maxLength(50)
+      .required()
+      .nullish()
+      .length(25)
+      .optional()
+      .required()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+})
+
+describe('arraySchema - element chaining with array chaining', () => {
+  it('array of complex chained elements with array chaining', () => {
+    const _schema = array(
+      string()
+        .minLength(3)
+        .maxLength(25)
+        .startsWith('prefix')
+        .endsWith('suffix')
+        .default('prefixdefaultsuffix'),
+    )
+      .minLength(1)
+      .maxLength(10)
+      .optional()
+      .nullable()
+      .required()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+
+  it('array of numbers with defaults and array optionality', () => {
+    const _schema = array(
+      number()
+        .min(0)
+        .max(100)
+        .default(50),
+    )
+      .minLength(1)
+      .optional()
+      .maxLength(5)
+      .nullable()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<number[] | null>()
+  })
+
+  it('array of booleans with chaining and array state changes', () => {
+    const _schema = array(
+      boolean()
+        .default(true),
+    )
+      .optional()
+      .minLength(0)
+      .maxLength(100)
+      .required()
+      .nullable()
+      .length(10)
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[] | null>()
+  })
+
+  it('array of objects with property chaining and array chaining', () => {
+    const _schema = array(
+      object({
+        name: string().minLength(1).maxLength(50).default('default'),
+        age: number().min(0).max(150).optional(),
+        active: boolean().default(true),
+      }),
+    )
+      .minLength(1)
+      .maxLength(20)
+      .optional()
+      .length(10)
+      .nullable()
+      .required()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+      name: string
+      active: boolean
+      age?: number
+    }>>()
+  })
+})
+
+describe('arraySchema - nested array chaining', () => {
+  it('nested arrays with independent chaining', () => {
+    const _schema = array(
+      array(string().minLength(1))
+        .minLength(1)
+        .maxLength(5)
+        .optional(),
+    )
+      .minLength(1)
+      .maxLength(10)
+      .nullable()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string[] | undefined> | null>()
+  })
+
+  it('triple nested arrays with chaining at each level', () => {
+    const _schema = array(
+      array(
+        array(number().min(0).max(100))
+          .minLength(1)
+          .maxLength(5)
+          .optional(),
+      )
+        .minLength(1)
+        .maxLength(3)
+        .nullable(),
+    )
+      .minLength(1)
+      .maxLength(2)
+      .nullish()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<Array<number[] | undefined> | null> | null | undefined>()
+  })
+
+  it('mixed nested structure with extensive chaining', () => {
+    const _schema = array(
+      object({
+        data: array(
+          object({
+            values: array(number().min(0).max(1))
+              .minLength(1)
+              .maxLength(100)
+              .optional(),
+            labels: array(string().minLength(1))
+              .minLength(0)
+              .nullable(),
+          }),
+        )
+          .minLength(1)
+          .optional(),
+        metadata: object({
+          id: string().minLength(1),
+          version: number().default(1),
+        }).nullable(),
+      }),
+    )
+      .minLength(1)
+      .maxLength(50)
+      .optional()
+      .required()
+      .nullable()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+      metadata: {
+        id: string
+        version: number
+      } | null
+      data?: Array<{
+        values?: number[]
+        labels: string[] | null
+      }>
+    }> | null>()
+  })
+})
+
+describe('arraySchema - extreme chaining scenarios', () => {
+  it('array with 10+ method calls', () => {
+    const _schema = array(string())
+      .minLength(1)
+      .maxLength(100)
+      .optional()
+      .minLength(2)
+      .nullable()
+      .maxLength(50)
+      .required()
+      .nullish()
+      .length(25)
+      .optional()
+      .required()
+      .nullable()
+      .minLength(10)
+      .maxLength(40)
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | null>()
+  })
+
+  it('array state oscillation', () => {
+    const _schema = array(boolean())
+      .optional() // -> optional
+      .required() // -> required
+      .nullable() // -> nullable
+      .required() // -> required
+      .optional() // -> optional
+      .nullish() // -> nullish
+      .required() // -> required
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<boolean[]>()
+  })
+
+  it('array with validation method spam', () => {
+    const _schema = array(string())
+      .minLength(1)
+      .minLength(2)
+      .minLength(3)
+      .minLength(4)
+      .minLength(5)
+      .maxLength(100)
+      .maxLength(90)
+      .maxLength(80)
+      .maxLength(70)
+      .length(50)
+      .length(40)
+      .length(30)
+      .optional()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('complex element and array chain combination', () => {
+    const _schema = array(
+      string()
+        .minLength(1)
+        .maxLength(20)
+        .startsWith('pre')
+        .endsWith('suf')
+        .default('presuf'),
+    )
+      .minLength(1)
+      .maxLength(10)
+      .optional()
+      .minLength(2)
+      .nullable()
+      .maxLength(8)
+      .required()
+      .nullish()
+      .length(5)
+      .required()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+})
+
 describe('arraySchema - nested arrays', () => {
   it('array of arrays of strings', () => {
     const _schema = array(array(string()))

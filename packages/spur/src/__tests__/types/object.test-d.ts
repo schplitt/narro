@@ -247,6 +247,437 @@ describe('objectSchema - object optionality', () => {
   })
 })
 
+describe('objectSchema - extensive chaining operations', () => {
+  it('object optionality state changes', () => {
+    const _schema = object({
+      name: string(),
+      age: number(),
+    })
+      .optional()
+      .required()
+      .nullable()
+      .nullish()
+      .required()
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      name: string
+      age: number
+    }>()
+  })
+
+  it('object oscillating between states', () => {
+    const _schema = object({
+      value: string(),
+    })
+      .optional() // -> optional
+      .required() // -> required
+      .nullable() // -> nullable
+      .required() // -> required (but nullable?)
+      .optional() // -> optional
+      .nullish() // -> nullish
+      .required() // -> required (but nullish?)
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      value: string
+    }>()
+  })
+
+  it('object with properties having extensive chains', () => {
+    const _schema = object({
+      stringProp: string()
+        .minLength(1)
+        .maxLength(100)
+        .startsWith('pre')
+        .endsWith('suf')
+        .optional()
+        .default('presuf')
+        .required()
+        .nullable(),
+
+      numberProp: number()
+        .min(0)
+        .max(1000)
+        .default(500)
+        .optional()
+        .min(100)
+        .max(900)
+        .required()
+        .nullish(),
+
+      booleanProp: boolean()
+        .default(true)
+        .optional()
+        .default(false)
+        .nullable()
+        .required(),
+    })
+      .optional()
+      .nullable()
+      .required()
+
+    type Output = ExtractOutputType<typeof _schema>
+
+    expectTypeOf<Output>().toEqualTypeOf<{
+      stringProp: string | null
+      numberProp: number | null | undefined
+      booleanProp: boolean
+    }>()
+  })
+
+  it('object state changes with complex properties', () => {
+    const _schema = object({
+      user: object({
+        name: string().minLength(1),
+        email: string().optional(),
+      }).optional(),
+      settings: object({
+        theme: string().default('light'),
+        notifications: boolean().default(true),
+      }).nullable(),
+    })
+      .optional()
+      .required()
+      .nullable()
+      .nullish()
+      .required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      user?: {
+        name: string
+        email?: string
+      }
+      settings: {
+        theme: string
+        notifications: boolean
+      } | null
+    }>()
+  })
+
+  it('object with nested objects having their own chaining', () => {
+    const _schema = object({
+      level1: object({
+        data: string(),
+      })
+        .optional()
+        .nullable()
+        .required(),
+
+      level2: object({
+        nested: object({
+          value: number(),
+        })
+          .nullable()
+          .required(),
+      })
+        .nullish()
+        .optional(),
+    })
+      .nullable()
+      .required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      level1: {
+        data: string
+      }
+      level2?: {
+        nested: {
+          value: number
+        }
+      } | undefined
+    }>()
+  })
+
+  it('object with arrays having chaining and object chaining', () => {
+    const _schema = object({
+      tags: array(string().minLength(1))
+        .minLength(0)
+        .maxLength(10)
+        .optional(),
+
+      scores: array(number().min(0).max(100))
+        .minLength(1)
+        .nullable()
+        .maxLength(5),
+
+      flags: array(boolean().default(false))
+        .optional()
+        .required()
+        .nullish(),
+    })
+      .optional()
+      .nullable()
+      .required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      scores: number[] | null
+      flags: boolean[] | null | undefined
+      tags?: string[]
+    }>()
+  })
+})
+
+describe('objectSchema - property chaining patterns', () => {
+  it('object with all property types having defaults and chaining', () => {
+    const _schema = object({
+      defaultString: string()
+        .default('default')
+        .optional()
+        .required()
+        .nullable(),
+
+      defaultNumber: number()
+        .default(42)
+        .nullable()
+        .optional()
+        .required(),
+
+      defaultBoolean: boolean()
+        .default(true)
+        .nullish()
+        .required()
+        .optional(),
+
+      defaultArray: array(string())
+        .optional()
+        .required()
+        .nullable(),
+
+      defaultObject: object({
+        nested: string().default('nested'),
+      })
+        .nullable()
+        .required()
+        .optional(),
+    })
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      defaultString: string | null
+      defaultNumber: number
+      defaultArray: string[] | null
+      defaultBoolean?: boolean
+      defaultObject?: {
+        nested: string
+      }
+    }>()
+  })
+
+  it('object with conflicting property requirements', () => {
+    const _schema = object({
+      confusing: string()
+        .optional()
+        .required()
+        .nullable()
+        .optional()
+        .nullish()
+        .required()
+        .default('confused')
+        .nullable(),
+    })
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      confusing: string | null
+    }>()
+  })
+
+  it('object with nested chaining hell', () => {
+    const _schema = object({
+      deep: object({
+        deeper: object({
+          deepest: object({
+            value: string()
+              .minLength(1)
+              .maxLength(50)
+              .startsWith('start')
+              .endsWith('end')
+              .default('startdefaultend')
+              .optional()
+              .required()
+              .nullable(),
+          })
+            .optional()
+            .nullable()
+            .required(),
+        })
+          .nullable()
+          .nullish()
+          .required(),
+      })
+        .optional()
+        .required()
+        .nullable(),
+    })
+      .nullable()
+      .nullish()
+      .required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      deep: {
+        deeper: {
+          deepest: {
+            value: string | null
+          }
+        }
+      } | null
+    }>()
+  })
+})
+
+describe('objectSchema - extreme chaining scenarios', () => {
+  it('object with 10+ optionality state changes', () => {
+    const _schema = object({
+      value: string(),
+    })
+      .optional()
+      .required()
+      .nullable()
+      .nullish()
+      .required()
+      .optional()
+      .required()
+      .nullable()
+      .required()
+      .nullish()
+      .required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      value: string
+    }>()
+  })
+
+  it('object with mixed array and object properties all chained', () => {
+    const _schema = object({
+      arrays: object({
+        strings: array(string().minLength(1).default('default'))
+          .minLength(1)
+          .maxLength(5)
+          .optional(),
+        numbers: array(number().min(0).max(100).default(50))
+          .nullable()
+          .required(),
+        booleans: array(boolean().default(true))
+          .nullish()
+          .optional()
+          .required(),
+      })
+        .optional()
+        .nullable()
+        .required(),
+
+      objects: object({
+        nested1: object({
+          value: string().default('default'),
+        })
+          .optional()
+          .required(),
+        nested2: object({
+          value: number().default(42),
+        })
+          .nullable()
+          .optional(),
+      })
+        .nullish()
+        .required(),
+    })
+      .optional()
+      .nullable()
+      .nullish()
+      .required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      arrays: {
+        numbers: number[]
+        booleans: boolean[]
+        strings?: string[]
+      }
+      objects: {
+        nested1: {
+          value: string
+        }
+        nested2?: {
+          value: number
+        }
+      }
+    }>()
+  })
+
+  it('ultra complex object chain with everything', () => {
+    const _schema = object({
+      meta: object({
+        id: string().minLength(1).maxLength(50).default('generated-id'),
+        version: number().min(1).max(999).default(1),
+        active: boolean().default(true),
+        tags: array(string().minLength(1).maxLength(20))
+          .minLength(0)
+          .maxLength(10)
+          .optional(),
+        config: object({
+          settings: object({
+            theme: string().default('light'),
+            lang: string().default('en'),
+          }).nullable(),
+          features: array(boolean().default(false))
+            .optional()
+            .required()
+            .nullable(),
+        })
+          .optional()
+          .required()
+          .nullish(),
+      })
+        .optional()
+        .nullable()
+        .required(),
+
+      data: array(
+        object({
+          values: array(number().min(0).max(1))
+            .minLength(1)
+            .optional(),
+          metadata: object({
+            type: string().minLength(1),
+            description: string().optional().maxLength(200),
+          })
+            .nullable()
+            .required(),
+        }),
+      )
+        .minLength(1)
+        .maxLength(100)
+        .nullable()
+        .optional()
+        .required(),
+    })
+      .optional()
+      .required()
+      .nullable()
+      .nullish()
+      .required()
+      .optional()
+      .required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{
+      meta: {
+        id: string
+        version: number
+        active: boolean
+        config: {
+          settings: {
+            theme: string
+            lang: string
+          } | null
+          features: boolean[] | null
+        } | null | undefined
+        tags?: string[]
+      }
+      data: Array<{
+        metadata: {
+          type: string
+          description?: string
+        }
+        values?: number[]
+      }>
+    }>()
+  })
+})
+
 describe('objectSchema - complex examples', () => {
   it('complex object from test.ts example', () => {
     const _schema = object({
@@ -440,7 +871,7 @@ describe('objectSchema - ultra complex nesting', () => {
   })
 })
 
-describe('objectSchema - extreme chaining scenarios', () => {
+describe('objectSchema - property optionality combinations', () => {
   it('object with all possible property optionalities', () => {
     const _schema = object({
       required: string(),
