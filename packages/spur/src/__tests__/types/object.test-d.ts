@@ -9,6 +9,7 @@ import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
+import { union } from '../../leitplanken/union'
 
 describe('objectSchema - basic types', () => {
   it('empty object', () => {
@@ -78,6 +79,20 @@ describe('objectSchema - basic types', () => {
     })
     expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ value: 'none' | 42 | 'all' }>()
   })
+
+  it('object with union property', () => {
+    const _schema = object({
+      data: union([string(), number()] as const),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ data: string | number }>()
+  })
+
+  it('object with complex union property', () => {
+    const _schema = object({
+      field: union([literal('exact'), oneOf(['a', 'b'] as const), boolean()] as const),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ field: 'exact' | 'a' | 'b' | boolean }>()
+  })
 })
 
 describe('objectSchema - optional properties', () => {
@@ -129,6 +144,13 @@ describe('objectSchema - optional properties', () => {
       priority: oneOf(['low', 'medium', 'high'] as const).optional(),
     })
     expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ priority?: 'low' | 'medium' | 'high' }>()
+  })
+
+  it('object with optional union property', () => {
+    const _schema = object({
+      content: union([string(), number(), boolean()] as const).optional(),
+    })
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<{ content?: string | number | boolean }>()
   })
 })
 

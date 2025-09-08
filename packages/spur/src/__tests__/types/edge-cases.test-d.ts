@@ -9,6 +9,7 @@ import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
+import { union } from '../../leitplanken/union'
 
 describe('edge cases - extreme type complexity', () => {
   it('maximum nesting depth', () => {
@@ -222,6 +223,123 @@ describe('edge cases - literal and oneOf complexity', () => {
         }>
       }
     }>()
+  })
+
+  it('complex union combinations in nested structures', () => {
+    const _schema = object({
+      api: object({
+        endpoint: union([literal('v1'), literal('v2'), string()] as const),
+        method: union([
+          oneOf(['GET', 'POST'] as const),
+          literal('PUT'),
+          literal('DELETE'),
+        ] as const),
+        response: union([
+          object({ success: boolean().default(true), data: string() }),
+          object({ success: boolean().default(false), error: string() }),
+          object({ pending: boolean().default(true) }),
+        ] as const),
+        headers: array(union([
+          object({ type: literal('auth'), token: string() }),
+          object({ type: literal('content'), value: literal('application/json') }),
+          object({ type: literal('custom'), key: string(), value: string() }),
+        ] as const)),
+      }),
+    })
+
+    type ApiSchema = ExtractOutputType<typeof _schema>
+
+    expectTypeOf<ApiSchema>().toEqualTypeOf<{
+      api: {
+        endpoint: 'v1' | 'v2' | string
+        method: 'GET' | 'POST' | 'PUT' | 'DELETE'
+        response:
+          | { success: boolean, data: string }
+          | { success: boolean, error: string }
+          | { pending: boolean }
+        headers: Array<
+          | { type: 'auth', token: string }
+          | { type: 'content', value: 'application/json' }
+          | { type: 'custom', key: string, value: string }
+        >
+      }
+    }>()
+  })
+})
+
+describe('edge cases - union complexity', () => {
+  it('union through all optionality states', () => {
+    const _schema1 = union([string(), number()] as const)
+    const _schema2 = union([string(), number()] as const).optional()
+    const _schema3 = union([string(), number()] as const).optional().required()
+    const _schema4 = union([string(), number()] as const).nullable()
+    const _schema5 = union([string(), number()] as const).nullish()
+    const _schema6 = union([string(), number()] as const).nullish().required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema1>>().toEqualTypeOf<string | number>()
+    expectTypeOf<ExtractOutputType<typeof _schema2>>().toEqualTypeOf<string | number | undefined>()
+    expectTypeOf<ExtractOutputType<typeof _schema3>>().toEqualTypeOf<string | number>()
+    expectTypeOf<ExtractOutputType<typeof _schema4>>().toEqualTypeOf<string | number | null>()
+    expectTypeOf<ExtractOutputType<typeof _schema5>>().toEqualTypeOf<string | number | null | undefined>()
+    expectTypeOf<ExtractOutputType<typeof _schema6>>().toEqualTypeOf<string | number>()
+  })
+
+  it('nested unions with all schema types', () => {
+    const _schema = array(object({
+      id: union([string(), number()] as const),
+      type: union([
+        literal('user'),
+        literal('admin'),
+        oneOf(['guest', 'member'] as const),
+      ] as const),
+      metadata: union([
+        object({ version: literal(1), legacy: boolean().default(false) }),
+        object({ version: literal(2), features: array(string()) }),
+        object({ version: literal(3), config: oneOf(['basic', 'advanced'] as const) }),
+      ] as const).optional(),
+      values: array(union([
+        string(),
+        number(),
+        boolean(),
+        literal('null'),
+        oneOf(['empty', 'unknown'] as const),
+      ] as const)),
+    }))
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<{
+      id: string | number
+      type: 'user' | 'admin' | 'guest' | 'member'
+      values: Array<string | number | boolean | 'null' | 'empty' | 'unknown'>
+      metadata?:
+        | { version: 1, legacy: boolean }
+        | { version: 2, features: string[] }
+        | { version: 3, config: 'basic' | 'advanced' }
+    }>>()
+  })
+
+  it('maximum union complexity with all features', () => {
+    const _schema = union([
+      // Primitives
+      string().minLength(1),
+      number().min(0),
+      boolean().default(true),
+
+      // Literals
+      literal('exact'),
+      literal(42),
+      literal(3.14),
+
+      // OneOf schemas
+      oneOf(['red', 'green', 'blue'] as const),
+      oneOf([100, 200, 300] as const).default(200),
+
+      // Nested union
+      union([literal('nested'), boolean()] as const),
+    ] as const).optional().nullable().required()
+
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<
+      string | number | boolean | 'exact' | 42 | 3.14 | 'red' | 'green' | 'blue' | 100 | 200 | 300
+    >()
   })
 })
 

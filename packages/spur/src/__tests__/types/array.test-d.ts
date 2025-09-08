@@ -9,6 +9,7 @@ import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
+import { union } from '../../leitplanken/union'
 
 describe('arraySchema - basic types', () => {
   it('array of strings', () => {
@@ -49,6 +50,16 @@ describe('arraySchema - basic types', () => {
   it('array of mixed oneOf', () => {
     const _schema = array(oneOf(['hello', 42, 'world'] as const))
     expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('hello' | 42 | 'world')[]>()
+  })
+
+  it('array of union schemas', () => {
+    const _schema = array(union([string(), number()] as const))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<(string | number)[]>()
+  })
+
+  it('array of complex union', () => {
+    const _schema = array(union([literal('test'), oneOf([1, 2, 3] as const), boolean()] as const))
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<('test' | 1 | 2 | 3 | boolean)[]>()
   })
 
   it('optional array of strings', () => {
@@ -148,6 +159,16 @@ describe('arraySchema - with element validation', () => {
   it('array of nullish oneOf', () => {
     const _schema = array(oneOf(['x', 'y'] as const).nullish())
     expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | null | undefined>>()
+  })
+
+  it('array of optional union', () => {
+    const _schema = array(union([string(), number()] as const).optional())
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<string | number | undefined>>()
+  })
+
+  it('array of nullable union', () => {
+    const _schema = array(union([literal('a'), literal(1)] as const).nullable())
+    expectTypeOf<ExtractOutputType<typeof _schema>>().toEqualTypeOf<Array<'a' | 1 | null>>()
   })
 })
 
