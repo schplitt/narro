@@ -20,8 +20,18 @@ describe('literalSchema - basic types', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | undefined>()
   })
 
+  it('undefinable string literal schema', () => {
+    const _schema = literal('hello').undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | undefined>()
+  })
+
   it('optional number literal schema', () => {
     const _schema = literal(42).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42 | undefined>()
+  })
+
+  it('undefinable number literal schema', () => {
+    const _schema = literal(42).undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42 | undefined>()
   })
 
@@ -69,6 +79,11 @@ describe('literalSchema - with defaults', () => {
 
   it('string literal with default then optional', () => {
     const _schema = literal('world').default('world').optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'world' | undefined>()
+  })
+
+  it('string literal with default then undefinable', () => {
+    const _schema = literal('world').default('world').undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'world' | undefined>()
   })
 
@@ -129,5 +144,61 @@ describe('literalSchema - edge cases', () => {
   it('float literal', () => {
     const _schema = literal(3.14)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<3.14>()
+  })
+})
+
+describe('literalSchema - undefinable', () => {
+  it('undefinable string literal', () => {
+    const _schema = literal('hello').undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | undefined>()
+  })
+
+  it('undefinable number literal', () => {
+    const _schema = literal(42).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42 | undefined>()
+  })
+
+  it('undefinable literal with default', () => {
+    const _schema = literal('test').undefinable().default('test')
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test'>()
+  })
+
+  it('literal with default then undefinable', () => {
+    const _schema = literal('hello').default('hello').undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | undefined>()
+  })
+
+  it('undefinable then required', () => {
+    const _schema = literal('test').undefinable().required()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test'>()
+  })
+
+  it('undefinable then nullable', () => {
+    const _schema = literal(123).undefinable().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<123 | null>()
+  })
+
+  it('undefinable then nullish', () => {
+    const _schema = literal('world').undefinable().nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'world' | null | undefined>()
+  })
+
+  it('undefinable then optional (should stay undefinable)', () => {
+    const _schema = literal('test').undefinable().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test' | undefined>()
+  })
+
+  it('complex undefinable chaining', () => {
+    const _schema = literal(42).default(42).undefinable().required().nullable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42 | undefined>()
+  })
+
+  it('undefinable with edge case literals', () => {
+    const _schema1 = literal('').undefinable()
+    const _schema2 = literal(0).undefinable()
+    const _schema3 = literal(-1).undefinable()
+    expectTypeOf<InferOutput<typeof _schema1>>().toEqualTypeOf<'' | undefined>()
+    expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<0 | undefined>()
+    expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<-1 | undefined>()
   })
 })

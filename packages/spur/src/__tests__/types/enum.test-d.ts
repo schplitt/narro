@@ -30,8 +30,18 @@ describe('oneOfSchema - basic types', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'red' | 'green' | 'blue' | undefined>()
   })
 
+  it('undefinable string enum schema', () => {
+    const _schema = oneOf(['red', 'green', 'blue'] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'red' | 'green' | 'blue' | undefined>()
+  })
+
   it('optional number enum schema', () => {
     const _schema = oneOf([1, 2, 3] as const).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<1 | 2 | 3 | undefined>()
+  })
+
+  it('undefinable number enum schema', () => {
+    const _schema = oneOf([1, 2, 3] as const).undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<1 | 2 | 3 | undefined>()
   })
 
@@ -154,5 +164,71 @@ describe('oneOfSchema - edge cases', () => {
   it('very long enum', () => {
     const _schema = oneOf(['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'] as const)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j'>()
+  })
+})
+
+describe('oneOfSchema - undefinable', () => {
+  it('undefinable string enum', () => {
+    const _schema = oneOf(['red', 'green', 'blue'] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'red' | 'green' | 'blue' | undefined>()
+  })
+
+  it('undefinable number enum', () => {
+    const _schema = oneOf([1, 2, 3] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<1 | 2 | 3 | undefined>()
+  })
+
+  it('undefinable mixed enum', () => {
+    const _schema = oneOf(['hello', 42, 'world'] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | 42 | 'world' | undefined>()
+  })
+
+  it('undefinable enum with default', () => {
+    const _schema = oneOf(['a', 'b', 'c'] as const).undefinable().default('a')
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | 'b' | 'c'>()
+  })
+
+  it('enum with default then undefinable', () => {
+    const _schema = oneOf(['x', 'y'] as const).default('x').undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'x' | 'y' | undefined>()
+  })
+
+  it('undefinable then required', () => {
+    const _schema = oneOf(['foo', 'bar'] as const).undefinable().required()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'foo' | 'bar'>()
+  })
+
+  it('undefinable then nullable', () => {
+    const _schema = oneOf([10, 20] as const).undefinable().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<10 | 20 | null>()
+  })
+
+  it('undefinable then nullish', () => {
+    const _schema = oneOf(['test', 99] as const).undefinable().nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test' | 99 | null | undefined>()
+  })
+
+  it('undefinable then optional (should stay undefinable)', () => {
+    const _schema = oneOf(['a', 'b'] as const).undefinable().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | 'b' | undefined>()
+  })
+
+  it('complex undefinable chaining', () => {
+    const _schema = oneOf(['x', 'y', 'z'] as const).default('x').undefinable().required().nullable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'x' | 'y' | 'z' | undefined>()
+  })
+
+  it('undefinable with edge case enums', () => {
+    const _schema1 = oneOf(['', 'non-empty'] as const).undefinable()
+    const _schema2 = oneOf([0, 1, 2] as const).undefinable()
+    const _schema3 = oneOf([-1, 0, 1] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema1>>().toEqualTypeOf<'' | 'non-empty' | undefined>()
+    expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<0 | 1 | 2 | undefined>()
+    expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<-1 | 0 | 1 | undefined>()
+  })
+
+  it('multiple undefinable calls', () => {
+    const _schema = oneOf(['a', 'b'] as const).undefinable().undefinable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | 'b' | undefined>()
   })
 })

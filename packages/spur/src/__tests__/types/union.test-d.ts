@@ -97,6 +97,11 @@ describe('unionSchema - optionality', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
   })
 
+  it('undefinable union schema', () => {
+    const _schema = union([string(), number()] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
+  })
+
   it('nullable union schema', () => {
     const _schema = union([string(), boolean()] as const).nullable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | boolean | null>()
@@ -250,6 +255,87 @@ describe('unionSchema - edge cases', () => {
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | boolean | 'a' | 'b' | 'c' | 1 | 2 | 3 | 'x' | 'y' | 'z' | 10 | 20 | 30 | undefined
+    >()
+  })
+})
+
+describe('unionSchema - undefinable', () => {
+  it('undefinable union schema', () => {
+    const _schema = union([string(), number()] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
+  })
+
+  it('undefinable union of literals', () => {
+    const _schema = union([literal('hello'), literal(42)] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | 42 | undefined>()
+  })
+
+  it('undefinable union of mixed schemas', () => {
+    const _schema = union([string(), literal(42), boolean()] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | 42 | boolean | undefined>()
+  })
+
+  it('union of undefinable schemas', () => {
+    const _schema = union([string().undefinable(), number().undefinable()] as const)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined | number>()
+  })
+
+  it('undefinable then required', () => {
+    const _schema = union([string(), number()] as const).undefinable().required()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number>()
+  })
+
+  it('undefinable then nullable', () => {
+    const _schema = union([string(), boolean()] as const).undefinable().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | boolean | null>()
+  })
+
+  it('undefinable then nullish', () => {
+    const _schema = union([literal('a'), literal(1)] as const).undefinable().nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | 1 | null | undefined>()
+  })
+
+  it('undefinable then optional (should stay undefinable)', () => {
+    const _schema = union([string(), number()] as const).undefinable().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
+  })
+
+  it('complex undefinable chaining', () => {
+    const _schema = union([string(), number()] as const).undefinable().required().nullable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
+  })
+
+  it('undefinable with complex union types', () => {
+    const _schema = union([
+      string(),
+      number(),
+      boolean(),
+      literal('exact'),
+      oneOf(['red', 'green'] as const),
+    ] as const).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
+      string | number | boolean | 'exact' | 'red' | 'green' | undefined
+    >()
+  })
+
+  it('multiple undefinable calls', () => {
+    const _schema = union([string(), number()] as const).undefinable().undefinable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | number | undefined>()
+  })
+
+  it('ultra complex undefinable scenario', () => {
+    const _schema = union([
+      string().undefinable(),
+      number().nullable(),
+      boolean().nullish(),
+      literal('test').undefinable(),
+      oneOf(['a', 'b']).default('a'),
+    ]).undefinable()
+
+    type Output = InferOutput<typeof _schema>
+
+    expectTypeOf<Output>().toEqualTypeOf<
+      string | undefined | number | null | boolean | null | undefined | 'test' | undefined | 'a' | 'b' | undefined
     >()
   })
 })

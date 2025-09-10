@@ -67,6 +67,11 @@ describe('arraySchema - basic types', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
   })
 
+  it('undefinable array of strings', () => {
+    const _schema = array(string()).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
   it('nullable array of strings', () => {
     const _schema = array(string()).nullable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null>()
@@ -108,6 +113,11 @@ describe('arraySchema - with validation', () => {
 describe('arraySchema - with element validation', () => {
   it('array of optional strings', () => {
     const _schema = array(string().optional())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined>>()
+  })
+
+  it('array of undefinable strings', () => {
+    const _schema = array(string().undefinable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined>>()
   })
 
@@ -156,6 +166,11 @@ describe('arraySchema - with element validation', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
+  it('array of undefinable oneOf', () => {
+    const _schema = array(oneOf([1, 2, 3] as const).undefinable())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
+  })
+
   it('array of nullish oneOf', () => {
     const _schema = array(oneOf(['x', 'y'] as const).nullish())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | null | undefined>>()
@@ -175,6 +190,11 @@ describe('arraySchema - with element validation', () => {
 describe('arraySchema - chained operations', () => {
   it('optional array with validation', () => {
     const _schema = array(string().minLength(3).maxLength(25)).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('undefinable array with validation', () => {
+    const _schema = array(string().minLength(3).maxLength(25)).undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
   })
 
@@ -469,6 +489,123 @@ describe('arraySchema - extreme chaining scenarios', () => {
       .length(5)
       .required()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+})
+
+describe('arraySchema - undefinable', () => {
+  it('undefinable array of strings', () => {
+    const _schema = array(string()).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('array of undefinable strings', () => {
+    const _schema = array(string().undefinable())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined>>()
+  })
+
+  it('undefinable array of undefinable strings', () => {
+    const _schema = array(string().undefinable()).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined> | undefined>()
+  })
+
+  it('undefinable array with validation', () => {
+    const _schema = array(string().minLength(3).maxLength(25)).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('undefinable array with element validation', () => {
+    const _schema = array(string().minLength(3).undefinable()).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined> | undefined>()
+  })
+
+  it('undefinable then required', () => {
+    const _schema = array(string()).undefinable().required()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+  })
+
+  it('undefinable then nullable', () => {
+    const _schema = array(number()).undefinable().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[] | null>()
+  })
+
+  it('undefinable then nullish', () => {
+    const _schema = array(boolean()).undefinable().nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[] | null | undefined>()
+  })
+
+  it('undefinable then optional (should stay undefinable)', () => {
+    const _schema = array(string()).undefinable().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('complex undefinable chaining', () => {
+    const _schema = array(string()).minLength(1).undefinable().maxLength(10).required().nullable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('array of undefinable literals', () => {
+    const _schema = array(literal('test').undefinable())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'test' | undefined>>()
+  })
+
+  it('array of undefinable oneOf', () => {
+    const _schema = array(oneOf([1, 2, 3] as const).undefinable())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
+  })
+
+  it('array of undefinable union', () => {
+    const _schema = array(union([string(), number()] as const).undefinable())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | number | undefined>>()
+  })
+
+  it('nested undefinable arrays', () => {
+    const _schema = array(array(string()).undefinable()).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string[] | undefined> | undefined>()
+  })
+
+  it('triple nested undefinable arrays', () => {
+    const _schema = array(array(array(number()).undefinable()).undefinable()).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<Array<number[] | undefined> | undefined> | undefined>()
+  })
+
+  it('undefinable array with complex elements', () => {
+    const _schema = array(
+      object({
+        name: string().undefinable(),
+        age: number().nullable(),
+      }),
+    ).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
+      name: string | undefined
+      age: number | null
+    }> | undefined>()
+  })
+
+  it('multiple undefinable calls', () => {
+    const _schema = array(string()).undefinable().undefinable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('ultra complex undefinable scenario', () => {
+    const _schema = array(
+      object({
+        data: array(string().undefinable()).undefinable(),
+        metadata: object({
+          id: string(),
+          optional: number().undefinable(),
+        }).undefinable(),
+      }),
+    ).undefinable().minLength(1).maxLength(5).required().undefinable()
+
+    type Output = InferOutput<typeof _schema>
+
+    expectTypeOf<Output>().toEqualTypeOf<Array<{
+      data: Array<string | undefined> | undefined
+      metadata: {
+        id: string
+        optional: number | undefined
+      } | undefined
+    }> | undefined>()
   })
 })
 

@@ -15,6 +15,11 @@ describe('booleanSchema - basic types', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
   })
 
+  it('undefinable boolean schema', () => {
+    const _schema = boolean().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+  })
+
   it('nullable boolean schema', () => {
     const _schema = boolean().nullable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null>()
@@ -72,6 +77,11 @@ describe('booleanSchema - chained operations', () => {
   it('boolean with default and optionality', () => {
     const _schema = boolean().default(false)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+  })
+
+  it('boolean with default then undefinable', () => {
+    const _schema = boolean().default(true).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
   })
 })
 
@@ -158,5 +168,57 @@ describe('booleanSchema - complex state transitions', () => {
   it('ultra complex chain', () => {
     const _schema = boolean().optional().default(true).nullable().required().default(false).nullish()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+  })
+})
+
+describe('booleanSchema - undefinable', () => {
+  it('undefinable boolean schema', () => {
+    const _schema = boolean().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+  })
+
+  it('undefinable boolean with default', () => {
+    const _schema = boolean().undefinable().default(true)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+  })
+
+  it('boolean with default then undefinable', () => {
+    const _schema = boolean().default(false).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+  })
+
+  it('undefinable then required', () => {
+    const _schema = boolean().undefinable().required()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+  })
+
+  it('undefinable then nullable', () => {
+    const _schema = boolean().undefinable().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null>()
+  })
+
+  it('undefinable then nullish', () => {
+    const _schema = boolean().undefinable().nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+  })
+
+  it('undefinable then optional (should stay undefinable)', () => {
+    const _schema = boolean().undefinable().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+  })
+
+  it('complex undefinable chaining', () => {
+    const _schema = boolean().default(true).undefinable().required().nullable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+  })
+
+  it('ultra complex undefinable chain', () => {
+    const _schema = boolean().undefinable().default(true).nullable().required().default(false).nullish().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+  })
+
+  it('multiple undefinable calls', () => {
+    const _schema = boolean().undefinable().undefinable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
   })
 })

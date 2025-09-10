@@ -313,6 +313,13 @@ describe('objectSchema - object optionality', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | undefined>()
   })
 
+  it('undefinable object', () => {
+    const _schema = object({
+      name: string(),
+    }).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | undefined>()
+  })
+
   it('nullable object', () => {
     const _schema = object({
       name: string(),
@@ -965,6 +972,7 @@ describe('objectSchema - property optionality combinations', () => {
       required: string(),
       defaulted: string().default('default'),
       optional: string().optional(),
+      undefinable: string().undefinable(),
       optionalDefaulted: string().optional().default('default'),
       nullable: string().nullable(),
       nullableDefaulted: string().nullable().default('default'),
@@ -978,6 +986,7 @@ describe('objectSchema - property optionality combinations', () => {
       required: string
       defaulted: string
       optional?: string
+      undefinable: string | undefined
       optionalDefaulted: string
       nullable: string | null
       nullableDefaulted: string
@@ -991,7 +1000,7 @@ describe('objectSchema - property optionality combinations', () => {
   it('object chain with optionality changes', () => {
     const _schema = object({
       prop: string(),
-    }).optional().nullable().required()
+    }).optional().undefinable().nullable().required()
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       prop: string
@@ -1040,5 +1049,174 @@ describe('objectSchema - property optionality combinations', () => {
         } | null | undefined
       }
     }>()
+  })
+})
+
+describe('objectSchema - undefinable', () => {
+  it('undefinable object', () => {
+    const _schema = object({
+      name: string(),
+    }).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | undefined>()
+  })
+
+  it('object with undefinable properties', () => {
+    const _schema = object({
+      name: string().undefinable(),
+      age: number().undefinable(),
+      active: boolean().undefinable(),
+    })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      name: string | undefined
+      age: number | undefined
+      active: boolean | undefined
+    }>()
+  })
+
+  it('undefinable object with undefinable properties', () => {
+    const _schema = object({
+      name: string().undefinable(),
+      description: string().optional(),
+    }).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      name: string | undefined
+      description?: string
+    } | undefined>()
+  })
+
+  it('undefinable then required', () => {
+    const _schema = object({
+      value: string(),
+    }).undefinable().required()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ value: string }>()
+  })
+
+  it('undefinable then nullable', () => {
+    const _schema = object({
+      data: number(),
+    }).undefinable().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ data: number } | null>()
+  })
+
+  it('undefinable then nullish', () => {
+    const _schema = object({
+      info: boolean(),
+    }).undefinable().nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ info: boolean } | null | undefined>()
+  })
+
+  it('undefinable then optional (should stay undefinable)', () => {
+    const _schema = object({
+      test: string(),
+    }).undefinable().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ test: string } | undefined>()
+  })
+
+  it('complex undefinable property chaining', () => {
+    const _schema = object({
+      field: string().default('test').undefinable().required().nullable().undefinable(),
+    })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      field: string | undefined
+    }>()
+  })
+
+  it('nested undefinable objects', () => {
+    const _schema = object({
+      nested: object({
+        value: string().undefinable(),
+      }).undefinable(),
+    }).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      nested: {
+        value: string | undefined
+      } | undefined
+    } | undefined>()
+  })
+
+  it('undefinable object with arrays', () => {
+    const _schema = object({
+      tags: array(string().undefinable()).undefinable(),
+      scores: array(number()).undefinable(),
+    }).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      tags: Array<string | undefined> | undefined
+      scores: Array<number> | undefined
+    } | undefined>()
+  })
+
+  it('object with all optionality variants including undefinable', () => {
+    const _schema = object({
+      required: string(),
+      defaulted: string().default('default'),
+      optional: string().optional(),
+      undefinable: string().undefinable(),
+      optionalDefaulted: string().optional().default('default'),
+      undefinableDefaulted: string().undefinable().default('default'),
+      nullable: string().nullable(),
+      nullableDefaulted: string().nullable().default('default'),
+      nullish: string().nullish(),
+      nullishDefaulted: string().nullish().default('default'),
+    })
+
+    type Output = InferOutput<typeof _schema>
+
+    interface Expected {
+      required: string
+      defaulted: string
+      optional?: string
+      undefinable: string | undefined
+      optionalDefaulted: string
+      undefinableDefaulted: string
+      nullable: string | null
+      nullableDefaulted: string
+      nullish: string | null | undefined
+      nullishDefaulted: string
+    }
+
+    expectTypeOf<Output>().toEqualTypeOf<Expected>()
+  })
+
+  it('multiple undefinable calls', () => {
+    const _schema = object({
+      value: string(),
+    }).undefinable().undefinable().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ value: string } | undefined>()
+  })
+
+  it('ultra complex undefinable scenario', () => {
+    const _schema = object({
+      meta: object({
+        id: string().undefinable(),
+        data: array(
+          object({
+            value: number().undefinable(),
+            tags: array(string().undefinable()).undefinable(),
+          }).undefinable(),
+        ).undefinable(),
+      }).undefinable(),
+      config: object({
+        settings: object({
+          theme: string().default('light').undefinable(),
+        }).undefinable(),
+      }).undefinable(),
+    }).undefinable()
+
+    type Output = InferOutput<typeof _schema>
+
+    expectTypeOf<Output>().toEqualTypeOf<{
+      meta: {
+        id: string | undefined
+        data: Array<{
+          value: number | undefined
+          tags: Array<string | undefined> | undefined
+        } | undefined> | undefined
+      } | undefined
+      config: {
+        settings: {
+          theme: string | undefined
+        } | undefined
+      } | undefined
+    } | undefined>()
   })
 })

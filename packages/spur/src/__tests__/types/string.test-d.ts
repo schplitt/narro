@@ -202,3 +202,60 @@ describe('stringSchema - default manipulation chains', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string>()
   })
 })
+
+describe('stringSchema - undefinable', () => {
+  it('undefinable string schema', () => {
+    const _schema = string().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('undefinable string with validation', () => {
+    const _schema = string().minLength(3).maxLength(25).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('undefinable string with default', () => {
+    const _schema = string().undefinable().default('hello')
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string>()
+  })
+
+  it('string with default then undefinable', () => {
+    const _schema = string().default('hello').undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('undefinable then required', () => {
+    const _schema = string().undefinable().required()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string>()
+  })
+
+  it('undefinable then nullable', () => {
+    const _schema = string().undefinable().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | null>()
+  })
+
+  it('undefinable then nullish', () => {
+    const _schema = string().undefinable().nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | null | undefined>()
+  })
+
+  it('undefinable with all validation methods', () => {
+    const _schema = string().minLength(5).maxLength(20).startsWith('pre').endsWith('suf').undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('undefinable with default and validation', () => {
+    const _schema = string().undefinable().minLength(3).maxLength(25).default('hello')
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string>()
+  })
+
+  it('undefinable then optional (should stay undefinable)', () => {
+    const _schema = string().undefinable().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('complex undefinable chaining', () => {
+    const _schema = string().minLength(1).undefinable().maxLength(50).default('test').required().undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined>()
+  })
+})
