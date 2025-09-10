@@ -704,4 +704,202 @@ describe('edge cases - performance stress tests', () => {
       branch10: { leaf: { subleaf: { deepleaf: number } } }
     }>()
   })
+
+  it('undefinable through all optionality states', () => {
+    const _schema1 = string().undefinable()
+    const _schema2 = string().undefinable().required()
+    const _schema3 = string().undefinable().required().nullable()
+    const _schema4 = string().undefinable().required().nullable().nullish()
+    const _schema5 = string().undefinable().required().nullable().nullish().required()
+    const _schema6 = string().undefinable().optional()
+
+    expectTypeOf<InferOutput<typeof _schema1>>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<string>()
+    expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<string | null>()
+    expectTypeOf<InferOutput<typeof _schema4>>().toEqualTypeOf<string | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<string>()
+    expectTypeOf<InferOutput<typeof _schema6>>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('undefinable with defaults stress test', () => {
+    const _schema1 = string().undefinable().default('test')
+    const _schema2 = string().default('test').undefinable()
+    const _schema3 = string().undefinable().default('a').default('b')
+    const _schema4 = string().default('a').undefinable().default('b')
+    const _schema5 = string().undefinable().default('a').required().undefinable()
+
+    expectTypeOf<InferOutput<typeof _schema1>>().toEqualTypeOf<string>()
+    expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<string>()
+    expectTypeOf<InferOutput<typeof _schema4>>().toEqualTypeOf<string>()
+    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<string | undefined>()
+  })
+
+  it('undefinable in complex nested structures', () => {
+    const _schema = object({
+      level1: object({
+        level2: object({
+          level3: object({
+            value: string().undefinable(),
+            data: array(number().undefinable()).undefinable(),
+          }).undefinable(),
+        }).undefinable(),
+      }).undefinable(),
+      parallel: array(
+        object({
+          items: array(
+            object({
+              prop: boolean().undefinable(),
+            }).undefinable(),
+          ).undefinable(),
+        }).undefinable(),
+      ).undefinable(),
+    }).undefinable()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      level1: {
+        level2: {
+          level3: {
+            value: string | undefined
+            data: Array<number | undefined> | undefined
+          } | undefined
+        } | undefined
+      } | undefined
+      parallel: Array<{
+        items: Array<{
+          prop: boolean | undefined
+        } | undefined> | undefined
+      } | undefined> | undefined
+    } | undefined>()
+  })
+
+  it('undefinable with all schema types', () => {
+    const _schema = object({
+      stringUndef: string().undefinable(),
+      numberUndef: number().undefinable(),
+      booleanUndef: boolean().undefinable(),
+      literalUndef: literal('test').undefinable(),
+      enumUndef: oneOf(['a', 'b', 'c'] as const).undefinable(),
+      arrayUndef: array(string()).undefinable(),
+      objectUndef: object({ nested: string() }).undefinable(),
+      unionUndef: union([string(), number()] as const).undefinable(),
+    })
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      stringUndef: string | undefined
+      numberUndef: number | undefined
+      booleanUndef: boolean | undefined
+      literalUndef: 'test' | undefined
+      enumUndef: 'a' | 'b' | 'c' | undefined
+      arrayUndef: string[] | undefined
+      objectUndef: { nested: string } | undefined
+      unionUndef: string | number | undefined
+    }>()
+  })
+
+  it('undefinable validation combinations', () => {
+    const _schema = object({
+      stringValidated: string().minLength(5).maxLength(20).undefinable(),
+      numberValidated: number().min(0).max(100).undefinable(),
+      arrayValidated: array(string().minLength(1)).minLength(1).maxLength(10).undefinable(),
+      stringWithDefault: string().minLength(3).undefinable().default('hello'),
+      numberWithDefault: number().min(0).undefinable().default(42),
+    })
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      stringValidated: string | undefined
+      numberValidated: number | undefined
+      arrayValidated: string[] | undefined
+      stringWithDefault: string
+      numberWithDefault: number
+    }>()
+  })
+
+  it('undefinable extreme chaining', () => {
+    const _schema1 = string().undefinable().undefinable().undefinable().undefinable()
+    const _schema2 = number().optional().undefinable().required().undefinable().nullable().undefinable()
+    const _schema3 = boolean().default(true).undefinable().optional().undefinable().required().undefinable()
+
+    expectTypeOf<InferOutput<typeof _schema1>>().toEqualTypeOf<string | undefined>()
+    expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<number | undefined>()
+    expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<boolean | undefined>()
+  })
+
+  it('undefinable mixed with all other optionality types', () => {
+    const _schema = object({
+      required: string(),
+      optional: string().optional(),
+      undefinable: string().undefinable(),
+      nullable: string().nullable(),
+      nullish: string().nullish(),
+      defaulted: string().default('default'),
+      optionalDefaulted: string().optional().default('default'),
+      undefinableDefaulted: string().undefinable().default('default'),
+      nullableDefaulted: string().nullable().default('default'),
+      nullishDefaulted: string().nullish().default('default'),
+      mixed1: string().optional().undefinable(),
+      mixed2: string().undefinable().nullable(),
+      mixed3: string().undefinable().nullish(),
+      mixed4: string().nullable().undefinable(),
+      mixed5: string().nullish().undefinable(),
+      complex: string().optional().undefinable().nullable().nullish().required().undefinable(),
+    })
+
+    type OutputType = InferOutput<typeof _schema>
+
+    expectTypeOf<OutputType>().toEqualTypeOf<{
+      required: string
+      optional?: string
+      nullable: string | null
+      mixed2: string | null
+      nullish: string | null | undefined
+      mixed3: string | null | undefined
+      defaulted: string
+      optionalDefaulted: string
+      undefinableDefaulted: string
+      nullableDefaulted: string
+      nullishDefaulted: string
+      undefinable: string | undefined
+      mixed1: string | undefined
+      mixed4: string | undefined
+      mixed5: string | undefined
+      complex: string | undefined
+    }>()
+  })
+
+  it('undefinable performance stress test', () => {
+    const _schema = array(
+      object({
+        a: string().undefinable(),
+        b: number().undefinable(),
+        c: boolean().undefinable(),
+        d: array(string().undefinable()).undefinable(),
+        e: object({
+          f: string().undefinable(),
+          g: number().undefinable(),
+          h: array(
+            object({
+              i: string().undefinable(),
+              j: number().undefinable(),
+            }).undefinable(),
+          ).undefinable(),
+        }).undefinable(),
+      }).undefinable(),
+    ).undefinable()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
+      a: string | undefined
+      b: number | undefined
+      c: boolean | undefined
+      d: Array<string | undefined> | undefined
+      e: {
+        f: string | undefined
+        g: number | undefined
+        h: Array<{
+          i: string | undefined
+          j: number | undefined
+        } | undefined> | undefined
+      } | undefined
+    } | undefined> | undefined>()
+  })
 })
