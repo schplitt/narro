@@ -6,23 +6,23 @@ export interface Report {
   passed: boolean
 }
 
-export type Check<TInput = any> = (input: TInput) => Report
+export type Check<TInput = any> = (input: TInput) => Promise<Report>
 
 export interface Checkable<TInput = any> {
   /**
-   * Async identifier for the checkable
+   * Get identifier for the checkable asynchronously
    */
   '~id': () => Promise<symbol>
   /**
-   * Imports the checkable asynchronously
+   * Imports the checkables dependencies
    */
-  '~i': () => void
+  '~i': () => Promise<void>
   /**
    * Imports and evaluates the checkable asynchronously
    * @param input The input to check
    * @returns A report indicating whether the input passed the check
    */
-  '~c': (input: TInput) => Promise<Report>
+  '~c': Check<TInput>
 }
 
 export interface BuildableSchema<TOutput = unknown, TInput = TOutput, TCommonOptions extends CommonOptions = DefaultCommonOptions> {
