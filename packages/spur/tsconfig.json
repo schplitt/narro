@@ -2,8 +2,8 @@
   // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     "target": "esnext",
-    // For nodejs:
-    "lib": ["ESNext"],
+    // For nodejs and web crypto:
+    "lib": ["ESNext", "DOM"],
     "moduleDetection": "force",
 
     "module": "preserve",

@@ -1,5 +1,6 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../types/common'
-import type { BuildableSchema } from '../../types/schema'
+import type { BuildableSchema, Checkable, CheckableImport, EvaluableSchema } from '../../types/schema'
+import { build } from '../../build'
 
 // TODO: could have typesafe default with (string & {}) | <default>
 
@@ -21,5 +22,21 @@ export interface StringSchema<TOutput = string, TInput = string, TCommonOptions 
 }
 
 export function string(): StringSchema {
-  return 1 as any
+  const options: CommonOptions = {
+    optionality: 'required',
+  }
+
+  // eslint-disable-next-line ts/explicit-function-return-type
+  const sourceCheckableImport = () => import('./string').then(m => m.createStringCheckable())
+
+  const checkableImports: CheckableImport<string>[] = [
+  ]
+
+  const s: StringSchema = {
+    '@build': () => {
+      return build(sourceCheckableImport, checkableImports, options)
+    },
+  }
+
+  return s
 }

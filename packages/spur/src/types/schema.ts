@@ -1,22 +1,25 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
 import type { CommonOptions, DefaultCommonOptions } from './common'
+import type { SchemaReport } from './report'
 
-export interface Report {
-  score: number
-  passed: boolean
+export type Check<TInput> = (input: TInput) => SchemaReport
+
+export type SourceCheck<TInput> = (input: unknown) => input is TInput
+
+export interface SourceCheckable<TInput> {
+  '~id': symbol
+  '~c': SourceCheck<TInput>
 }
 
-export type Check<TInput = any> = (input: TInput) => Promise<Report>
+export type SourceCheckableImport<TInput> = () => Promise<SourceCheckable<TInput>>
 
-export interface Checkable<TInput = any> {
+export type CheckableImport<TInput> = () => Promise<Checkable<TInput>>
+
+export interface Checkable<TInput> {
   /**
    * Get identifier for the checkable asynchronously
    */
-  '~id': () => Promise<symbol>
-  /**
-   * Imports the checkables dependencies
-   */
-  '~i': () => Promise<void>
+  '~id': symbol
   /**
    * Imports and evaluates the checkable asynchronously
    * @param input The input to check
@@ -26,7 +29,7 @@ export interface Checkable<TInput = any> {
 }
 
 export interface BuildableSchema<TOutput = unknown, TInput = TOutput, TCommonOptions extends CommonOptions = DefaultCommonOptions> {
-  '@b': () => EvaluableSchema<TOutput>
+  '@build': () => Promise<EvaluableSchema<TOutput>>
   '~types'?: {
     // necessary to keep TS from bailing out on complex generics
     options: TCommonOptions
