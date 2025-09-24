@@ -1,5 +1,14 @@
-import type { Check } from '../../types/schema'
+import type { SourceCheck, SourceCheckable } from '../../types/schema'
 
-export const stringSymbol = Symbol('string')
+const stringSymbol = Symbol('string')
 
-export const checkString: Check<string> = v => typeof v === 'string'
+const checkString: SourceCheck<string> = v => typeof v === 'string'
+
+export function createStringCheckable(): SourceCheckable<string> {
+  return {
+    '~id': stringSymbol,
+    '~c': checkString,
+  }
+}
+
+export default createStringCheckable
