@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spur Dynamic Imports Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        pre {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 3px;
+            overflow-x: auto;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spur Dynamic Imports Test</h1>
+    <p>Testing if dynamic imports work in Vite for schema validation.</p>
+
+    <div id="loading">Loading tests...</div>
+    
+    <div id="tests" style="display: none;">
+        <div class="test-section">
+            <h2>String Schema Test</h2>
+            <p>Testing the string schema with dynamic imports</p>
+            <button onclick="testStringSchema()">Test String Schema</button>
+            <div id="string-test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>String with Length Validation</h2>
+            <p>Testing string with length constraints</p>
+            <button onclick="testStringWithLength()">Test String with Length</button>
+            <div id="length-test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Interactive Test</h2>
+            <input type="text" id="user-input" placeholder="Enter text to validate..." style="width: 300px; padding: 8px;">
+            <button onclick="testUserInput()">Validate Input</button>
+            <div id="interactive-result"></div>
+        </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+</body>
+</html>
