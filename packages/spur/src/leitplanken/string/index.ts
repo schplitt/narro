@@ -8,8 +8,6 @@ export interface StringSchema<TOutput = string, TInput = string, TCommonOptions 
   minLength: (minLength: number) => StringSchema<TOutput, TInput, TCommonOptions>
   maxLength: (maxLength: number) => StringSchema<TOutput, TInput, TCommonOptions>
   length: (length: number) => StringSchema<TOutput, TInput, TCommonOptions>
-
-  // template literals might be possible in the future here, similar to templateLiteralSchema
   endsWith: (end: string) => StringSchema<TOutput, TInput, TCommonOptions>
   startsWith: (start: string) => StringSchema<TOutput, TInput, TCommonOptions>
 
@@ -36,6 +34,22 @@ export function string(): StringSchema {
     '@build': () => {
       return build(sourceCheckableImport, checkableImports, options)
     },
+
+    length(length: number) {
+      checkableImports.push(() => import('../_shared/length').then(m => m.createLengthCheck(length)))
+      return s
+    },
+
+    minLength(minLength: number) {
+      checkableImports.push(() => import('../_shared/minLength').then(m => m.createMinLengthCheck(minLength)))
+      return s
+    },
+
+    maxLength(maxLength: number) {
+      checkableImports.push(() => import('../_shared/maxLength').then(m => m.createMaxLengthCheck(maxLength)))
+      return s
+    },
+
   }
 
   return s

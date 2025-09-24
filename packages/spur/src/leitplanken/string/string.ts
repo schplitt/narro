@@ -8,6 +8,7 @@ export function createStringCheckable(): SourceCheckable<string> {
   return {
     '~id': stringSymbol,
     '~c': checkString,
+    'maxScore': 1,
   }
 }
 

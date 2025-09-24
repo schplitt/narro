@@ -1,4 +1,5 @@
 import type { CommonOptions } from './types/common'
+import type { SchemaReport } from './types/report'
 import type { BuildableSchema, Checkable, CheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from './types/schema'
 
 const cache = new Map<string, any>()
@@ -52,20 +53,54 @@ export async function build<TOutput>(sourceCheckableImport: SourceCheckableImpor
  * @param uniqueCheckables Already deduplicated checkables
  * @param options
  */
-export async function buildEvaluableSchema<TOutput>(sourceCheckable: SourceCheckable<TOutput>, uniqueCheckables: Checkable<TOutput>[], options: CommonOptions): Promise<EvaluableSchema<TOutput>> {
-  function saveEval(input: unknown) {
+export function buildEvaluableSchema<TOutput>(sourceCheckable: SourceCheckable<TOutput>, uniqueCheckables: Checkable<TOutput>[], options: CommonOptions): EvaluableSchema<TOutput> {
+  function safeParse(input: unknown): SchemaReport {
     const sourceResult = sourceCheckable['~c'](input)
     if (!sourceResult) {
       // create report
-      return
+      return {
+        'passed': false,
+        // TODO: this needs to be -1 when in object or so
+        'score': 0,
+        'maxScore': uniqueCheckables.reduce((acc, c) => acc + c.maxScore, sourceCheckable.maxScore),
+        '~id': sourceCheckable['~id'],
+      }
+    }
+
+    if (uniqueCheckables.length === 0) {
+      return {
+        'passed': true,
+        'score': sourceCheckable.maxScore,
+        'maxScore': sourceCheckable.maxScore,
+        '~id': sourceCheckable['~id'],
+      }
     }
 
     const results = uniqueCheckables.map(c => c['~c'](input))
+
+    return results.reduce((acc, r) => {
+      acc.maxScore += r.maxScore
+      acc.score += r.score
+      acc.passed = acc.passed && r.passed
+      acc.subReports![r['~id'].toString()] = r
+      return acc
+    }, {
+      'maxScore': sourceCheckable.maxScore,
+      'score': sourceCheckable.maxScore,
+      'passed': true,
+      'subReports': {},
+      '~id': sourceCheckable['~id'],
+    } as Required<SchemaReport>)
   }
 
   return {
-    eval: (input) => {
-
+    safeParse,
+    parse: (input) => {
+      const report = safeParse(input)
+      if (report.passed) {
+        return input as TOutput
+      }
+      throw new Error('Input did not pass schema checks')
     },
   }
 }

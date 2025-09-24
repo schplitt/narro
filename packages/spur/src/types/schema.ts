@@ -9,6 +9,7 @@ export type SourceCheck<TInput> = (input: unknown) => input is TInput
 export interface SourceCheckable<TInput> {
   '~id': symbol
   '~c': SourceCheck<TInput>
+  'maxScore': number
 }
 
 export type SourceCheckableImport<TInput> = () => Promise<SourceCheckable<TInput>>
@@ -26,6 +27,7 @@ export interface Checkable<TInput> {
    * @returns A report indicating whether the input passed the check
    */
   '~c': Check<TInput>
+  'maxScore': number
 }
 
 export interface BuildableSchema<TOutput = unknown, TInput = TOutput, TCommonOptions extends CommonOptions = DefaultCommonOptions> {
@@ -38,8 +40,7 @@ export interface BuildableSchema<TOutput = unknown, TInput = TOutput, TCommonOpt
   }
 }
 
-export interface EvaluableSchema<TOutput = unknown> extends StandardSchemaV1<unknown, TOutput> {
-  eval: (input: unknown) => Promise<TOutput>
-  // TODO with report
-  safeEval: (input: unknown) => Promise<TOutput>
+export interface EvaluableSchema<TOutput = unknown> /* extends StandardSchemaV1<unknown, TOutput>  */ {
+  parse: (input: unknown) => TOutput
+  safeParse: (input: unknown) => SchemaReport
 }
