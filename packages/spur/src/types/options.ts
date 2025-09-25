@@ -1,7 +1,9 @@
 import type { BuildableSchema } from './schema'
 
+export type Optionality = 'optional' | 'required' | 'nullable' | 'nullish' | 'defaulted' | 'undefinable'
+
 export interface CommonOptions {
-  optionality: 'optional' | 'required' | 'nullable' | 'nullish' | 'defaulted' | 'undefinable'
+  optionality: Optionality
 }
 
 export interface DefaultCommonOptions extends CommonOptions {

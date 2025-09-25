@@ -1,27 +1,24 @@
-import type { CommonOptions } from './types/common'
+import type { CommonOptions } from './types/options'
 import type { SchemaReport } from './types/report'
 import type { BuildableSchema, Checkable, CheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from './types/schema'
 
 const cache = new Map<string, any>()
 
-export async function createSchemaCacheKey(sourceId: symbol, importIds: symbol[], options: CommonOptions): Promise<string> {
+export function createSchemaCacheKey(sourceId: symbol, importIds: symbol[], options?: CommonOptions): string {
   const hashInput = [sourceId, ...importIds]
     .map(id => id.toString())
-    .concat([JSON.stringify(options, Object.keys(options).sort())])
+    .concat([JSON.stringify(options, Object.keys(options ?? {}).sort())])
     .join('|')
 
-  const encoder = new TextEncoder()
-  const data = encoder.encode(hashInput)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
+  // TODO: hashing is unecessary complex here, we can just use the string directly as key
+  return hashInput
 }
 
 export async function buildSchema<TOutput, TSchema extends BuildableSchema<TOutput>>(schema: TSchema): Promise<EvaluableSchema<TOutput>> {
   return schema['@build']()
 }
 
-export async function build<TOutput>(sourceCheckableImport: SourceCheckableImport<TOutput>, checkableImports: CheckableImport<TOutput>[], options: CommonOptions): Promise<EvaluableSchema<TOutput>> {
+export async function build<TOutput>(sourceCheckableImport: SourceCheckableImport<TOutput>, checkableImports: CheckableImport<TOutput>[] = [], options?: CommonOptions): Promise<EvaluableSchema<TOutput>> {
 // we start with importing the source checkable and then all other checkables
   const sourcePromise = sourceCheckableImport()
   const importPromises = checkableImports.map(ci => ci())
@@ -35,14 +32,14 @@ export async function build<TOutput>(sourceCheckableImport: SourceCheckableImpor
     checkableMap.set(checkable['~id'], checkable)
   }
 
-  const cacheKey = await createSchemaCacheKey(sourceCheckable['~id'], Array.from(checkableMap.keys()), options)
+  const cacheKey = createSchemaCacheKey(sourceCheckable['~id'], Array.from(checkableMap.keys()), options)
 
   if (cache.has(cacheKey)) {
     return cache.get(cacheKey)
   }
 
   // if not in cache we build the schema
-  const evaluableSchema = await buildEvaluableSchema(sourceCheckable, Array.from(checkableMap.values()), options)
+  const evaluableSchema = buildEvaluableSchema(sourceCheckable, Array.from(checkableMap.values()), options)
   cache.set(cacheKey, evaluableSchema)
   return evaluableSchema
 }
@@ -53,43 +50,36 @@ export async function build<TOutput>(sourceCheckableImport: SourceCheckableImpor
  * @param uniqueCheckables Already deduplicated checkables
  * @param options
  */
-export function buildEvaluableSchema<TOutput>(sourceCheckable: SourceCheckable<TOutput>, uniqueCheckables: Checkable<TOutput>[], options: CommonOptions): EvaluableSchema<TOutput> {
+export function buildEvaluableSchema<TOutput>(sourceCheckable: SourceCheckable<TOutput>, uniqueCheckables: Checkable<TOutput>[], options?: CommonOptions): EvaluableSchema<TOutput> {
   function safeParse(input: unknown): SchemaReport {
     const sourceResult = sourceCheckable['~c'](input)
     if (!sourceResult) {
       // create report
       return {
-        'passed': false,
-        // TODO: this needs to be -1 when in object or so
-        'score': 0,
-        'maxScore': uniqueCheckables.reduce((acc, c) => acc + c.maxScore, sourceCheckable.maxScore),
-        '~id': sourceCheckable['~id'],
+        passed: false,
+        score: 0,
+        maxScore: uniqueCheckables.reduce((acc, c) => acc + c.maxScore, 1 /** 1 for sourceCheckable */),
       }
     }
 
     if (uniqueCheckables.length === 0) {
       return {
-        'passed': true,
-        'score': sourceCheckable.maxScore,
-        'maxScore': sourceCheckable.maxScore,
-        '~id': sourceCheckable['~id'],
+        passed: true,
+        score: 1,
+        maxScore: 1,
       }
     }
 
-    const results = uniqueCheckables.map(c => c['~c'](input))
-
-    return results.reduce((acc, r) => {
+    return uniqueCheckables.reduce((acc, c) => {
+      const r = c['~c'](input)
       acc.maxScore += r.maxScore
       acc.score += r.score
       acc.passed = acc.passed && r.passed
-      acc.subReports![r['~id'].toString()] = r
       return acc
     }, {
-      'maxScore': sourceCheckable.maxScore,
-      'score': sourceCheckable.maxScore,
-      'passed': true,
-      'subReports': {},
-      '~id': sourceCheckable['~id'],
+      maxScore: 1 /* 1 for sourceCheckable */,
+      score: 1 /* 1 for sourceCheckable */,
+      passed: true,
     } as Required<SchemaReport>)
   }
 

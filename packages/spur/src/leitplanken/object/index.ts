@@ -1,4 +1,4 @@
-import type { CommonOptions, DefaultCommonOptions, ExtractDefaultedSchema, ExtractNullableSchema, ExtractNullishSchema, ExtractOptionalSchema, ExtractRequiredSchema, ExtractUndefinableSchema, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../types/common'
+import type { CommonOptions, DefaultCommonOptions, ExtractDefaultedSchema, ExtractNullableSchema, ExtractNullishSchema, ExtractOptionalSchema, ExtractRequiredSchema, ExtractUndefinableSchema, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../types/options'
 import type { BuildableSchema } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 

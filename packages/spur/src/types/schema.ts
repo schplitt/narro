@@ -1,22 +1,21 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec'
-import type { CommonOptions, DefaultCommonOptions } from './common'
+import type { CommonOptions, DefaultCommonOptions } from './options'
 import type { SchemaReport } from './report'
 
-export type Check<TInput> = (input: TInput) => SchemaReport
+export type Check<TOutput, TInput = TOutput> = (input: TInput) => SchemaReport<TOutput>
 
-export type SourceCheck<TInput> = (input: unknown) => input is TInput
+export type SourceCheck<TOutput, TInput = TOutput> = (input: unknown) => input is TInput
 
-export interface SourceCheckable<TInput> {
+export interface SourceCheckable<TOutput, TInput = TOutput> {
   '~id': symbol
   '~c': SourceCheck<TInput>
-  'maxScore': number
 }
 
-export type SourceCheckableImport<TInput> = () => Promise<SourceCheckable<TInput>>
+export type SourceCheckableImport<TOutput, TInput = TOutput> = () => Promise<SourceCheckable<TInput>>
 
-export type CheckableImport<TInput> = () => Promise<Checkable<TInput>>
+export type CheckableImport<TOutput, TInput = TOutput> = () => Promise<Checkable<TInput>>
 
-export interface Checkable<TInput> {
+export interface Checkable<TOutput, TInput = TOutput> {
   /**
    * Get identifier for the checkable asynchronously
    */
@@ -27,7 +26,7 @@ export interface Checkable<TInput> {
    * @returns A report indicating whether the input passed the check
    */
   '~c': Check<TInput>
-  'maxScore': number
+
 }
 
 export interface BuildableSchema<TOutput = unknown, TInput = TOutput, TCommonOptions extends CommonOptions = DefaultCommonOptions> {
