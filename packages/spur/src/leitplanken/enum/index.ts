@@ -12,6 +12,6 @@ export interface OneOfSchema<TEnum extends (string | number)[], TOutput = InferE
   nullish: () => OneOfSchema<TEnum, InferEnumType<TEnum> | null | undefined, InferEnumType<TEnum> | null | undefined, MakeNullish<TCommonOptions>>
 }
 
-export function oneOf<TEnum extends (string | number)[]>(_values: TEnum): OneOfSchema<TEnum> {
+export function oneOf<const TEnum extends (string | number)[]>(_values: TEnum): OneOfSchema<TEnum> {
   return 1 as any
 }

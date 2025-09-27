@@ -38,27 +38,27 @@ describe('arraySchema - basic types', () => {
   })
 
   it('array of oneOf strings', () => {
-    const _schema = array(oneOf(['red', 'green', 'blue'] as const))
+    const _schema = array(oneOf(['red', 'green', 'blue']))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('red' | 'green' | 'blue')[]>()
   })
 
   it('array of oneOf numbers', () => {
-    const _schema = array(oneOf([1, 2, 3] as const))
+    const _schema = array(oneOf([1, 2, 3]))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<(1 | 2 | 3)[]>()
   })
 
   it('array of mixed oneOf', () => {
-    const _schema = array(oneOf(['hello', 42, 'world'] as const))
+    const _schema = array(oneOf(['hello', 42, 'world']))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('hello' | 42 | 'world')[]>()
   })
 
   it('array of union schemas', () => {
-    const _schema = array(union([string(), number()] as const))
+    const _schema = array(union([string(), number()]))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<(string | number)[]>()
   })
 
   it('array of complex union', () => {
-    const _schema = array(union([literal('test'), oneOf([1, 2, 3] as const), boolean()] as const))
+    const _schema = array(union([literal('test'), oneOf([1, 2, 3]), boolean()]))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('test' | 1 | 2 | 3 | boolean)[]>()
   })
 
@@ -157,32 +157,32 @@ describe('arraySchema - with element validation', () => {
   })
 
   it('array of oneOf with defaults', () => {
-    const _schema = array(oneOf(['a', 'b', 'c'] as const).default('a'))
+    const _schema = array(oneOf(['a', 'b', 'c']).default('a'))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
   })
 
   it('array of optional oneOf', () => {
-    const _schema = array(oneOf([1, 2, 3] as const).optional())
+    const _schema = array(oneOf([1, 2, 3]).optional())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
   it('array of undefinable oneOf', () => {
-    const _schema = array(oneOf([1, 2, 3] as const).undefinable())
+    const _schema = array(oneOf([1, 2, 3]).undefinable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
   it('array of nullish oneOf', () => {
-    const _schema = array(oneOf(['x', 'y'] as const).nullish())
+    const _schema = array(oneOf(['x', 'y']).nullish())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | null | undefined>>()
   })
 
   it('array of optional union', () => {
-    const _schema = array(union([string(), number()] as const).optional())
+    const _schema = array(union([string(), number()]).optional())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | number | undefined>>()
   })
 
   it('array of nullable union', () => {
-    const _schema = array(union([literal('a'), literal(1)] as const).nullable())
+    const _schema = array(union([literal('a'), literal(1)]).nullable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'a' | 1 | null>>()
   })
 })
@@ -430,7 +430,7 @@ describe('arraySchema - objects with shape modes inside arrays', () => {
       object({ kind: literal('strict'), a: string() }).strict(),
       object({ kind: literal('pass'), b: number() }).passthrough(),
       object({ kind: literal('strip'), c: boolean() }).passthrough().strip(),
-    ] as const))
+    ]))
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<
       | { kind: 'strict', a: string }
@@ -633,12 +633,12 @@ describe('arraySchema - undefinable', () => {
   })
 
   it('array of undefinable oneOf', () => {
-    const _schema = array(oneOf([1, 2, 3] as const).undefinable())
+    const _schema = array(oneOf([1, 2, 3]).undefinable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
   it('array of undefinable union', () => {
-    const _schema = array(union([string(), number()] as const).undefinable())
+    const _schema = array(union([string(), number()]).undefinable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | number | undefined>>()
   })
 

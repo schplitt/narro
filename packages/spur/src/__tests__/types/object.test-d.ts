@@ -68,28 +68,28 @@ describe('objectSchema - basic types', () => {
 
   it('object with oneOf property', () => {
     const _schema = object({
-      color: oneOf(['red', 'green', 'blue'] as const),
+      color: oneOf(['red', 'green', 'blue'] ),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ color: 'red' | 'green' | 'blue' }>()
   })
 
   it('object with mixed oneOf property', () => {
     const _schema = object({
-      value: oneOf(['none', 42, 'all'] as const),
+      value: oneOf(['none', 42, 'all'] ),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ value: 'none' | 42 | 'all' }>()
   })
 
   it('object with union property', () => {
     const _schema = object({
-      data: union([string(), number()] as const),
+      data: union([string(), number()] ),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ data: string | number }>()
   })
 
   it('object with complex union property', () => {
     const _schema = object({
-      field: union([literal('exact'), oneOf(['a', 'b'] as const), boolean()] as const),
+      field: union([literal('exact'), oneOf(['a', 'b'] ), boolean()] ),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ field: 'exact' | 'a' | 'b' | boolean }>()
   })
@@ -141,14 +141,14 @@ describe('objectSchema - optional properties', () => {
 
   it('object with optional oneOf property', () => {
     const _schema = object({
-      priority: oneOf(['low', 'medium', 'high'] as const).optional(),
+      priority: oneOf(['low', 'medium', 'high'] ).optional(),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ priority?: 'low' | 'medium' | 'high' }>()
   })
 
   it('object with optional union property', () => {
     const _schema = object({
-      content: union([string(), number(), boolean()] as const).optional(),
+      content: union([string(), number(), boolean()] ).optional(),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ content?: string | number | boolean }>()
   })
@@ -240,8 +240,8 @@ describe('objectSchema - with defaults', () => {
 
   it('object with oneOf defaults', () => {
     const _schema = object({
-      level: oneOf(['debug', 'info', 'warn', 'error'] as const).default('info'),
-      size: oneOf([1, 2, 3, 4, 5] as const).default(3),
+      level: oneOf(['debug', 'info', 'warn', 'error'] ).default('info'),
+      size: oneOf([1, 2, 3, 4, 5] ).default(3),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       level: 'debug' | 'info' | 'warn' | 'error'
@@ -1471,7 +1471,7 @@ describe('objectSchema - shape with optionality & nesting', () => {
       object({ a: string(), shared: number().default(1) }).passthrough(),
       object({ b: number(), shared: number().default(2) }).strict(),
       object({ c: boolean().nullable(), shared: number().default(3) }).strip(),
-    ] as const)
+    ] )
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       | { a: string, shared: number, [key: string]: any }
       | { b: number, shared: number }
@@ -1556,7 +1556,7 @@ describe('objectSchema - shape with optionality & nesting', () => {
       meta: object({ created: string().default('now'), updated: string().optional() }).strip(),
     }).strip()
 
-    const _schema = union([BaseStrict, BasePassthrough, BaseStrip] as const).optional()
+    const _schema = union([BaseStrict, BasePassthrough, BaseStrip] ).optional()
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       | {

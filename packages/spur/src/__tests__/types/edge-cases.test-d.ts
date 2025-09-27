@@ -220,7 +220,7 @@ describe('edge cases - object shape modes with extreme combinations', () => {
     const _schema = union([
       _strict,
       _passthrough,
-    ] as const)
+    ] )
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       | { id: string, tag: 'strict' }
@@ -234,7 +234,7 @@ describe('edge cases - object shape modes with extreme combinations', () => {
         object({ kind: literal('A'), value: string() }).strict(),
         object({ kind: literal('B'), value: number() }).passthrough(),
         object({ kind: literal('C'), value: boolean() }).passthrough().strip(),
-      ] as const),
+      ] ),
     )
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<
@@ -312,10 +312,10 @@ describe('edge cases - literal and oneOf complexity', () => {
 
   it('object with all oneOf types', () => {
     const _schema = object({
-      colors: oneOf(['red', 'green', 'blue'] as const),
-      numbers: oneOf([1, 2, 3, 4, 5] as const),
-      mixed: oneOf(['none', 0, 'all', 100] as const),
-      single: oneOf(['only'] as const),
+      colors: oneOf(['red', 'green', 'blue'] ),
+      numbers: oneOf([1, 2, 3, 4, 5] ),
+      mixed: oneOf(['none', 0, 'all', 100] ),
+      single: oneOf(['only'] ),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       colors: 'red' | 'green' | 'blue'
@@ -328,11 +328,11 @@ describe('edge cases - literal and oneOf complexity', () => {
   it('nested arrays with literal and oneOf elements', () => {
     const _schema = array(array(object({
       type: literal('item'),
-      status: oneOf(['active', 'inactive', 'pending'] as const),
-      priority: oneOf([1, 2, 3] as const).default(2),
+      status: oneOf(['active', 'inactive', 'pending'] ),
+      priority: oneOf([1, 2, 3] ).default(2),
       metadata: object({
         version: literal(1),
-        flags: array(oneOf(['read', 'write', 'execute'] as const)),
+        flags: array(oneOf(['read', 'write', 'execute'] )),
       }).optional(),
     })))
 
@@ -362,10 +362,10 @@ describe('edge cases - literal and oneOf complexity', () => {
     expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<'test' | null | undefined>()
     expectTypeOf<InferOutput<typeof _schema6>>().toEqualTypeOf<'test' | undefined>()
 
-    const _enum1 = oneOf(['a', 'b'] as const)
-    const _enum2 = oneOf(['a', 'b'] as const).optional()
-    const _enum3 = oneOf(['a', 'b'] as const).nullable().required()
-    const _enum4 = oneOf(['a', 'b'] as const).default('a').nullish()
+    const _enum1 = oneOf(['a', 'b'] )
+    const _enum2 = oneOf(['a', 'b'] ).optional()
+    const _enum3 = oneOf(['a', 'b'] ).nullable().required()
+    const _enum4 = oneOf(['a', 'b'] ).default('a').nullish()
 
     expectTypeOf<InferOutput<typeof _enum1>>().toEqualTypeOf<'a' | 'b'>()
     expectTypeOf<InferOutput<typeof _enum2>>().toEqualTypeOf<'a' | 'b' | undefined>()
@@ -378,19 +378,19 @@ describe('edge cases - literal and oneOf complexity', () => {
       config: object({
         env: literal('production'),
         debug: boolean().default(false),
-        logLevel: oneOf(['error', 'warn', 'info', 'debug'] as const).default('info'),
-        port: oneOf([3000, 8080, 9000] as const),
+        logLevel: oneOf(['error', 'warn', 'info', 'debug'] ).default('info'),
+        port: oneOf([3000, 8080, 9000] ),
         features: object({
           auth: boolean().default(true),
-          cache: oneOf(['redis', 'memory', 'none'] as const).optional(),
+          cache: oneOf(['redis', 'memory', 'none'] ).optional(),
           compression: literal('gzip').nullable(),
         }),
         servers: array(object({
           name: string(),
           type: literal('web'),
-          status: oneOf(['running', 'stopped', 'error'] as const),
+          status: oneOf(['running', 'stopped', 'error'] ),
           config: object({
-            cpu: oneOf([1, 2, 4, 8] as const).default(2),
+            cpu: oneOf([1, 2, 4, 8] ).default(2),
             memory: literal('512MB'),
           }),
         })),
@@ -424,22 +424,22 @@ describe('edge cases - literal and oneOf complexity', () => {
   it('complex union combinations in nested structures', () => {
     const _schema = object({
       api: object({
-        endpoint: union([literal('v1'), literal('v2'), string()] as const),
+        endpoint: union([literal('v1'), literal('v2'), string()] ),
         method: union([
-          oneOf(['GET', 'POST'] as const),
+          oneOf(['GET', 'POST'] ),
           literal('PUT'),
           literal('DELETE'),
-        ] as const),
+        ] ),
         response: union([
           object({ success: boolean().default(true), data: string() }),
           object({ success: boolean().default(false), error: string() }),
           object({ pending: boolean().default(true) }),
-        ] as const),
+        ] ),
         headers: array(union([
           object({ type: literal('auth'), token: string() }),
           object({ type: literal('content'), value: literal('application/json') }),
           object({ type: literal('custom'), key: string(), value: string() }),
-        ] as const)),
+        ] )),
       }),
     })
 
@@ -465,12 +465,12 @@ describe('edge cases - literal and oneOf complexity', () => {
 
 describe('edge cases - union complexity', () => {
   it('union through all optionality states', () => {
-    const _schema1 = union([string(), number()] as const)
-    const _schema2 = union([string(), number()] as const).optional()
-    const _schema3 = union([string(), number()] as const).optional().required()
-    const _schema4 = union([string(), number()] as const).nullable()
-    const _schema5 = union([string(), number()] as const).nullish()
-    const _schema6 = union([string(), number()] as const).nullish().required()
+    const _schema1 = union([string(), number()] )
+    const _schema2 = union([string(), number()] ).optional()
+    const _schema3 = union([string(), number()] ).optional().required()
+    const _schema4 = union([string(), number()] ).nullable()
+    const _schema5 = union([string(), number()] ).nullish()
+    const _schema6 = union([string(), number()] ).nullish().required()
 
     expectTypeOf<InferOutput<typeof _schema1>>().toEqualTypeOf<string | number>()
     expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<string | number | undefined>()
@@ -482,24 +482,24 @@ describe('edge cases - union complexity', () => {
 
   it('nested unions with all schema types', () => {
     const _schema = array(object({
-      id: union([string(), number()] as const),
+      id: union([string(), number()] ),
       type: union([
         literal('user'),
         literal('admin'),
-        oneOf(['guest', 'member'] as const),
-      ] as const),
+        oneOf(['guest', 'member'] ),
+      ] ),
       metadata: union([
         object({ version: literal(1), legacy: boolean().default(false) }),
         object({ version: literal(2), features: array(string()) }),
-        object({ version: literal(3), config: oneOf(['basic', 'advanced'] as const) }),
-      ] as const).optional(),
+        object({ version: literal(3), config: oneOf(['basic', 'advanced'] ) }),
+      ] ).optional(),
       values: array(union([
         string(),
         number(),
         boolean(),
         literal('null'),
-        oneOf(['empty', 'unknown'] as const),
-      ] as const)),
+        oneOf(['empty', 'unknown'] ),
+      ] )),
     }))
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
@@ -526,12 +526,12 @@ describe('edge cases - union complexity', () => {
       literal(3.14),
 
       // OneOf schemas
-      oneOf(['red', 'green', 'blue'] as const),
-      oneOf([100, 200, 300] as const).default(200),
+      oneOf(['red', 'green', 'blue'] ),
+      oneOf([100, 200, 300] ).default(200),
 
       // Nested union
-      union([literal('nested'), boolean()] as const),
-    ] as const).optional().nullable().required()
+      union([literal('nested'), boolean()] ),
+    ] ).optional().nullable().required()
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | boolean | 'exact' | 42 | 3.14 | 'red' | 'green' | 'blue' | 100 | 200 | 300
@@ -975,10 +975,10 @@ describe('edge cases - performance stress tests', () => {
       numberUndef: number().undefinable(),
       booleanUndef: boolean().undefinable(),
       literalUndef: literal('test').undefinable(),
-      enumUndef: oneOf(['a', 'b', 'c'] as const).undefinable(),
+      enumUndef: oneOf(['a', 'b', 'c'] ).undefinable(),
       arrayUndef: array(string()).undefinable(),
       objectUndef: object({ nested: string() }).undefinable(),
-      unionUndef: union([string(), number()] as const).undefinable(),
+      unionUndef: union([string(), number()] ).undefinable(),
     })
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
