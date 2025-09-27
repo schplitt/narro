@@ -1,5 +1,5 @@
-import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../types/options'
-import type { BuildableSchema, Checkable, CheckableImport, EvaluableSchema } from '../../types/schema'
+import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { BuildableSchema, CheckableImport } from '../../types/schema'
 import { build } from '../../build'
 
 // TODO: could have typesafe default with (string & {}) | <default>

@@ -1,4 +1,4 @@
-import type { CommonOptions, DefaultCommonOptions, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../types/options'
+import type { CommonOptions, DefaultCommonOptions, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BuildableSchema } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 

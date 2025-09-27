@@ -1,10 +1,10 @@
-import type { CommonOptions, DefaultCommonOptions, ExtractDefaultedSchema, ExtractNullableSchema, ExtractNullishSchema, ExtractOptionalSchema, ExtractRequiredSchema, ExtractUndefinableSchema, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../types/options'
+import type { DefaultObjectOptions, MakeObjectPassthrough, MakeObjectStrict, MakeObjectStrip, ObjectOptions } from '../../options/objectOptions'
+import type { CommonOptions, ExtractDefaultedSchema, ExtractNullableSchema, ExtractNullishSchema, ExtractOptionalSchema, ExtractRequiredSchema, ExtractUndefinableSchema, InferOptionalityType, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BuildableSchema } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 
 export type ObjectEntries = Record<string, BuildableSchema<unknown, unknown, CommonOptions>>
 
-// TODO: as the schemas should take care of their returntypes themselves, only the optional should be handled differently here as we need to make the property optional in the object and remove undefined from the type
 type InferObjectOutput<T extends ObjectEntries> = {
   [K in keyof T as T[K] extends ExtractRequiredSchema<T[K]> ? K : never]: InferOutput<T[K]> & {}
 } & {
@@ -24,12 +24,29 @@ type InferObjectInput<T extends ObjectEntries> = {
   [K in keyof T]: InferInput<T[K]>
 }
 
-export interface ObjectSchema<TEntries extends ObjectEntries, TOutput = InferObjectOutput<TEntries>, TInput = InferObjectInput<TEntries>, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
-  optional: () => ObjectSchema<TEntries, InferObjectOutput<TEntries> | undefined, InferObjectInput<TEntries> | undefined, MakeOptional<TCommonOptions>>
-  undefinable: () => ObjectSchema<TEntries, InferObjectOutput<TEntries> | undefined, InferObjectInput<TEntries> | undefined, MakeUndefinable<TCommonOptions>>
-  required: () => ObjectSchema<TEntries, InferObjectOutput<TEntries>, InferObjectInput<TEntries>, MakeRequired<TCommonOptions>>
-  nullable: () => ObjectSchema<TEntries, InferObjectOutput<TEntries> | null, InferObjectInput<TEntries> | null, MakeNullable<TCommonOptions>>
-  nullish: () => ObjectSchema<TEntries, InferObjectOutput<TEntries> | null | undefined, InferObjectInput<TEntries> | null | undefined, MakeNullish<TCommonOptions>>
+// TODO: test alone and in combination with InferOptionalityType
+export type InferShapeType<TOptions extends ObjectOptions> = TOptions extends { shape: infer TShape }
+  // eslint-disable-next-line ts/no-empty-object-type
+  ? (TShape extends 'passthrough' ? { [key: string]: any } : {}) : never
+
+/**
+ * Utility type to create an ObjectSchema with correct Inferred types based on entries and options
+ */
+export type CreateObjectSchema<TEntries extends ObjectEntries, TOptions extends ObjectOptions> = ObjectSchema<TEntries, InferObjectOutput<TEntries> & InferShapeType<TOptions> | InferOptionalityType<TOptions>, InferObjectInput<TEntries> & InferShapeType<TOptions> | InferOptionalityType<TOptions>, TOptions>
+
+export interface ObjectSchema<TEntries extends ObjectEntries, TOutput = InferObjectOutput<TEntries>, TInput = InferObjectInput<TEntries>, TOptions extends ObjectOptions = DefaultObjectOptions> extends BuildableSchema<TOutput, TInput, TOptions> {
+
+  optional: () => CreateObjectSchema<TEntries, MakeOptional<TOptions>>
+  undefinable: () => CreateObjectSchema<TEntries, MakeUndefinable<TOptions>>
+  required: () => CreateObjectSchema<TEntries, MakeRequired<TOptions>>
+  nullable: () => CreateObjectSchema<TEntries, MakeNullable<TOptions>>
+  nullish: () => CreateObjectSchema<TEntries, MakeNullish<TOptions>>
+
+  strict: () => CreateObjectSchema<TEntries, MakeObjectStrict<TOptions>>
+  strip: () => CreateObjectSchema<TEntries, MakeObjectStrip<TOptions>>
+  passthrough: () => CreateObjectSchema<TEntries, MakeObjectPassthrough<TOptions>>
+
+  // TODO: extend type tests with strict, strip, passthrough + in combination with optional, undefinable, required, nullable, nullish
 }
 
 export function object<TEntries extends ObjectEntries>(_structure: TEntries): ObjectSchema<TEntries> {
