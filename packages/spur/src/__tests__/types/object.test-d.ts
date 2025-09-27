@@ -1220,3 +1220,389 @@ describe('objectSchema - undefinable', () => {
     } | undefined>()
   })
 })
+
+describe('objectSchema - shape (strict | strip | passthrough)', () => {
+  it('default (strip) has only declared keys', () => {
+    const _schema = object({ a: string(), b: number() })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      b: number
+    }>()
+  })
+
+  it('explicit strict has only declared keys', () => {
+    const _schema = object({ a: string(), b: number() }).strict()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      b: number
+    }>()
+  })
+
+  it('passthrough adds string index signature', () => {
+    const _schema = object({ a: string(), b: number() }).passthrough()
+
+    type Output = InferOutput<typeof _schema>
+    expectTypeOf<Output>().toEqualTypeOf<{
+      a: string
+      b: number
+      [key: string]: any
+    }>()
+  })
+
+  it('strip after passthrough removes index signature', () => {
+    const _schema = object({ a: string() }).passthrough().strip()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+    }>()
+  })
+
+  it('strict after passthrough removes index signature', () => {
+    const _schema = object({ a: string() }).passthrough().strict()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+    }>()
+  })
+
+  it('passthrough after strict re-adds index signature', () => {
+    const _schema = object({ a: string() }).strict().passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      [key: string]: any
+    }>()
+  })
+
+  it('passthrough after strip re-adds index signature', () => {
+    const _schema = object({ a: string(), b: number() }).strip().passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      b: number
+      [key: string]: any
+    }>()
+  })
+
+  it('complex oscillation ends in strict (no index signature)', () => {
+    const _schema = object({ x: number(), y: string() })
+      .passthrough()
+      .strict()
+      .passthrough()
+      .strip()
+      .passthrough()
+      .strict()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      x: number
+      y: string
+    }>()
+  })
+
+  it('complex oscillation ends in passthrough (index signature present)', () => {
+    const _schema = object({ x: number() })
+      .strict()
+      .passthrough()
+      .strip()
+      .passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      x: number
+      [key: string]: any
+    }>()
+  })
+
+  it('passthrough combined with optionality (optional)', () => {
+    const _schema = object({ a: string() }).passthrough().optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      [key: string]: any
+    } | undefined>()
+  })
+
+  it('passthrough combined with optionality (nullable)', () => {
+    const _schema = object({ a: string(), b: number() }).passthrough().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      b: number
+      [key: string]: any
+    } | null>()
+  })
+
+  it('nested objects with mixed shapes', () => {
+    const _schema = object({
+      outer: object({
+        inner: object({ value: string() }).passthrough(),
+        meta: object({ flag: boolean() }).strict(),
+      }).passthrough(),
+    })
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      outer: {
+        inner: {
+          value: string
+          [key: string]: any
+        }
+        meta: {
+          flag: boolean
+        }
+        [key: string]: any
+      }
+    }>()
+  })
+
+  it('arrays of passthrough objects', () => {
+    const _schema = array(object({ id: string() }).passthrough())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
+      id: string
+      [key: string]: any
+    }>>()
+  })
+
+  it('deep nesting with passthrough at multiple levels', () => {
+    const _schema = object({
+      level1: object({
+        level2: object({
+          keep: string(),
+          level3: object({
+            value: number(),
+          }).passthrough(),
+        }).strict(),
+      }).passthrough(),
+    }).passthrough()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      level1: {
+        level2: {
+          keep: string
+          level3: {
+            value: number
+            [key: string]: any
+          }
+        }
+        [key: string]: any
+      }
+      [key: string]: any
+    }>()
+  })
+})
+
+describe('objectSchema - shape with optionality & nesting', () => {
+  it('passthrough root with optionality applied before shape (optional -> passthrough)', () => {
+    const _schema = object({ a: string().optional(), b: number().nullable() })
+      .optional()
+      .passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a?: string
+      b: number | null
+      [key: string]: any
+    } | undefined>()
+  })
+
+  it('passthrough root with optionality applied after shape (passthrough -> nullish)', () => {
+    const _schema = object({ a: string(), b: number().optional() })
+      .passthrough()
+      .nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      b?: number
+      [key: string]: any
+    } | null | undefined>()
+  })
+
+  it('strict -> passthrough -> strip -> passthrough retains final passthrough', () => {
+    const _schema = object({ id: string(), count: number().undefinable() })
+      .strict()
+      .passthrough()
+      .strip()
+      .passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      id: string
+      count: number | undefined
+      [key: string]: any
+    }>()
+  })
+
+  it('nested passthrough inside strict root', () => {
+    const _schema = object({
+      strictInner: object({ x: number(), y: string().optional() }).strict(),
+      passthroughInner: object({ p: boolean().nullable() }).passthrough(),
+    }).strict()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      strictInner: { x: number, y?: string }
+      passthroughInner: { p: boolean | null, [key: string]: any }
+    }>()
+  })
+
+  it('passthrough root with nested strict and passthrough grandchildren', () => {
+    const _schema = object({
+      layer1: object({
+        strictChild: object({ name: string(), age: number().optional() }).strict(),
+        openChild: object({ tag: string().default('t') }).passthrough(),
+      }).passthrough(),
+    }).passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      layer1: {
+        strictChild: { name: string, age?: number }
+        openChild: { tag: string, [key: string]: any }
+        [key: string]: any
+      }
+      [key: string]: any
+    }>()
+  })
+
+  it('arrays of objects mixing shapes and optionalities', () => {
+    const _schema = object({
+      list: array(
+        object({
+          id: string(),
+          meta: object({ created: string().default('now'), updated: string().optional() }).strict(),
+          data: object({ value: number().nullable(), note: string().optional() }).passthrough(),
+        }).passthrough(),
+      ).optional(),
+    }).passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      list?: Array<{
+        id: string
+        meta: { created: string, updated?: string }
+        data: { value: number | null, note?: string, [key: string]: any }
+        [key: string]: any
+      }>
+      [key: string]: any
+    }>()
+  })
+
+  it('union of objects with different shapes', () => {
+    const _schema = union([
+      object({ a: string(), shared: number().default(1) }).passthrough(),
+      object({ b: number(), shared: number().default(2) }).strict(),
+      object({ c: boolean().nullable(), shared: number().default(3) }).strip(),
+    ] as const)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
+      | { a: string, shared: number, [key: string]: any }
+      | { b: number, shared: number }
+      | { c: boolean | null, shared: number }
+    >()
+  })
+
+  it('root nullish passthrough with deep optional/defaulted chain', () => {
+    const _schema = object({
+      config: object({
+        flags: object({
+          enabled: boolean().default(true),
+          label: string().optional(),
+        }).passthrough(),
+        limits: object({ count: number().default(10) }).strict(),
+      }).optional(),
+      items: array(object({ value: number().optional() }).passthrough()).nullable(),
+    })
+      .passthrough()
+      .nullish()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      config?: {
+        flags: { enabled: boolean, label?: string, [key: string]: any }
+        limits: { count: number }
+      }
+      items: Array<{ value?: number, [key: string]: any }> | null
+      [key: string]: any
+    } | null | undefined>()
+  })
+
+  it('multiple shape transitions with root optionality ending passthrough', () => {
+    const _schema = object({ alpha: string(), beta: number().undefinable() })
+      .strict()
+      .passthrough()
+      .strip()
+      .strict()
+      .passthrough()
+      .optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      alpha: string
+      beta: number | undefined
+      [key: string]: any
+    } | undefined>()
+  })
+
+  it('nested arrays with alternating shape modes', () => {
+    const _schema = object({
+      matrix: array(
+        array(
+          object({
+            cell: object({ value: string().optional() }).strict(),
+            payload: object({ data: number().nullable() }).passthrough(),
+          }).strip(),
+        ),
+      ),
+    }).passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      matrix: Array<Array<{
+        cell: { value?: string }
+        payload: { data: number | null, [key: string]: any }
+      }>>
+      [key: string]: any
+    }>()
+  })
+
+  it('union of deeply nested mixed shape trees', () => {
+    const BaseStrict = object({
+      id: string(),
+      info: object({ label: string().optional(), count: number().default(0) }).strict(),
+      data: array(object({ v: number().nullable() }).strip()),
+    }).strict()
+
+    const BasePassthrough = object({
+      id: string(),
+      info: object({ label: string().nullable(), extra: boolean().optional() }).passthrough(),
+      data: array(object({ v: number().nullish(), tag: string().optional() }).passthrough()),
+    }).passthrough()
+
+    const BaseStrip = object({
+      id: string(),
+      meta: object({ created: string().default('now'), updated: string().optional() }).strip(),
+    }).strip()
+
+    const _schema = union([BaseStrict, BasePassthrough, BaseStrip] as const).optional()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
+      | {
+        id: string
+        info: { label?: string, count: number }
+        data: Array<{ v: number | null }>
+      }
+      | {
+        id: string
+        info: { label: string | null, extra?: boolean, [key: string]: any }
+        data: Array<{ v: number | null | undefined, tag?: string, [key: string]: any }>
+        [key: string]: any
+      }
+      | {
+        id: string
+        meta: { created: string, updated?: string }
+      }
+      | undefined
+    >()
+  })
+
+  it('object with properties referencing other shaped objects', () => {
+    const StrictChild = object({ a: string(), b: number().optional() }).strict()
+    const PassChild = object({ c: boolean().nullable() }).passthrough()
+    const StripChild = object({ d: string().default('d') }).strip()
+    const _schema = object({ one: StrictChild, two: PassChild, three: StripChild }).passthrough().nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
+      | {
+        one: { a: string, b?: number }
+        two: { c: boolean | null, [key: string]: any }
+        three: { d: string }
+        [key: string]: any
+      }
+      | null
+    >()
+  })
+
+  it('deep transformation chain ending in strip loses index signature', () => {
+    const _schema = object({ base: string().optional(), nested: object({ inner: number().nullable() }).passthrough() })
+      .passthrough()
+      .strict()
+      .passthrough()
+      .strip()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      base?: string
+      nested: { inner: number | null, [key: string]: any }
+    }>()
+  })
+})

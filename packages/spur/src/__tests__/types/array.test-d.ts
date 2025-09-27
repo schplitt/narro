@@ -419,6 +419,90 @@ describe('arraySchema - nested array chaining', () => {
   })
 })
 
+describe('arraySchema - objects with shape modes inside arrays', () => {
+  it('array of passthrough objects (index signature only on element)', () => {
+    const _schema = array(object({ key: string(), value: number().optional() }).passthrough())
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{ key: string, value?: number, [key: string]: any }>>()
+  })
+
+  it('array of mixed shape mode objects via union', () => {
+    const _schema = array(union([
+      object({ kind: literal('strict'), a: string() }).strict(),
+      object({ kind: literal('pass'), b: number() }).passthrough(),
+      object({ kind: literal('strip'), c: boolean() }).passthrough().strip(),
+    ] as const))
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<
+      | { kind: 'strict', a: string }
+      | { kind: 'pass', b: number, [key: string]: any }
+      | { kind: 'strip', c: boolean }
+    >>()
+  })
+
+  it('optional array of passthrough objects', () => {
+    const _schema = array(object({ id: string(), meta: number().nullable() }).passthrough()).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{ id: string, meta: number | null, [key: string]: any }> | undefined>()
+  })
+
+  it('nullable array of strip objects derived from passthrough', () => {
+    const _schema = array(object({ name: string().optional(), age: number() }).passthrough().strip()).nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{ name?: string, age: number }> | null>()
+  })
+
+  it('array of objects with deep nested passthrough child', () => {
+    const _schema = array(object({
+      outer: object({
+        inner: object({ value: string() }).passthrough(),
+      }).strip(),
+    }).passthrough())
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
+      outer: { inner: { value: string, [key: string]: any } }
+      [key: string]: any
+    }>>()
+  })
+
+  it('array chaining after element shape transitions', () => {
+    const _schema = array(
+      object({ id: string(), flag: boolean().optional() })
+        .strict()
+        .passthrough()
+        .strip(), // final element shape: strip
+    ).minLength(0).optional()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{ id: string, flag?: boolean }> | undefined>()
+  })
+
+  it('array of objects final element passthrough with root nullish', () => {
+    const _schema = array(
+      object({ code: string(), data: object({ v: number() }).passthrough() })
+        .strip()
+        .passthrough(),
+    ).nullish()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{
+      code: string
+      data: { v: number, [key: string]: any }
+      [key: string]: any
+    }> | null | undefined>()
+  })
+
+  it('multi-level nested arrays of mixed shape objects', () => {
+    const _schema = array(array(object({
+      tag: literal('node'),
+      info: object({ label: string().optional() }).passthrough(),
+      meta: object({ created: number() }).passthrough().strip(),
+    }).passthrough()))
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<Array<{
+      tag: 'node'
+      info: { label?: string, [key: string]: any }
+      meta: { created: number }
+      [key: string]: any
+    }>>>()
+  })
+})
+
 describe('arraySchema - extreme chaining scenarios', () => {
   it('array with 10+ method calls', () => {
     const _schema = array(string())

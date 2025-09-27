@@ -94,6 +94,202 @@ describe('edge cases - extreme type complexity', () => {
   })
 })
 
+describe('edge cases - object shape modes with extreme combinations', () => {
+  it('root passthrough adds index signature while nested strict removes it', () => {
+    const _schema = object({
+      id: string(),
+      meta: object({
+        version: number(),
+        flags: array(string()),
+      }).strict(),
+      data: object({
+        payload: object({
+          value: number(),
+        }).passthrough(),
+      }).passthrough(),
+    }).passthrough()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      id: string
+      meta: {
+        version: number
+        flags: string[]
+      }
+      data: {
+        payload: {
+          value: number
+          [key: string]: any
+        }
+        [key: string]: any
+      }
+      [key: string]: any
+    }>()
+  })
+
+  it('shape mode oscillation ends in strip (no index signature)', () => {
+    const _schema = object({
+      a: string(),
+      b: number().optional(),
+    })
+      .passthrough()
+      .strict()
+      .passthrough()
+      .strip() // final
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      b?: number
+    }>()
+  })
+
+  it('shape mode oscillation ends in passthrough (index signature present)', () => {
+    const _schema = object({
+      user: object({ name: string() }),
+      count: number().nullable(),
+    })
+      .strict()
+      .strip()
+      .passthrough() // final
+      .nullable()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      user: { name: string }
+      count: number | null
+      [key: string]: any
+    } | null>()
+  })
+
+  it('passthrough + optional root', () => {
+    const _schema = object({
+      alpha: string().optional(),
+      beta: number().undefinable(),
+    }).passthrough().optional()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      alpha?: string
+      beta: number | undefined
+      [key: string]: any
+    } | undefined>()
+  })
+
+  it('nested differing final shape modes', () => {
+    const _schema = object({
+      strictChild: object({ x: string() }).strict(),
+      passthroughChild: object({ y: number() }).passthrough(),
+      stripChild: object({ z: boolean() }).passthrough().strip(),
+    }).strict()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      strictChild: { x: string }
+      passthroughChild: { y: number, [key: string]: any }
+      stripChild: { z: boolean }
+    }>()
+  })
+
+  it('deep nesting alternating shapes', () => {
+    const _schema = object({
+      level1: object({
+        a: string(),
+        level2: object({
+          b: number(),
+          level3: object({
+            c: boolean(),
+          }).passthrough(),
+        }).strict(),
+      }).passthrough(),
+    }).strip()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      level1: {
+        a: string
+        level2: {
+          b: number
+          level3: {
+            c: boolean
+            [key: string]: any
+          }
+        }
+        [key: string]: any
+      }
+    }>()
+  })
+
+  it('union of strict vs passthrough objects', () => {
+    const _strict = object({ id: string(), tag: literal('strict') }).strict()
+    const _passthrough = object({ id: string(), tag: literal('pass') }).passthrough()
+    const _schema = union([
+      _strict,
+      _passthrough,
+    ] as const)
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
+      | { id: string, tag: 'strict' }
+      | { id: string, tag: 'pass', [key: string]: any }
+    >()
+  })
+
+  it('array of objects with different final shapes (inside union stress)', () => {
+    const _schema = array(
+      union([
+        object({ kind: literal('A'), value: string() }).strict(),
+        object({ kind: literal('B'), value: number() }).passthrough(),
+        object({ kind: literal('C'), value: boolean() }).passthrough().strip(),
+      ] as const),
+    )
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<
+      | { kind: 'A', value: string }
+      | { kind: 'B', value: number, [key: string]: any }
+      | { kind: 'C', value: boolean }
+    >>()
+  })
+
+  it('passthrough after nullish then required (final passthrough)', () => {
+    const _schema = object({
+      core: string(),
+    })
+      .nullish()
+      .required()
+      .passthrough()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      core: string
+      [key: string]: any
+    }>()
+  })
+
+  it('strip after passing through optional and nullable', () => {
+    const _schema = object({ id: number().nullable(), name: string().optional() })
+      .passthrough()
+      .optional()
+      .nullable()
+      .strip()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      id: number | null
+      name?: string
+    } | null>()
+  })
+
+  it('deep chain ending in passthrough optional with nested passthrough children', () => {
+    const _schema = object({
+      parent: object({
+        child: object({ leaf: string() }).passthrough(),
+      }).strip(),
+      meta: object({ created: number() }).passthrough(),
+    })
+      .strip()
+      .passthrough()
+      .optional()
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      parent: { child: { leaf: string, [key: string]: any } }
+      meta: { created: number, [key: string]: any }
+      [key: string]: any
+    } | undefined>()
+  })
+})
+
 describe('edge cases - literal and oneOf complexity', () => {
   it('object with all literal types', () => {
     const _schema = object({
