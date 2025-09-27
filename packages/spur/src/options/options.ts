@@ -1,4 +1,5 @@
-import type { BuildableSchema } from './schema'
+import type { BuildableSchema } from '../types/schema'
+import type { SetCommonOption } from './utils'
 
 export type Optionality = 'optional' | 'required' | 'nullable' | 'nullish' | 'defaulted' | 'undefinable'
 
@@ -10,10 +11,25 @@ export interface DefaultCommonOptions extends CommonOptions {
   optionality: 'required'
 }
 
-export type SetCommonOption<TOptions extends CommonOptions, TKey extends keyof CommonOptions, TNewValue extends CommonOptions[TKey]> = Omit<TOptions, TKey> & {
-  [K in TKey]: TNewValue
-}
+export type InferOptionalityType<T extends CommonOptions> = T extends { optionality: infer TOptionality }
+  ? (
+      TOptionality extends 'optional' | 'undefinable' ? undefined
+        : TOptionality extends 'nullable' ? null
+          : TOptionality extends 'nullish' ? null | undefined
+            : TOptionality extends 'defaulted' | 'required' ? never
+              : never
+    )
+  : never
+
+/**
+ * Extracts all schemas from T that have the option TKey set to TValue
+ * E.g. to extract all optional schemas from a union of schemas
+ */
 export type ExtractSchemas<T extends BuildableSchema<any, any, CommonOptions>, TKey extends keyof CommonOptions, TValue extends CommonOptions[TKey]> = T extends BuildableSchema<any, any, infer TCommonOptions> ? TCommonOptions extends { [K in TKey]: TValue } ? T : never : never
+
+/**
+ * Extracts the options from a schema
+ */
 export type ExtractOptions<T extends BuildableSchema<any, any, CommonOptions>> = T extends BuildableSchema<any, any, infer TCommonOptions> ? TCommonOptions : never
 
 export type MakeOptional<TOptions extends CommonOptions> = SetCommonOption<TOptions, 'optionality', 'optional'>
