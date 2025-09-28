@@ -68,28 +68,28 @@ describe('objectSchema - basic types', () => {
 
   it('object with oneOf property', () => {
     const _schema = object({
-      color: oneOf(['red', 'green', 'blue'] ),
+      color: oneOf(['red', 'green', 'blue']),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ color: 'red' | 'green' | 'blue' }>()
   })
 
   it('object with mixed oneOf property', () => {
     const _schema = object({
-      value: oneOf(['none', 42, 'all'] ),
+      value: oneOf(['none', 42, 'all']),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ value: 'none' | 42 | 'all' }>()
   })
 
   it('object with union property', () => {
     const _schema = object({
-      data: union([string(), number()] ),
+      data: union([string(), number()]),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ data: string | number }>()
   })
 
   it('object with complex union property', () => {
     const _schema = object({
-      field: union([literal('exact'), oneOf(['a', 'b'] ), boolean()] ),
+      field: union([literal('exact'), oneOf(['a', 'b']), boolean()]),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ field: 'exact' | 'a' | 'b' | boolean }>()
   })
@@ -141,14 +141,14 @@ describe('objectSchema - optional properties', () => {
 
   it('object with optional oneOf property', () => {
     const _schema = object({
-      priority: oneOf(['low', 'medium', 'high'] ).optional(),
+      priority: oneOf(['low', 'medium', 'high']).optional(),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ priority?: 'low' | 'medium' | 'high' }>()
   })
 
   it('object with optional union property', () => {
     const _schema = object({
-      content: union([string(), number(), boolean()] ).optional(),
+      content: union([string(), number(), boolean()]).optional(),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ content?: string | number | boolean }>()
   })
@@ -240,8 +240,8 @@ describe('objectSchema - with defaults', () => {
 
   it('object with oneOf defaults', () => {
     const _schema = object({
-      level: oneOf(['debug', 'info', 'warn', 'error'] ).default('info'),
-      size: oneOf([1, 2, 3, 4, 5] ).default(3),
+      level: oneOf(['debug', 'info', 'warn', 'error']).default('info'),
+      size: oneOf([1, 2, 3, 4, 5]).default(3),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       level: 'debug' | 'info' | 'warn' | 'error'
@@ -1471,7 +1471,7 @@ describe('objectSchema - shape with optionality & nesting', () => {
       object({ a: string(), shared: number().default(1) }).passthrough(),
       object({ b: number(), shared: number().default(2) }).strict(),
       object({ c: boolean().nullable(), shared: number().default(3) }).strip(),
-    ] )
+    ])
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       | { a: string, shared: number, [key: string]: any }
       | { b: number, shared: number }
@@ -1556,7 +1556,7 @@ describe('objectSchema - shape with optionality & nesting', () => {
       meta: object({ created: string().default('now'), updated: string().optional() }).strip(),
     }).strip()
 
-    const _schema = union([BaseStrict, BasePassthrough, BaseStrip] ).optional()
+    const _schema = union([BaseStrict, BasePassthrough, BaseStrip]).optional()
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       | {
@@ -1604,5 +1604,176 @@ describe('objectSchema - shape with optionality & nesting', () => {
       base?: string
       nested: { inner: number | null, [key: string]: any }
     }>()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// TRANSFORM TESTS (moved from object-transform.test-d.ts)
+// ---------------------------------------------------------------------------
+
+// Helper phantom usage so TS evaluates deeply
+const _phantom = <T>(_v: T) => _v
+
+describe('objectSchema - transform: basic mapping', () => {
+  it('map simple object to primitive', () => {
+    const base = object({ name: string(), age: number() })
+    const _mapped = base.transform(v => `${v.name}:${v.age}`)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string>()
+  })
+
+  it('map to narrower object', () => {
+    const base = object({ name: string(), age: number(), active: boolean() })
+    const _mapped = base.transform(v => ({ id: `${v.name}-${v.age}`, active: v.active }))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ id: string, active: boolean }>()
+  })
+
+  it('map to union type', () => {
+    const base = object({ kind: literal('A'), value: number() })
+    const _mapped = base.transform(v => v.value > 0 ? v.value : v.kind)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | 'A'>()
+  })
+})
+
+describe('objectSchema - transform: optional / nullable roots', () => {
+  it('optional root drops undefined by default in transform', () => {
+    const base = object({ value: string() }).optional()
+    const _mapped = base.transform(v => (v ? v.value.length : 0))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+  it('optional root preserves undefined explicitly', () => {
+    const base = object({ value: string() }).optional()
+    const _mapped = base.transform(v => (v ? v.value.length : undefined as number | undefined))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | undefined>()
+  })
+  it('nullable root to non-nullable', () => {
+    const base = object({ name: string() }).nullable()
+    const _mapped = base.transform(v => v ? v.name.length : 0)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+  it('nullable root preserving null', () => {
+    const base = object({ name: string() }).nullable()
+    const _mapped = base.transform(v => (v ? v.name : null))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string | null>()
+  })
+  it('nullish root to boolean', () => {
+    const base = object({ flag: boolean() }).nullish()
+    const _mapped = base.transform(v => !!v && v.flag)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<boolean>()
+  })
+  it('nullish root preserving null | undefined explicitly', () => {
+    const base = object({ name: string() }).nullish()
+    const _mapped = base.transform(v => (v ? v.name : undefined as string | null | undefined))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string | null | undefined>()
+  })
+  it('undefinable root discards undefined', () => {
+    const base = object({ id: number() }).undefinable()
+    const _mapped = base.transform(v => (v ? v.id : 0))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+  it('undefinable root keeps undefined explicitly', () => {
+    const base = object({ id: number() }).undefinable()
+    const _mapped = base.transform(v => (v && v.id > 0 ? v.id : undefined))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | undefined>()
+  })
+})
+
+describe('objectSchema - transform: defaults & shape', () => {
+  it('defaulted properties then transform', () => {
+    const base = object({ name: string().default('x'), age: number().default(1) })
+    const _mapped = base.transform(v => `${v.name.toUpperCase()}-${v.age + 1}`)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string>()
+  })
+  it('defaulted object then transform', () => {
+    const base = object({ name: string() }).default({ name: 'x' })
+    const _mapped = base.transform(v => v.name.length)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+  it('passthrough root transform to keys array', () => {
+    const base = object({ a: string(), b: number() }).passthrough()
+    const _mapped = base.transform(v => Object.keys(v) as string[])
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string[]>()
+  })
+})
+
+describe('objectSchema - transform: nested collections', () => {
+  it('nested object summarization', () => {
+    const nested = object({ inner: object({ label: string(), count: number().optional() }) })
+    const _mapped = nested.transform(v => ({ labelLength: v.inner.label.length, hasCount: typeof v.inner.count === 'number' }))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ labelLength: number, hasCount: boolean }>()
+  })
+  it('aggregate array numbers', () => {
+    const base = object({ values: array(number()) })
+    const _mapped = base.transform(v => v.values.reduce((a, b) => a + b, 0))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+  it('refine union to uniform number', () => {
+    const base = object({ data: union([string(), number()]) })
+    const _mapped = base.transform(v => (typeof v.data === 'string' ? v.data.length : v.data))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+})
+
+describe('objectSchema - transform: chained transforms', () => {
+  it('after complex optionality chain', () => {
+    const base = object({ val: number() }).optional().nullable().required()
+    const _mapped = base.transform(v => v.val.toString())
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string>()
+  })
+  it('complex union return with prior optionality', () => {
+    const base = object({ val: number() }).nullish().optional().undefinable().nullable()
+    const _mapped = base.transform(_ => ({ kind: 'value' as const }) as { kind: 'value' } | null | undefined)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ kind: 'value' } | null | undefined>()
+  })
+})
+
+describe('objectSchema - transform: literals & enums', () => {
+  it('preserves template literal combination', () => {
+    const base = object({ tag: literal('X'), mode: oneOf(['a', 'b']) })
+    const _mapped = base.transform(v => ({ combo: `${v.tag}:${v.mode}` as const }))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ combo: `${'X'}:${'a' | 'b'}` }>()
+  })
+})
+
+describe('objectSchema - transform: wide object collapse', () => {
+  it('derive summary stats', () => {
+    const base = object({
+      a: string(),
+      b: string().optional(),
+      c: number(),
+      d: number().nullable(),
+      e: boolean(),
+      f: literal('fix'),
+      g: oneOf(['x', 'y', 'z']),
+      h: array(string()),
+      i: union([number(), string()]),
+      j: object({ inner: string().default('ok') }),
+    })
+    const _mapped = base.transform(v => ({
+      totalKeys: Object.keys(v).length,
+      hasOptionalB: typeof v.b === 'string',
+      isDNull: v.d === null,
+      g: v.g,
+    }))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ totalKeys: number, hasOptionalB: boolean, isDNull: boolean, g: 'x' | 'y' | 'z' }>()
+  })
+})
+
+describe('objectSchema - transform: Prettify interaction', () => {
+  it('intersection literal preservation', () => {
+    interface Extra { extra: 1 }
+    const base = object({ name: literal('N') })
+    const _mapped = base.transform(v => ({ label: v.name, extra: 1 } as { label: 'N' } & Extra))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ label: 'N', extra: 1 }>()
+  })
+})
+
+describe('objectSchema - transform: input shape stability', () => {
+  it('compile-time only check', () => {
+    const base = object({ id: string(), count: number().optional() })
+    const _mapped = base.transform(v => !!v.count)
+    const acceptBaseOutput = <T extends InferOutput<typeof base>>(_v: T) => true
+    // @ts-expect-error mapped output is boolean, not original object
+    acceptBaseOutput(_phantom<InferOutput<typeof _mapped>>(false as any))
+    acceptBaseOutput({ id: '', count: 1 })
   })
 })
