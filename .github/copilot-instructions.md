@@ -19,7 +19,7 @@ refactor, and maintain Spur safely, consistently, and efficiently. You MUST foll
 ## High-Level Architecture
 - A schema is built from exactly one `SourceCheckable` plus zero or more `Checkable` constraint units.
 - `SourceCheckable['~c'](input)` is a type guard deciding basic shape / kind and narrowing input.
-- Each `Checkable['~c'](value)` returns a `SchemaReport` with `{ passed, score, maxScore, value? }`.
+- Each `Checkable['~c'](value)` returns a `SchemaReport` with `{ passed, score, value? }`.
 - Checks are referenced by unique `symbol` identifiers stored in their `~id` property.
 - During build (`build.ts`):
 	1. Import source check lazily.
@@ -27,7 +27,7 @@ refactor, and maintain Spur safely, consistently, and efficiently. You MUST foll
 	3. Deduplicate by `~id` (last occurrence wins) to avoid redundant or overridden constraints.
 	4. Construct a cache key: `sourceSymbol | uniqueCheckSymbols | sortedJSON(options)`.
 	5. Return an `EvaluableSchema` with `safeParse` + `parse`.
-- `safeParse` orchestrates source guard + sequential constraint evaluation, aggregating score / maxScore.
+- `safeParse` orchestrates source guard + sequential constraint evaluation, aggregating score.
 - Union or alternative branches (e.g., `union([...])`, optionality layering) may attach `unionReports` for heuristics.
 
 ## Design Principles (CRITICAL)
@@ -48,16 +48,15 @@ refactor, and maintain Spur safely, consistently, and efficiently. You MUST foll
 	- MUST return a boolean type guard; no scoring occurs here—failing short-circuits constraints.
 - `Checkable`:
 	- Shape: `{ '~id': symbol; '~c': (value) => SchemaReport }`.
-	- MUST return a `SchemaReport` with `passed`, `score`, `maxScore`, and (if success) `value`.
+	- MUST return a `SchemaReport` with `passed`, `score`, and (if success) `value`.
 	- `score` is typically 1 for pass / 0 for fail unless more granular weighting is intentionally documented.
 - Evaluation Flow:
-	1. Run source guard. If false → failure report (aggregate derived maxScore) without value.
-	2. Sequentially run unique checkables keeping a running aggregation: `score += r.score`, `maxScore += r.maxScore`, `passed = passed && r.passed`.
+	1. Run source guard. If false → failure report without value.
+	2. Sequentially run unique checkables keeping a running aggregation: `score += r.score`, `passed = passed && r.passed`.
 	3. Optionally attach `unionReports` if alternative branches are explored (e.g., union path scoring).
 - `SchemaReport` invariants:
 	- Failure: `passed: false`, `value: undefined`.
 	- Success: `passed: true`, `value` present.
-	- `score <= maxScore` always.
 	- No side effects.
 
 ## Optionality Semantics
@@ -149,7 +148,7 @@ export function date() {
 				'~c': (v) => {
 					const d = v instanceof Date ? v : new Date(v as any)
 					const passed = d.getTime() >= ts
-					return { passed, score: passed ? 1 : 0, maxScore: 1, value: passed ? d : undefined }
+					return { passed, score: passed ? 1 : 0, value: passed ? d : undefined }
 				},
 			}))
 			return this
@@ -182,7 +181,7 @@ export function date() {
 - Constraints MUST NOT transform values except those explicitly allowed (e.g., `defaulted` substitutes default).
 - If transformation is introduced (e.g., normalizing dates), you MUST document and test it.
 - No mutation of user-provided objects; treat inputs as immutable.
-- Union handling: each candidate branch produces a report; heuristics pick highest `(score / maxScore)` ratio.
+- Union handling: each candidate branch produces a report; heuristics pick highest `(score)`.
 
 ## Caching & Build Pipeline Rules
 - Cache key = Concatenated string: `sourceId|checkId...|sortedJSON(options)`.
@@ -204,7 +203,7 @@ Layers:
 1. Type-Level Tests (using `expectTypeOf`): Ensure output unions, optionality overrides, chaining precedence.
 2. Runtime Smoke Tests: Minimal positive & negative inputs; verify scoring boundaries (score 1 pass, 0 fail by default).
 3. Edge Optionality Chains: Sequences of `.optional().nullable().required()...` confirm last-call precedence.
-4. Heuristic Branching: For unions, ensure higher ratio `(score / maxScore)` branch is recognized.
+4. Heuristic Branching: For unions, ensure higher `(score)` branch is recognized.
 
 Guidelines:
 - Add type tests BEFORE implementing new primitives/constraints (MANDATORY).
@@ -274,7 +273,7 @@ AVOID:
 2. "Introduce date() primitive": Follow primitive workflow; add source guard, optional `.min()` constraint, tests,
 	 docs snippet; ensure no timezone transformations unless specified.
 3. "Enhance union scoring": If adjusting weighting, justify heuristic rationale, update union tests checking
-	 `(score / maxScore)` selection, document in design notes.
+	 `(score)` selection, document in design notes.
 4. "Add default to enum option": Implement `.default(value)` using existing defaulted factory; ensure value is a
 	 member; adjust type inference to remove nullish from output.
 5. "Optimize build cache": Provide benchmark or size rationale; do not break key stability; add migration note if
@@ -292,7 +291,7 @@ export function createAlphaCheck(): Checkable<string> {
 		'~id': stringAlphaSymbol,
 		'~c': (v) => {
 			const passed = /^[A-Za-z]+$/.test(v)
-			return { passed, score: passed ? 1 : 0, maxScore: 1, value: passed ? v : undefined }
+			return { passed, score: passed ? 1 : 0, value: passed ? v : undefined }
 		},
 	}
 }
@@ -309,7 +308,7 @@ Micro Example: Union extension pattern:
 ## Glossary
 - SourceCheckable: Type guard + symbol representing the root runtime kind of a schema.
 - Checkable: A scoring constraint returning a `SchemaReport`.
-- SchemaReport: Structured outcome with `passed`, `score`, `maxScore`, optional `unionReports`.
+- SchemaReport: Structured outcome with `passed`, `score`, optional `unionReports`.
 - Optionality: Set of transformations controlling null/undefined/default semantics.
 - Heuristic Scoring: Aggregated scoring to indicate most plausible intended branch.
 - Dynamic Import Boundary: Module separation enabling tree shaking and lazy load.
@@ -320,6 +319,6 @@ Micro Example: Union extension pattern:
 - (commit conventions) See `./.github/instructions/commits.instructions.md`.
 - (vitest docs) Placeholder reference for test runner usage.
 - (TypeScript handbook) For advanced generics & conditional types.
-- (heuristic scoring notes) Internal rationale for score vs maxScore selection.
+- (heuristic scoring notes) Internal rationale for score selection.
 - (dynamic import rationale) Design justification for lazy boundaries.
 
