@@ -866,6 +866,89 @@ describe('arraySchema - complex element combinations', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number[] | null>()
   })
 
+  // ---------------------------------------------------------------------------
+  // TRANSFORM TESTS (array)
+  // ---------------------------------------------------------------------------
+  describe('arraySchema - transform: basic mapping', () => {
+    it('map array of numbers to sum', () => {
+      const base = array(number())
+      const _mapped = base.transform(v => v.length as number)
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+    })
+    it('map array of literals to joined string', () => {
+      const base = array(literal('x'))
+      const _mapped = base.transform(v => v.join(',') as string)
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string>()
+    })
+  })
+
+  describe('arraySchema - transform: optional / nullable roots', () => {
+    it('optional array to count', () => {
+      const base = array(string()).optional()
+      const _mapped = base.transform(v => (v ? v.length : 0))
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+    })
+    it('nullable array to maybe string', () => {
+      const base = array(boolean()).nullable()
+      const _mapped = base.transform(v => (v === null ? null : v.length > 0 ? 'non-empty' as const : 'empty' as const))
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<'non-empty' | 'empty' | null>()
+    })
+    it('nullish array preserves nullish when explicit', () => {
+      const base = array(number()).nullish()
+      const _mapped = base.transform(v => (v == null ? v : v.length))
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | undefined | null>()
+    })
+  })
+
+  describe('arraySchema - transform: defaults & element defaults', () => {
+    it('defaulted array then transform to boolean', () => {
+      const base = array(string()).default([])
+      const _mapped = base.transform(v => v.length === 0)
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<boolean>()
+    })
+    it('element default then array transform', () => {
+      const base = array(string().default('x'))
+      const _mapped = base.transform(v => v[0])
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string | undefined>()
+    })
+    it('array optional then default then transform', () => {
+      const base = array(number()).optional().default([])
+      const _mapped = base.transform(v => v.length)
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+    })
+  })
+
+  describe('arraySchema - transform: nested & unions', () => {
+    it('array of union mapped to numbers', () => {
+      const base = array(union([string(), number()]))
+      const _mapped = base.transform(v => v.length)
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+    })
+    it('array of objects to aggregated object', () => {
+      const base = array(object({ id: number(), name: string().optional() }))
+      const _mapped = base.transform(v => ({ count: v.length, hasOptional: v.some(x => typeof x.name === 'string') }))
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ count: number, hasOptional: boolean }>()
+    })
+    it('deep nested arrays reduce depth', () => {
+      const base = array(array(array(literal('x'))))
+      const _mapped = base.transform(v => v.length)
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+    })
+  })
+
+  describe('arraySchema - transform: complex chaining', () => {
+    it('optional -> nullable -> required then transform', () => {
+      const base = array(string()).optional().nullable().required()
+      const _mapped = base.transform(v => v.join(''))
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string>()
+    })
+    it('nullish -> optional -> transform preserves explicit null | undefined', () => {
+      const base = array(number()).nullish().optional()
+      const _mapped = base.transform(v => (v == null ? v : v.length as number | undefined | null))
+      expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | undefined | null>()
+    })
+  })
+
   it('ultra complex nested structure', () => {
     const _schema = array(
       object({

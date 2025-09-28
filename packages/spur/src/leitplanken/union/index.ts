@@ -14,6 +14,8 @@ export interface UnionSchema<TSchemas extends readonly BuildableSchema<unknown, 
   required: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas>, InferUnionInput<TSchemas>, MakeRequired<TCommonOptions>>
   nullable: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas> | null, InferUnionInput<TSchemas> | null, MakeNullable<TCommonOptions>>
   nullish: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined | null, InferUnionInput<TSchemas> | undefined | null, MakeNullish<TCommonOptions>>
+
+  transform: <TTransformOutput>(fn: (input: TOutput) => TTransformOutput) => BuildableSchema<TTransformOutput, TInput, TCommonOptions>
 }
 
 export function union<TSchemas extends readonly BuildableSchema<unknown, unknown, CommonOptions>[]>(_schemas: TSchemas): UnionSchema<TSchemas> {

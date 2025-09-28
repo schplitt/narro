@@ -6,6 +6,7 @@ import { boolean } from '../../leitplanken/boolean'
 import { oneOf } from '../../leitplanken/enum'
 import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
+import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
 import { union } from '../../leitplanken/union'
 
@@ -350,5 +351,85 @@ describe('unionSchema - undefinable', () => {
     expectTypeOf<Output>().toEqualTypeOf<
       string | undefined | number | null | boolean | undefined | null | 'test' | undefined | 'a' | 'b' | undefined
     >()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// TRANSFORM TESTS (union)
+// ---------------------------------------------------------------------------
+describe('unionSchema - transform: basic mapping', () => {
+  it('map union to boolean discriminator', () => {
+    const base = union([string(), number()])
+    const _mapped = base.transform(v => typeof v === 'string')
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<boolean>()
+  })
+  it('map union to narrowed literal union', () => {
+    const base = union([literal('x'), literal('y'), number()])
+    const _mapped = base.transform(v => (typeof v === 'number' ? 'num' as const : v))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<'x' | 'y' | 'num'>()
+  })
+  it('map union with defaulted member', () => {
+    const base = union([string().default('a'), number()])
+    const _mapped = base.transform(v => (typeof v === 'string' ? v.length : v))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+})
+
+describe('unionSchema - transform: optional / nullable roots', () => {
+  it('optional union to primitive', () => {
+    const base = union([string(), number()]).optional()
+    const _mapped = base.transform(v => (v ? (typeof v === 'string' ? v.length : v) : 0))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+  it('nullable union preserving null', () => {
+    const base = union([boolean(), literal('t')]).nullable()
+    const _mapped = base.transform(v => (v === null ? null : (typeof v === 'boolean' ? v : v === 't'))) // boolean | null
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<boolean | null>()
+  })
+  it('nullish union broad mapping', () => {
+    const base = union([oneOf(['a', 'b']), number()]).nullish()
+    const _mapped = base.transform(v => (v == null ? v : typeof v === 'number' ? v : (v.length as number)))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | undefined | null>()
+  })
+})
+
+describe('unionSchema - transform: chained transforms', () => {
+  it('single transform refine type (no chained transform support on mapped result)', () => {
+    const base = union([string(), number()])
+    const _mapped = base.transform(v => (typeof v === 'string' ? v.length : v))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+  it('transform after optionality oscillation', () => {
+    const base = union([string(), number()]).optional().nullable().required().nullish()
+    const _mapped = base.transform(v => (v == null ? null : typeof v === 'string' ? v.toUpperCase() : v.toFixed(2)))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string | null>()
+  })
+})
+
+describe('unionSchema - transform: complex unions', () => {
+  it('large literal union collapsed to number', () => {
+    const base = union([
+      literal('p'),
+      literal('q'),
+      literal('r'),
+      literal('s'),
+      literal('t'),
+      number(),
+    ])
+    const _mapped = base.transform(v => typeof v === 'number' ? v : v.length)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number>()
+  })
+})
+
+describe('unionSchema - transform: defaulted root chain', () => {
+  it('default then transform', () => {
+    const base = union([string(), number()]).default(1)
+    const _mapped = base.transform(v => (typeof v === 'string' ? v : v + 1))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string | number>()
+  })
+  it('default + optional then transform preserves reintroduced undefined if explicit', () => {
+    const base = union([string(), number()]).default(2).optional()
+    const _mapped = base.transform(v => (v ? (typeof v === 'string' ? v.length : v) : undefined as number | undefined))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | undefined>()
   })
 })

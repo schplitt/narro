@@ -16,6 +16,8 @@ export interface ArraySchema<TSchema extends BuildableSchema<unknown, unknown, C
   required: () => ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema>, MakeRequired<TCommonOptions>>
   nullable: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | null, InferArrayInput<TSchema> | null, MakeNullable<TCommonOptions>>
   nullish: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined | null, InferArrayInput<TSchema> | undefined | null, MakeNullish<TCommonOptions>>
+
+  transform: <TTransformOutput>(fn: (input: TOutput) => TTransformOutput) => BuildableSchema<TTransformOutput, TInput, TCommonOptions>
 }
 
 export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>>(_schema: TSchema): ArraySchema<TSchema> {
