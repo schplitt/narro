@@ -1,8 +1,6 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BuildableSchema, CheckableImport } from '../../types/schema'
+import type { BuildableSchema, CheckableImport, DefaultInput } from '../../types/schema'
 import { build } from '../../build'
-
-// TODO: could have typesafe default with (string & {}) | <default>
 
 export interface StringSchema<TOutput = string, TInput = string, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
   minLength: (minLength: number) => StringSchema<TOutput, TInput, TCommonOptions>
@@ -11,7 +9,7 @@ export interface StringSchema<TOutput = string, TInput = string, TCommonOptions 
   endsWith: (end: string) => StringSchema<TOutput, TInput, TCommonOptions>
   startsWith: (start: string) => StringSchema<TOutput, TInput, TCommonOptions>
 
-  default: (v: string) => StringSchema<string, string | undefined, MakeDefaulted<TCommonOptions>>
+  default: (value: DefaultInput<TOutput>) => StringSchema<string, string | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => StringSchema<string | undefined, string | undefined, MakeOptional<TCommonOptions>>
   undefinable: () => StringSchema<string | undefined, string | undefined, MakeUndefinable<TCommonOptions>>
   required: () => StringSchema<string, string, MakeRequired<TCommonOptions>>

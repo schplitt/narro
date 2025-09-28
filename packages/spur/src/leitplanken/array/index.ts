@@ -1,5 +1,5 @@
-import type { CommonOptions, DefaultCommonOptions, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BuildableSchema } from '../../types/schema'
+import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 
 type InferArrayOutput<T extends BuildableSchema<unknown, unknown, CommonOptions>> = Array<InferOutput<T>>
@@ -10,11 +10,12 @@ export interface ArraySchema<TSchema extends BuildableSchema<unknown, unknown, C
   maxLength: (max: number) => ArraySchema<TSchema, TOutput, TInput, TCommonOptions>
   length: (length: number) => ArraySchema<TSchema, TOutput, TInput, TCommonOptions>
 
+  default: (value: DefaultInput<InferArrayOutput<TSchema>>) => ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema> | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeOptional<TCommonOptions>>
   undefinable: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeUndefinable<TCommonOptions>>
   required: () => ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema>, MakeRequired<TCommonOptions>>
   nullable: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | null, InferArrayInput<TSchema> | null, MakeNullable<TCommonOptions>>
-  nullish: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | null | undefined, InferArrayInput<TSchema> | null | undefined, MakeNullish<TCommonOptions>>
+  nullish: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined | null, InferArrayInput<TSchema> | undefined | null, MakeNullish<TCommonOptions>>
 }
 
 export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>>(_schema: TSchema): ArraySchema<TSchema> {

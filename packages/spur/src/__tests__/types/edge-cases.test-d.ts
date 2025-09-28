@@ -87,9 +87,9 @@ describe('edge cases - extreme type complexity', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       required: { value: string }
       nullable: { value: string } | null
-      nullish: { value: string } | null | undefined
+      nullish: { value: string } | undefined | null
       defaulted: { value: string }
-      optional?: { value: string }
+      optional?: { value: string } | undefined
     }>()
   })
 })
@@ -407,7 +407,7 @@ describe('edge cases - literal and oneOf complexity', () => {
     expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<'test' | undefined>()
     expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<'test'>()
     expectTypeOf<InferOutput<typeof _schema4>>().toEqualTypeOf<'test' | null>()
-    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<'test' | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<'test' | undefined | null>()
     expectTypeOf<InferOutput<typeof _schema6>>().toEqualTypeOf<'test' | undefined>()
 
     const _enum1 = oneOf(['a', 'b'])
@@ -418,7 +418,7 @@ describe('edge cases - literal and oneOf complexity', () => {
     expectTypeOf<InferOutput<typeof _enum1>>().toEqualTypeOf<'a' | 'b'>()
     expectTypeOf<InferOutput<typeof _enum2>>().toEqualTypeOf<'a' | 'b' | undefined>()
     expectTypeOf<InferOutput<typeof _enum3>>().toEqualTypeOf<'a' | 'b'>()
-    expectTypeOf<InferOutput<typeof _enum4>>().toEqualTypeOf<'a' | 'b' | null | undefined>()
+    expectTypeOf<InferOutput<typeof _enum4>>().toEqualTypeOf<'a' | 'b' | undefined | null>()
   })
 
   it('complex object with mixed literal, oneOf, and primitives', () => {
@@ -524,7 +524,7 @@ describe('edge cases - union complexity', () => {
     expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<string | number | undefined>()
     expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<string | number>()
     expectTypeOf<InferOutput<typeof _schema4>>().toEqualTypeOf<string | number | null>()
-    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<string | number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<string | number | undefined | null>()
     expectTypeOf<InferOutput<typeof _schema6>>().toEqualTypeOf<string | number>()
   })
 
@@ -600,7 +600,7 @@ describe('edge cases - optionality chain limits', () => {
     expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<string | undefined>()
     expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<string>()
     expectTypeOf<InferOutput<typeof _schema4>>().toEqualTypeOf<string | null>()
-    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<string | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<string | undefined | null>()
     expectTypeOf<InferOutput<typeof _schema6>>().toEqualTypeOf<string>()
   })
 
@@ -632,7 +632,7 @@ describe('edge cases - optionality chain limits', () => {
       .minLength(5)
       .maxLength(50)
 
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | undefined | null>()
   })
 })
 
@@ -667,15 +667,15 @@ describe('edge cases - large object schemas', () => {
     interface ExpectedType {
       prop1: string
       prop3: string | null
-      prop4: string | null | undefined
+      prop4: string | undefined | null
       prop5: string
       prop6: number
       prop8: number | null
-      prop9: number | null | undefined
+      prop9: number | undefined | null
       prop10: number
       prop11: boolean
       prop13: boolean | null
-      prop14: boolean | null | undefined
+      prop14: boolean | undefined | null
       prop15: boolean
       prop16: string[]
       prop18: string[] | null
@@ -790,7 +790,7 @@ describe('edge cases - circular-like references simulation', () => {
             id: string
             data: string
           }>
-        } | null | undefined
+        } | undefined | null
         optional?: {
           id: string
           children: Array<{
@@ -885,13 +885,13 @@ describe('edge cases - type inference edge cases', () => {
 
     // This will likely have many type errors showing the complexity issues
     expectTypeOf<OutputType>().toEqualTypeOf<{
-      a: string | null | undefined
+      a: string | undefined | null
       b: number
       c?: boolean
       d?: string[]
       e: {
         nested: string | null
-      } | null | undefined
+      } | undefined | null
     }>()
   })
 })
@@ -960,7 +960,7 @@ describe('edge cases - performance stress tests', () => {
     expectTypeOf<InferOutput<typeof _schema1>>().toEqualTypeOf<string | undefined>()
     expectTypeOf<InferOutput<typeof _schema2>>().toEqualTypeOf<string>()
     expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<string | null>()
-    expectTypeOf<InferOutput<typeof _schema4>>().toEqualTypeOf<string | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema4>>().toEqualTypeOf<string | undefined | null>()
     expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<string>()
     expectTypeOf<InferOutput<typeof _schema6>>().toEqualTypeOf<string | undefined>()
   })
@@ -1096,8 +1096,8 @@ describe('edge cases - performance stress tests', () => {
       optional?: string
       nullable: string | null
       mixed2: string | null
-      nullish: string | null | undefined
-      mixed3: string | null | undefined
+      nullish: string | undefined | null
+      mixed3: string | undefined | null
       defaulted: string
       optionalDefaulted: string
       undefinableDefaulted: string
@@ -1145,5 +1145,192 @@ describe('edge cases - performance stress tests', () => {
         } | undefined> | undefined
       } | undefined
     } | undefined> | undefined>()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// ADDITIONAL EDGE CASES - defaults & chaining across ALL schemas
+// ---------------------------------------------------------------------------
+describe('edge cases - defaults & chaining across schemas', () => {
+  it('root object default after complex optionality + shape chain', () => {
+    const _schema = object({
+      a: string().optional().default('A'),
+      b: number().nullable().default(1),
+      c: boolean().nullish().default(true),
+      d: array(string().default('x')).optional(),
+      e: object({ inner: string().default('in') }).optional(),
+    })
+      .passthrough()
+      .optional()
+      .nullable()
+      .strip()
+      .default({ a: 'A', b: 1, c: true })
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      a: string
+      b: number
+      c: boolean
+      d?: string[]
+      e?: { inner: string }
+    }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{
+      a?: string | undefined | null
+      b?: number | undefined | null
+      c?: boolean | undefined | null
+      d?: Array<string | undefined | null>
+      e?: { inner?: string | undefined | null }
+    } | undefined | null>()
+  })
+
+  it('default then optional/nullable/nullish reintroduces optionality on object', () => {
+    const base = object({ x: string(), y: number().optional() }).default({ x: 'x' })
+    const _opt = base.optional()
+    const _nul = base.nullable()
+    const _nil = base.nullish()
+    expectTypeOf<InferOutput<typeof _opt>>().toEqualTypeOf<{ x: string, y?: number } | undefined>()
+    expectTypeOf<InferInput<typeof _opt>>().toEqualTypeOf<{ x: string, y?: number } | undefined>()
+    expectTypeOf<InferOutput<typeof _nul>>().toEqualTypeOf<{ x: string, y?: number } | null>()
+    expectTypeOf<InferInput<typeof _nul>>().toEqualTypeOf<{ x: string, y?: number } | null>()
+    expectTypeOf<InferOutput<typeof _nil>>().toEqualTypeOf<{ x: string, y?: number } | undefined | null>()
+    expectTypeOf<InferInput<typeof _nil>>().toEqualTypeOf<{ x: string, y?: number } | undefined | null>()
+  })
+
+  it('array root default with element defaults and post optionality', () => {
+    const _schema = array(string().default('z')).default([]).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<Array<string | undefined | null> | undefined>()
+  })
+
+  it('array nullish before root default collapses nullish in output', () => {
+    const _schema = array(number().optional()).nullish().default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<number | undefined>>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<Array<number | undefined> | undefined | null>()
+  })
+
+  it('union with default after optional chain (normalizes output)', () => {
+    const _schema = union([
+      string().default('s'),
+      number().optional(),
+      object({ v: boolean().default(false) }),
+      array(boolean().default(true)).optional(),
+    ])
+      .optional()
+      .nullable()
+      .optional()
+      .default('s')
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
+      string | number | { v: boolean } | boolean[] | undefined
+    >()
+
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<
+      | string | number | { v?: boolean | undefined | null } | Array<boolean | undefined | null>
+      | undefined | null
+    >()
+  })
+
+  it('union default then nullish reintroduces null | undefined', () => {
+    const _schema = union([literal('a'), number().default(1)]).default('a').nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | number | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'a' | number | undefined | null>()
+  })
+
+  it('nested union inside object with root default', () => {
+    const _schema = object({
+      payload: union([
+        object({ kind: literal('x'), data: string().default('x') }),
+        object({ kind: literal('y'), value: number().nullable() }),
+        array(object({ kind: literal('z'), flag: boolean().default(true) })).optional(),
+      ]).optional(),
+    }).default({
+      payload: [{
+        kind: 'z',
+        flag: true,
+      }],
+    })
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      payload?:
+        | { kind: 'x', data: string }
+        | { kind: 'y', value: number | null }
+        | Array<{ kind: 'z', flag: boolean }>
+    }>()
+
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{
+      payload?:
+        | { kind: 'x', data?: string | undefined | null }
+        | { kind: 'y', value: number | null }
+        | Array<{ kind: 'z', flag?: boolean | undefined | null }>
+    } | undefined | null>()
+  })
+
+  it('object root default with deeply nested array/object defaults', () => {
+    const _schema = object({
+      meta: object({
+        id: string().default('id'),
+        rev: number().default(1),
+      }).default({ id: 'id' }),
+      items: array(object({
+        key: string(),
+        attrs: object({
+          enabled: boolean().default(true),
+        }).optional(),
+        tags: array(string().default('t')).default([]),
+      })).default([]),
+    }).default({
+      meta: {
+        id: 'id',
+      },
+    })
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      meta: { id: string, rev: number }
+      items: Array<{
+        key: string
+        attrs?: { enabled: boolean }
+        tags: string[]
+      }>
+    }>()
+
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{
+      meta?: { id?: string | undefined | null, rev?: number | undefined | null } | undefined | null
+      items?: Array<{
+        key: string
+        attrs?: { enabled?: boolean | undefined | null } | undefined
+        tags?: Array<string | undefined | null> | undefined | null
+      }> | undefined | null
+    } | undefined | null>()
+  })
+
+  it('multi-level defaults: array.default + object.default + property.default ordering', () => {
+    const element = object({ label: string().default('lbl'), count: number().optional() }).default({ label: 'lbl' })
+    const _schema = array(element).default([]).nullable().default([])
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<{ label: string, count?: number | undefined }>>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<Array<{ label?: string | undefined | null, count?: number | undefined } | undefined | null> | undefined | null>()
+  })
+
+  it('multiple defaults (stress) on object & array (last wins)', () => {
+    const _arr = array(string()).default([])
+    const _obj = object({ v: number().default(1) }).default({ v: 1 }).default({ v: 1 })
+
+    expectTypeOf<InferOutput<typeof _arr>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _arr>>().toEqualTypeOf<string[] | undefined | null>()
+    expectTypeOf<InferOutput<typeof _obj>>().toEqualTypeOf<{ v: number }>()
+    expectTypeOf<InferInput<typeof _obj>>().toEqualTypeOf<{ v?: number | undefined | null } | undefined | null>()
+  })
+
+  it('union of defaulted object | defaulted array | defaulted primitive', () => {
+    const Obj = object({ id: string().default('id') }).default({ id: 'id' })
+    const Arr = array(number().default(0)).default([])
+    const Prim = string().default('s')
+    const _U = union([Obj, Arr, Prim]).default('s')
+
+    expectTypeOf<InferOutput<typeof _U>>().toEqualTypeOf<{
+      id: string
+    } | number[] | string>()
+    expectTypeOf<InferInput<typeof _U>>().toEqualTypeOf<{
+      id?: string | undefined | null
+    } | Array<number | undefined | null> | string | undefined | null>()
   })
 })

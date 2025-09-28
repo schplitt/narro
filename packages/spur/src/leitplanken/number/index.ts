@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BuildableSchema } from '../../types/schema'
+import type { BuildableSchema, DefaultInput } from '../../types/schema'
 
 // TODO: could have typesafe default with (number & {}) | <default>
 
@@ -7,7 +7,7 @@ export interface NumberSchema<TOutput = number, TInput = number, TCommonOptions 
   min: (min: number) => NumberSchema<TOutput, TInput, TCommonOptions>
   max: (max: number) => NumberSchema<TOutput, TInput, TCommonOptions>
 
-  default: <TDefault extends number>(v: TDefault) => NumberSchema<number, number | undefined, MakeDefaulted<TCommonOptions>>
+  default: (value: DefaultInput<TOutput>) => NumberSchema<number, number | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => NumberSchema<number | undefined, number | undefined, MakeOptional<TCommonOptions>>
   undefinable: () => NumberSchema<number | undefined, number | undefined, MakeUndefinable<TCommonOptions>>
   required: () => NumberSchema<number, number, MakeRequired<TCommonOptions>>

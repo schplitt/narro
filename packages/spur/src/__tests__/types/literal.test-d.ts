@@ -1,4 +1,4 @@
-import type { InferOutput } from '../../types/utils'
+import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -47,12 +47,12 @@ describe('literalSchema - basic types', () => {
 
   it('nullish string literal schema', () => {
     const _schema = literal('hello').nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | undefined | null>()
   })
 
   it('nullish number literal schema', () => {
     const _schema = literal(42).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42 | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42 | undefined | null>()
   })
 
   it('required string literal schema (explicit)', () => {
@@ -70,36 +70,43 @@ describe('literalSchema - with defaults', () => {
   it('string literal with default', () => {
     const _schema = literal('hello').default('hello')
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello'>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'hello' | undefined | null>()
   })
 
   it('number literal with default', () => {
     const _schema = literal(42).default(42)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<42 | undefined | null>()
   })
 
   it('string literal with default then optional', () => {
     const _schema = literal('world').default('world').optional()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'world' | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'world' | undefined>()
   })
 
   it('string literal with default then undefinable', () => {
     const _schema = literal('world').default('world').undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'world' | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'world' | undefined>()
   })
 
   it('number literal with default then nullable', () => {
     const _schema = literal(123).default(123).nullable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<123 | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<123 | null>()
   })
 
   it('string literal with default then nullish', () => {
     const _schema = literal('test').default('test').nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test' | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test' | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'test' | undefined | null>()
   })
 
   it('optional literal then default then required', () => {
     const _schema = literal('foo').optional().default('foo').required()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'foo'>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'foo'>()
   })
 })
 
@@ -161,11 +168,13 @@ describe('literalSchema - undefinable', () => {
   it('undefinable literal with default', () => {
     const _schema = literal('test').undefinable().default('test')
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'test'>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'test' | undefined | null>()
   })
 
   it('literal with default then undefinable', () => {
     const _schema = literal('hello').default('hello').undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'hello' | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'hello' | undefined>()
   })
 
   it('undefinable then required', () => {
@@ -180,7 +189,7 @@ describe('literalSchema - undefinable', () => {
 
   it('undefinable then nullish', () => {
     const _schema = literal('world').undefinable().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'world' | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'world' | undefined | null>()
   })
 
   it('undefinable then optional (should stay undefinable)', () => {

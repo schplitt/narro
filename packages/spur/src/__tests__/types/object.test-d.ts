@@ -1,4 +1,4 @@
-import type { InferOutput } from '../../types/utils'
+import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -182,21 +182,21 @@ describe('objectSchema - nullish properties', () => {
     const _schema = object({
       petName: string().nullish(),
     })
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ petName: string | null | undefined }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ petName: string | undefined | null }>()
   })
 
   it('object with nullish number property', () => {
     const _schema = object({
       weight: number().nullish(),
     })
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ weight: number | null | undefined }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ weight: number | undefined | null }>()
   })
 
   it('object with nullish boolean property', () => {
     const _schema = object({
       isDeleted: boolean().nullish(),
     })
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ isDeleted: boolean | null | undefined }>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ isDeleted: boolean | undefined | null }>()
   })
 })
 
@@ -247,6 +247,155 @@ describe('objectSchema - with defaults', () => {
       level: 'debug' | 'info' | 'warn' | 'error'
       size: 1 | 2 | 3 | 4 | 5
     }>()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// ROOT LEVEL DEFAULT TESTS (object.default(...))
+// ---------------------------------------------------------------------------
+describe('objectSchema - root level defaults', () => {
+  it('root default on empty object (value)', () => {
+    const _schema = object({}).default({})
+    // eslint-disable-next-line ts/no-empty-object-type
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{}>()
+    // input widened to allow null | undefined
+    // eslint-disable-next-line ts/no-empty-object-type
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{} | undefined | null>()
+  })
+
+  it('root default on object with required properties', () => {
+    const _schema = object({ id: string(), active: boolean() }).default({ id: 'x', active: true })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ id: string, active: boolean }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ id: string, active: boolean } | undefined | null>()
+  })
+
+  it('root default with optional property (optional removed in output)', () => {
+    const _schema = object({ name: string().optional() }).default({})
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name?: string }>()
+    // input allows providing optional property or null/undefined root
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ name?: string } | undefined | null>()
+  })
+
+  it('optional then default collapses undefined in output', () => {
+    const _schema = object({ n: number() }).optional().default({ n: 0 })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ n: number }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ n: number } | undefined | null>()
+  })
+
+  it('nullable then default removes null in output', () => {
+    const _schema = object({ n: number() }).nullable().default({ n: 1 })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ n: number }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ n: number } | undefined | null>()
+  })
+
+  it('nullish then default collapses null | undefined in output', () => {
+    const _schema = object({ v: string() }).nullish().default({ v: 'd' })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ v: string }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ v: string } | undefined | null>()
+  })
+
+  it('undefinable then default collapses undefined in output', () => {
+    const _schema = object({ flag: boolean() }).undefinable().default({ flag: false })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ flag: boolean }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ flag: boolean } | undefined | null>()
+  })
+
+  it('complex pre-default optionality chain collapsed by default', () => {
+    const _schema = object({ x: string() })
+      .optional()
+      .nullable()
+      .nullish()
+      .undefinable()
+      .optional()
+      .default({ x: 'x' })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ x: string }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ x: string } | undefined | null>()
+  })
+
+  it('default then optional reintroduces undefined to output', () => {
+    const _schema = object({ a: string() }).default({ a: 'a' }).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a: string } | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ a: string } | undefined>()
+  })
+
+  it('default then nullable reintroduces null to output', () => {
+    const _schema = object({ a: string() }).default({ a: 'a' }).nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a: string } | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ a: string } | null>()
+  })
+
+  it('default then nullish reintroduces null | undefined to output', () => {
+    const _schema = object({ a: string() }).default({ a: 'a' }).nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a: string } | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ a: string } | undefined | null>()
+  })
+
+  it('default then undefinable (treated like optional output undefined)', () => {
+    const _schema = object({ a: string() }).default({ a: 'a' }).undefinable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a: string } | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ a: string } | undefined>()
+  })
+
+  it('lazy root default function', () => {
+    const _schema = object({ id: string(), ts: number().default(0) }).default(() => ({ id: 'gen', ts: 0 }))
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ id: string, ts: number }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ id: string, ts?: number | undefined | null } | undefined | null>()
+  })
+
+  it('root default with nested property defaults', () => {
+    const _schema = object({
+      meta: object({ version: number().default(1), tag: string().optional() }),
+      flags: array(boolean().default(false)).optional(),
+    }).default({ meta: { version: 1 } })
+
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
+      meta: { version: number, tag?: string }
+      flags?: boolean[]
+    }>()
+
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{
+      meta: { version?: number | undefined | null, tag?: string | undefined }
+      flags?: (boolean | undefined | null)[] | undefined
+    } | undefined | null>()
+  })
+
+  it('root default after shape transitions (passthrough -> strip -> default)', () => {
+    const _schema = object({ a: string(), b: number().optional() })
+      .passthrough()
+      .strip() // back to declared keys only
+      .default({ a: 'a' })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a: string, b?: number }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ a: string, b?: number } | undefined | null>()
+  })
+
+  it('root default then shape change (default then passthrough)', () => {
+    const _schema = object({ a: string(), b: number().optional() })
+      .default({ a: 'a' })
+      .passthrough()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a: string, b?: number, [key: string]: any }>()
+    // Input no longer includes null | undefined because optionality changed after default? After default we are in required state; passthrough does not alter optionality.
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ a: string, b?: number, [key: string]: any } | undefined | null>()
+  })
+
+  it('shape oscillation before default (final default removes nullish states)', () => {
+    const _schema = object({ k: string().optional(), v: number().nullable() })
+      .passthrough()
+      .strict()
+      .passthrough()
+      .strip()
+      .default({
+        v: null,
+      })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ k?: string, v: number | null }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ k?: string, v: number | null } | undefined | null>()
+  })
+
+  it('multiple defaults last one wins (output still normalized, input widened only once)', () => {
+    const _schema = object({ a: string().optional() })
+      .default({})
+      .default({})
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a?: string }>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<{ a?: string } | undefined | null>()
   })
 })
 
@@ -331,7 +480,7 @@ describe('objectSchema - object optionality', () => {
     const _schema = object({
       name: string(),
     }).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name: string } | undefined | null>()
   })
 
   it('required object (explicit)', () => {
@@ -412,7 +561,7 @@ describe('objectSchema - extensive chaining operations', () => {
 
     expectTypeOf<Output>().toEqualTypeOf<{
       stringProp: string | null
-      numberProp: number | null | undefined
+      numberProp: number | undefined | null
       booleanProp: boolean
     }>()
   })
@@ -503,7 +652,7 @@ describe('objectSchema - extensive chaining operations', () => {
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       scores: number[] | null
-      flags: boolean[] | null | undefined
+      flags: boolean[] | undefined | null
       tags?: string[]
     }>()
   })
@@ -759,7 +908,7 @@ describe('objectSchema - extreme chaining scenarios', () => {
             lang: string
           } | null
           features: boolean[] | null
-        } | null | undefined
+        } | undefined | null
         tags?: string[]
       }
       data: Array<{
@@ -792,9 +941,9 @@ describe('objectSchema - complex examples', () => {
       age: number
       isAdmin: boolean
       isVerified: boolean | null
-      isDeleted: boolean | null | undefined
+      isDeleted: boolean | undefined | null
       nickname: string | null
-      petName: string | null | undefined
+      petName: string | undefined | null
       description?: string
       friends?: string[]
       isSomething?: boolean
@@ -990,7 +1139,7 @@ describe('objectSchema - property optionality combinations', () => {
       optionalDefaulted: string
       nullable: string | null
       nullableDefaulted: string
-      nullish: string | null | undefined
+      nullish: string | undefined | null
       nullishDefaulted: string
     }
 
@@ -1046,7 +1195,7 @@ describe('objectSchema - property optionality combinations', () => {
             type: string
             data?: boolean[]
           }>
-        } | null | undefined
+        } | undefined | null
       }
     }>()
   })
@@ -1102,7 +1251,7 @@ describe('objectSchema - undefinable', () => {
     const _schema = object({
       info: boolean(),
     }).undefinable().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ info: boolean } | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ info: boolean } | undefined | null>()
   })
 
   it('undefinable then optional (should stay undefinable)', () => {
@@ -1170,7 +1319,7 @@ describe('objectSchema - undefinable', () => {
       undefinableDefaulted: string
       nullable: string | null
       nullableDefaulted: string
-      nullish: string | null | undefined
+      nullish: string | undefined | null
       nullishDefaulted: string
     }
 
@@ -1401,7 +1550,7 @@ describe('objectSchema - shape with optionality & nesting', () => {
       a: string
       b?: number
       [key: string]: any
-    } | null | undefined>()
+    } | undefined | null>()
   })
 
   it('strict -> passthrough -> strip -> passthrough retains final passthrough', () => {
@@ -1500,7 +1649,7 @@ describe('objectSchema - shape with optionality & nesting', () => {
       }
       items: Array<{ value?: number, [key: string]: any }> | null
       [key: string]: any
-    } | null | undefined>()
+    } | undefined | null>()
   })
 
   it('multiple shape transitions with root optionality ending passthrough', () => {
@@ -1567,7 +1716,7 @@ describe('objectSchema - shape with optionality & nesting', () => {
       | {
         id: string
         info: { label: string | null, extra?: boolean, [key: string]: any }
-        data: Array<{ v: number | null | undefined, tag?: string, [key: string]: any }>
+        data: Array<{ v: number | undefined | null, tag?: string, [key: string]: any }>
         [key: string]: any
       }
       | {
@@ -1662,8 +1811,8 @@ describe('objectSchema - transform: optional / nullable roots', () => {
   })
   it('nullish root preserving null | undefined explicitly', () => {
     const base = object({ name: string() }).nullish()
-    const _mapped = base.transform(v => (v ? v.name : undefined as string | null | undefined))
-    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string | null | undefined>()
+    const _mapped = base.transform(v => (v ? v.name : undefined as string | undefined | null))
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<string | undefined | null>()
   })
   it('undefinable root discards undefined', () => {
     const base = object({ id: number() }).undefinable()
@@ -1721,8 +1870,8 @@ describe('objectSchema - transform: chained transforms', () => {
   })
   it('complex union return with prior optionality', () => {
     const base = object({ val: number() }).nullish().optional().undefinable().nullable()
-    const _mapped = base.transform(_ => ({ kind: 'value' as const }) as { kind: 'value' } | null | undefined)
-    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ kind: 'value' } | null | undefined>()
+    const _mapped = base.transform(_ => ({ kind: 'value' as const }) as { kind: 'value' } | undefined | null)
+    expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ kind: 'value' } | undefined | null>()
   })
 })
 

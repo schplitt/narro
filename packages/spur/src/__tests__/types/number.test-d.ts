@@ -1,4 +1,4 @@
-import type { InferOutput } from '../../types/utils'
+import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -27,7 +27,7 @@ describe('numberSchema - basic types', () => {
 
   it('nullish number schema', () => {
     const _schema = number().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('required number schema (explicit)', () => {
@@ -40,16 +40,55 @@ describe('numberSchema - with defaults', () => {
   it('number with default', () => {
     const _schema = number().default(42)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('number with default then unset', () => {
     const _schema = number().default(42)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('optional number with default', () => {
     const _schema = number().optional().default(42)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
+  })
+
+  it('number with lazy default function', () => {
+    const _schema = number().default(() => 7)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
+  })
+
+  it('nullable then default removes null', () => {
+    const _schema = number().nullable().default(1)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
+  })
+
+  it('nullish then default removes null & undefined', () => {
+    const _schema = number().nullish().default(1)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
+  })
+
+  it('default then optional reintroduces undefined', () => {
+    const _schema = number().default(1).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined>()
+  })
+
+  it('default then nullable reintroduces null', () => {
+    const _schema = number().default(1).nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | null>()
+  })
+
+  it('default then nullish reintroduces null | undefined', () => {
+    const _schema = number().default(1).nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 })
 
@@ -88,12 +127,13 @@ describe('numberSchema - chained operations', () => {
 
   it('nullish number with validation', () => {
     const _schema = number().min(0).max(150).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('number with default and validation', () => {
     const _schema = number().min(0).max(150).default(18)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('complex chaining with default', () => {
@@ -106,51 +146,61 @@ describe('numberSchema - complex chaining with defaults', () => {
   it('nullable number with default', () => {
     const _schema = number().nullable().default(42)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('nullish number with default', () => {
     const _schema = number().nullish().default(42)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('optional number with default and validation', () => {
     const _schema = number().optional().min(0).max(100).default(50)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('undefinable number with default and validation', () => {
     const _schema = number().undefinable().min(0).max(100).default(50)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('nullable number with default and validation', () => {
     const _schema = number().nullable().min(0).max(100).default(50)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('nullish number with default and validation', () => {
     const _schema = number().nullish().min(0).max(100).default(50)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('number with default then made optional', () => {
     const _schema = number().default(42).optional()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined>()
   })
 
   it('number with default then made nullable', () => {
     const _schema = number().default(42).nullable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | null>()
   })
 
   it('number with default then made nullish', () => {
     const _schema = number().default(42).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('number with default then made undefinable', () => {
     const _schema = number().default(42).undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<number | undefined>()
   })
 })
 
@@ -167,7 +217,7 @@ describe('numberSchema - complex validation chains', () => {
 
   it('validation then nullish', () => {
     const _schema = number().min(-100).max(100).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('validation with default and optionality', () => {
@@ -182,7 +232,7 @@ describe('numberSchema - complex validation chains', () => {
 
   it('validation with default and nullish', () => {
     const _schema = number().min(-100).max(100).default(0).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 })
 
@@ -199,7 +249,7 @@ describe('numberSchema - default manipulation chains', () => {
 
   it('default then unset then nullish', () => {
     const _schema = number().default(42).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('optional then default then required', () => {
@@ -256,7 +306,7 @@ describe('numberSchema - undefinable', () => {
 
   it('undefinable then nullish', () => {
     const _schema = number().undefinable().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<number | undefined | null>()
   })
 
   it('undefinable with all validation methods', () => {

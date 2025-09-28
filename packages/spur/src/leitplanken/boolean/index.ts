@@ -1,9 +1,9 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BuildableSchema } from '../../types/schema'
+import type { BuildableSchema, DefaultInput } from '../../types/schema'
 
 export interface BooleanSchema<TOutput = boolean, TInput = boolean, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
 
-  default: (v: boolean) => BooleanSchema<boolean, boolean | undefined, MakeDefaulted<TCommonOptions>>
+  default: (value: DefaultInput<TOutput>) => BooleanSchema<boolean, boolean | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => BooleanSchema<boolean | undefined, boolean | undefined, MakeOptional<TCommonOptions>>
   undefinable: () => BooleanSchema<boolean | undefined, boolean | undefined, MakeUndefinable<TCommonOptions>>
   required: () => BooleanSchema<boolean, boolean, MakeRequired<TCommonOptions>>

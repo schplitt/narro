@@ -1,4 +1,4 @@
-import type { InferOutput } from '../../types/utils'
+import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -27,7 +27,7 @@ describe('booleanSchema - basic types', () => {
 
   it('nullish boolean schema', () => {
     const _schema = boolean().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('required boolean schema (explicit)', () => {
@@ -40,21 +40,25 @@ describe('booleanSchema - with defaults', () => {
   it('boolean with default', () => {
     const _schema = boolean().default(false)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('boolean with default true', () => {
     const _schema = boolean().default(true)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('boolean with default then unset', () => {
     const _schema = boolean().default(false)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('optional boolean with default', () => {
     const _schema = boolean().optional().default(false)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 })
 
@@ -71,7 +75,7 @@ describe('booleanSchema - chained operations', () => {
 
   it('nullish boolean', () => {
     const _schema = boolean().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('boolean with default and optionality', () => {
@@ -89,26 +93,31 @@ describe('booleanSchema - complex chaining with defaults', () => {
   it('nullable boolean with default', () => {
     const _schema = boolean().nullable().default(true)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('nullish boolean with default', () => {
     const _schema = boolean().nullish().default(false)
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('boolean with default then made optional', () => {
     const _schema = boolean().default(true).optional()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
   })
 
   it('boolean with default then made nullable', () => {
     const _schema = boolean().default(false).nullable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | null>()
   })
 
   it('boolean with default then made nullish', () => {
     const _schema = boolean().default(true).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 })
 
@@ -116,26 +125,31 @@ describe('booleanSchema - default manipulation chains', () => {
   it('default then unset then optional', () => {
     const _schema = boolean().default(true).optional()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined>()
   })
 
   it('default then unset then nullable', () => {
     const _schema = boolean().default(false).nullable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | null>()
   })
 
   it('default then unset then nullish', () => {
     const _schema = boolean().default(true).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('optional then default then required', () => {
     const _schema = boolean().optional().default(false).required()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean>()
   })
 
   it('nullable then default then required', () => {
     const _schema = boolean().nullable().default(true).required()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<boolean>()
   })
 
   it('nullish then default then required', () => {
@@ -167,7 +181,7 @@ describe('booleanSchema - complex state transitions', () => {
 
   it('ultra complex chain', () => {
     const _schema = boolean().optional().default(true).nullable().required().default(false).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 })
 
@@ -199,7 +213,7 @@ describe('booleanSchema - undefinable', () => {
 
   it('undefinable then nullish', () => {
     const _schema = boolean().undefinable().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean | undefined | null>()
   })
 
   it('undefinable then optional (should stay undefinable)', () => {

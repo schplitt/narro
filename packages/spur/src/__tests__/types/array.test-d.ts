@@ -1,4 +1,4 @@
-import type { InferOutput } from '../../types/utils'
+import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
@@ -79,7 +79,7 @@ describe('arraySchema - basic types', () => {
 
   it('nullish array of strings', () => {
     const _schema = array(string()).nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
   })
 
   it('required array of strings (explicit)', () => {
@@ -139,11 +139,13 @@ describe('arraySchema - with element validation', () => {
   it('array of booleans with default', () => {
     const _schema = array(boolean().default(false))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<(boolean | undefined | null)[]>()
   })
 
   it('array of strings with default', () => {
     const _schema = array(string().default('hello'))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<(string | undefined | null)[]>()
   })
 
   it('array of optional literals', () => {
@@ -157,8 +159,9 @@ describe('arraySchema - with element validation', () => {
   })
 
   it('array of oneOf with defaults', () => {
-    const _schema = array(oneOf(['a', 'b', 'c']).default('a'))
+    const _schema = array(oneOf(['a', 'b', 'c']))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
   })
 
   it('array of optional oneOf', () => {
@@ -173,7 +176,7 @@ describe('arraySchema - with element validation', () => {
 
   it('array of nullish oneOf', () => {
     const _schema = array(oneOf(['x', 'y']).nullish())
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | null | undefined>>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | undefined | null>>()
   })
 
   it('array of optional union', () => {
@@ -184,6 +187,80 @@ describe('arraySchema - with element validation', () => {
   it('array of nullable union', () => {
     const _schema = array(union([literal('a'), literal(1)]).nullable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'a' | 1 | null>>()
+  })
+})
+
+describe('arraySchema - array level defaults', () => {
+  it('array of strings with root default (empty array)', () => {
+    const _schema = array(string()).default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
+  })
+
+  it('array of strings with root lazy default', () => {
+    const _schema = array(string()).default(() => ['x'])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
+  })
+
+  it('optional then default (default overrides previous optionality)', () => {
+    const _schema = array(string()).optional().default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
+  })
+
+  it('nullable then default removes null in output', () => {
+    const _schema = array(string()).nullable().default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
+  })
+
+  it('nullish then default collapses to base output', () => {
+    const _schema = array(string()).nullish().default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
+  })
+
+  it('default then optional reintroduces undefined to output', () => {
+    const _schema = array(string()).default([]).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | undefined>()
+  })
+
+  it('default then nullable reintroduces null to output', () => {
+    const _schema = array(string()).default([]).nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | null>()
+  })
+
+  it('default then nullish reintroduces null | undefined to output', () => {
+    const _schema = array(string()).default([]).nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
+  })
+
+  it('array of optional strings with root default', () => {
+    const _schema = array(string().optional()).default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined>>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<Array<string | undefined> | undefined | null>()
+  })
+
+  it('array of defaulted strings with root default', () => {
+    const _schema = array(string().default('a')).default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[]>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<Array<string | undefined | null> | undefined | null>()
+  })
+
+  it('array default after element nullable', () => {
+    const _schema = array(string().nullable()).default([])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | null>>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<Array<string | null> | undefined | null>()
+  })
+
+  it('array default then element optional chain (element optional before root default)', () => {
+    const _schema = array(string().optional()).default([]).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<string | undefined> | undefined>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<Array<string | undefined> | undefined>()
   })
 })
 
@@ -205,7 +282,7 @@ describe('arraySchema - chained operations', () => {
 
   it('nullish array with validation', () => {
     const _schema = array(string()).nullish().minLength(1).maxLength(5)
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string[] | undefined | null>()
   })
 
   it('complex chaining', () => {
@@ -376,7 +453,7 @@ describe('arraySchema - nested array chaining', () => {
       .minLength(1)
       .maxLength(2)
       .nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<Array<number[] | undefined> | null> | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<Array<number[] | undefined> | null> | undefined | null>()
   })
 
   it('mixed nested structure with extensive chaining', () => {
@@ -484,7 +561,7 @@ describe('arraySchema - objects with shape modes inside arrays', () => {
       code: string
       data: { v: number, [key: string]: any }
       [key: string]: any
-    }> | null | undefined>()
+    }> | undefined | null>()
   })
 
   it('multi-level nested arrays of mixed shape objects', () => {
@@ -614,7 +691,7 @@ describe('arraySchema - undefinable', () => {
 
   it('undefinable then nullish', () => {
     const _schema = array(boolean()).undefinable().nullish()
-    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[] | null | undefined>()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<boolean[] | undefined | null>()
   })
 
   it('undefinable then optional (should stay undefinable)', () => {
