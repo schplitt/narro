@@ -1,5 +1,12 @@
-import type { Check } from '../../types/schema'
+import type { SourceCheck, SourceCheckable } from '../../types/schema'
 
 export const numberSymbol = Symbol('number')
 
-export const checkNumber: Check<number> = v => typeof v === 'number'
+const checkNumber: SourceCheck<number> = (v): v is number => typeof v === 'number'
+
+export const numberCheckable: SourceCheckable<number> = {
+  '~id': numberSymbol,
+  '~c': checkNumber,
+}
+
+export default numberCheckable

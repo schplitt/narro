@@ -1,20 +1,18 @@
 import type { SchemaReport } from '../../../types/report'
-import type { Checkable } from '../../../types/schema'
+import type { BranchCheckable } from '../../../types/schema'
 
-export const nullishSymbol = Symbol('nullish')
+export const nullableSymbol = Symbol('nullable')
 
-export function createNullishCheck(): Checkable<null | undefined, any> {
-  return {
-    '~id': nullishSymbol,
-    '~c': (v) => {
-      // Nullish allows the value to be null or undefined, so it always passes
-      const passed = v === null || v === undefined
-      return {
-        passed,
-        score: passed ? 1 : 0,
-        maxScore: 1,
-        value: passed ? v : undefined,
-      } as SchemaReport<null | undefined>
-    },
-  }
+export const nullableCheckable: BranchCheckable<null | undefined> = {
+  '~id': nullableSymbol,
+  '~c': (v) => {
+    const passed = v === null || v === undefined
+    return {
+      passed,
+      value: passed ? v : undefined,
+      score: passed ? 1 : 0,
+    } as SchemaReport<null | undefined>
+  },
 }
+
+export default nullableCheckable

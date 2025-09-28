@@ -1,12 +1,12 @@
 import type { BranchCheckable } from '../../../types/schema'
 import { undefinableCheckable } from './undefinable'
 
-export const optionalSymbol = Symbol('optional')
+export const exactOptionalSymbol = Symbol('exactOptional')
 
-export const optionalCheckable: BranchCheckable<undefined> = {
+export const exactOptionalCheckable: BranchCheckable<undefined> = {
   // is the same as undefinable (unless for object properties which has its own logic)
   ...undefinableCheckable,
-  '~id': optionalSymbol,
+  '~id': exactOptionalSymbol,
 }
 
-export default optionalCheckable
+export default exactOptionalCheckable

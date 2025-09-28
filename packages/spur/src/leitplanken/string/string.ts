@@ -4,11 +4,9 @@ const stringSymbol = Symbol('string')
 
 const checkString: SourceCheck<string> = v => typeof v === 'string'
 
-export function createStringCheckable(): SourceCheckable<string> {
-  return {
-    '~id': stringSymbol,
-    '~c': checkString,
-  }
+export const stringCheckable: SourceCheckable<string> = {
+  '~id': stringSymbol,
+  '~c': checkString,
 }
 
-export default createStringCheckable
+export default stringCheckable

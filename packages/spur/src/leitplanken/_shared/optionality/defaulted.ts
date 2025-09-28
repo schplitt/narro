@@ -1,20 +1,21 @@
 import type { SchemaReport } from '../../../types/report'
-import type { Checkable } from '../../../types/schema'
+import type { BranchCheckable, DefaultInput } from '../../../types/schema'
 
 export const defaultedSymbol = Symbol('defaulted')
 
-export function createDefaultedCheck<TInput, TDefault extends TInput>(defaultValue: TDefault): Checkable<TInput, TInput | undefined | null> {
+export function createDefaultedCheckable<TOutput>(d: DefaultInput<TOutput>): BranchCheckable<TOutput> {
   return {
     '~id': defaultedSymbol,
     '~c': (v) => {
       // If the value is undefined or null, use the default value
-      const actualValue = v === undefined || v === null ? defaultValue : v
+      const passed = v === undefined || v === null
       return {
-        passed: true,
-        score: 1,
-        maxScore: 1,
-        value: actualValue,
-      } as SchemaReport<TInput>
+        passed,
+        value: passed ? typeof d === 'function' ? (d as () => TOutput)() : d : undefined,
+        score: passed ? 1 : 0,
+      } as SchemaReport<TOutput>
     },
   }
 }
+
+export default createDefaultedCheckable
