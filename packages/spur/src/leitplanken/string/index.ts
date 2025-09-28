@@ -1,4 +1,4 @@
-import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BuildableSchema, CheckableImport, DefaultInput } from '../../types/schema'
 import { build } from '../../build'
 
@@ -11,6 +11,7 @@ export interface StringSchema<TOutput = string, TInput = string, TCommonOptions 
 
   default: (value: DefaultInput<TOutput>) => StringSchema<string, string | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => StringSchema<string | undefined, string | undefined, MakeOptional<TCommonOptions>>
+  exactOptional: () => StringSchema<string | undefined, string | undefined, MakeExactOptional<TCommonOptions>>
   undefinable: () => StringSchema<string | undefined, string | undefined, MakeUndefinable<TCommonOptions>>
   required: () => StringSchema<string, string, MakeRequired<TCommonOptions>>
   nullable: () => StringSchema<string | null, string | null, MakeNullable<TCommonOptions>>

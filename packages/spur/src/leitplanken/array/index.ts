@@ -1,4 +1,4 @@
-import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 
@@ -12,6 +12,7 @@ export interface ArraySchema<TSchema extends BuildableSchema<unknown, unknown, C
 
   default: (value: DefaultInput<InferArrayOutput<TSchema>>) => ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema> | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeOptional<TCommonOptions>>
+  exactOptional: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeExactOptional<TCommonOptions>>
   undefinable: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeUndefinable<TCommonOptions>>
   required: () => ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema>, MakeRequired<TCommonOptions>>
   nullable: () => ArraySchema<TSchema, InferArrayOutput<TSchema> | null, InferArrayInput<TSchema> | null, MakeNullable<TCommonOptions>>

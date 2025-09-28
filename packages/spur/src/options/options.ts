@@ -32,7 +32,7 @@ export interface DefaultCommonOptions extends CommonOptions {
 
 export type InferOptionalityOutputType<T extends CommonOptions> = T extends { optionality: infer TOptionality }
   ? (
-      TOptionality extends 'optional' | 'undefinable' ? undefined
+      TOptionality extends 'optional' | 'undefinable' | 'exactOptional' ? undefined
         : TOptionality extends 'nullable' ? null
           : TOptionality extends 'nullish' ? null | undefined
             : TOptionality extends 'defaulted' | 'required' ? never
@@ -42,7 +42,7 @@ export type InferOptionalityOutputType<T extends CommonOptions> = T extends { op
 
 export type InferOptionalityInputType<T extends CommonOptions> = T extends { optionality: infer TOptionality }
   ? (
-      TOptionality extends 'optional' | 'undefinable' ? undefined
+      TOptionality extends 'optional' | 'undefinable' | 'exactOptional' ? undefined
         : TOptionality extends 'nullable' ? null
           : TOptionality extends 'nullish' | 'defaulted' ? null | undefined
             : TOptionality extends 'required' ? never

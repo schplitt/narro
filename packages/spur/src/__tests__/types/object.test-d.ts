@@ -96,6 +96,45 @@ describe('objectSchema - basic types', () => {
 })
 
 describe('objectSchema - optional properties', () => {
+  it('object with exactOptional string property (no undefined in value)', () => {
+    const _schema = object({
+      name: string().exactOptional(),
+    })
+    // key is optional, value type remains string (no | undefined)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ name?: string }>()
+  })
+
+  it('object mixing optional and exactOptional', () => {
+    const _schema = object({
+      a: string().optional(), // a?: string
+      b: number().exactOptional(), // b?: number
+    })
+
+    // TODO: should be "fixed to support exactOptionalPropertyTypes" -> https://github.com/mmkal/expect-type/issues/128
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ a?: string | undefined, b?: number | undefined }>()
+  })
+
+  it('exactOptional overrides previous optionality (last call wins)', () => {
+    const _schema = object({
+      field: string().optional().exactOptional(),
+    })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ field?: string }>()
+  })
+
+  it('optional after exactOptional (last call wins -> optional still ? key)', () => {
+    const _schema = object({
+      field: string().exactOptional().optional(),
+    })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ field?: string }>()
+  })
+
+  it('exactOptional with default (default keeps output base type)', () => {
+    const _schema = object({
+      cfg: string().default('x').exactOptional(),
+    })
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ cfg?: string }>()
+  })
+
   it('object with optional string property', () => {
     const _schema = object({
       description: string().optional(),

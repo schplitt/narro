@@ -1,5 +1,5 @@
 import type { DefaultObjectOptions, MakeObjectPassthrough, MakeObjectStrict, MakeObjectStrip, ObjectOptions } from '../../options/objectOptions'
-import type { CommonOptions, ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { CommonOptions, ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput, Prettify } from '../../types/utils'
 
@@ -38,6 +38,7 @@ export type CreateObjectSchema<TEntries extends ObjectEntries, TOptions extends 
 export interface ObjectSchema<TEntries extends ObjectEntries, TOutput = InferObjectOutput<TEntries>, TInput = InferObjectInput<TEntries>, TOptions extends ObjectOptions = DefaultObjectOptions> extends BuildableSchema<TOutput, TInput, TOptions> {
 
   optional: () => CreateObjectSchema<TEntries, MakeOptional<TOptions>>
+  exactOptional: () => CreateObjectSchema<TEntries, MakeExactOptional<TOptions>>
   undefinable: () => CreateObjectSchema<TEntries, MakeUndefinable<TOptions>>
   required: () => CreateObjectSchema<TEntries, MakeRequired<TOptions>>
   nullable: () => CreateObjectSchema<TEntries, MakeNullable<TOptions>>

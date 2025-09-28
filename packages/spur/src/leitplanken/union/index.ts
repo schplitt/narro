@@ -1,4 +1,4 @@
-import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 
@@ -10,6 +10,7 @@ type InferUnionInput<T extends readonly BuildableSchema<unknown, unknown, Common
 export interface UnionSchema<TSchemas extends readonly BuildableSchema<unknown, unknown, CommonOptions>[], TOutput = InferUnionOutput<TSchemas>, TInput = InferUnionInput<TSchemas>, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
   default: (value: DefaultInput<TOutput>) => UnionSchema<TSchemas, InferUnionOutput<TSchemas>, TInput | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined, InferUnionInput<TSchemas> | undefined, MakeOptional<TCommonOptions>>
+  exactOptional: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined, InferUnionInput<TSchemas> | undefined, MakeExactOptional<TCommonOptions>>
   undefinable: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined, InferUnionInput<TSchemas> | undefined, MakeUndefinable<TCommonOptions>>
   required: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas>, InferUnionInput<TSchemas>, MakeRequired<TCommonOptions>>
   nullable: () => UnionSchema<TSchemas, InferUnionOutput<TSchemas> | null, InferUnionInput<TSchemas> | null, MakeNullable<TCommonOptions>>
