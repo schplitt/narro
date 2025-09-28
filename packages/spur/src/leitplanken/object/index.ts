@@ -2,7 +2,6 @@ import type { DefaultObjectOptions, MakeObjectPassthrough, MakeObjectStrict, Mak
 import type { CommonOptions, ExtractOptionalSchema, InferOptionalityType, MakeDefaulted, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BuildableSchema } from '../../types/schema'
 import type { InferInput, InferOutput, Prettify } from '../../types/utils'
-import { string } from '../string'
 
 export type ObjectEntries = Record<string, BuildableSchema<unknown, unknown, CommonOptions>>
 
@@ -14,7 +13,10 @@ type InferObjectOutput<T extends ObjectEntries> = {
 }
 
 type InferObjectInput<T extends ObjectEntries> = {
-  [K in keyof T]: InferInput<T[K]>
+  [K in keyof T as T[K] extends ExtractOptionalSchema<T[K]> ? never : K]: InferInput<T[K]>
+} & {
+  //                                                                                      ! "& {}" is used in favor of "NonNullable<...>" to preserve literal types
+  [K in keyof T as T[K] extends ExtractOptionalSchema<T[K]> ? K : never]?: InferInput<T[K]> & {}
 }
 
 // TODO: test alone and in combination with InferOptionalityType

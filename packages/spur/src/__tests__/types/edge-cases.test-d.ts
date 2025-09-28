@@ -334,8 +334,7 @@ describe('transform edge cases', () => {
 
     type Input = InferInput<typeof _base>
 
-    // TODO: input is not exact optional
-    // expectTypeOf<Input>().toEqualTypeOf<{ a: number, b?: string }>()
+    expectTypeOf<Input>().toEqualTypeOf<{ a: number, b?: string }>()
   })
 })
 
