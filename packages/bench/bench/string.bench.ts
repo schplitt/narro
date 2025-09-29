@@ -16,7 +16,7 @@ const spurAsyncUnbuild = spurStringAsync().minLength(3).maxLength(12)
 const spurAsyncBuilt = await spurStringAsync().minLength(3).maxLength(12)['~build']()
 
 // Sync spur schemas
-const spurSyncBuilt = spurStringSync().minLength(3).maxLength(12)['~build']()
+const spurSyncBuilt = await spurStringSync().minLength(3).maxLength(12)['~build']()
 
 // Inline spur schemas
 const spurInlineBuilt = await spurStringInline().minLength(3).maxLength(12)['~build']()

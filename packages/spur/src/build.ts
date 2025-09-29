@@ -1,4 +1,4 @@
-import type { CommonOptions } from './types/options'
+import type { CommonOptions } from './options/options'
 import type { SchemaReport } from './types/report'
 import type { BuildableSchema, Checkable, CheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from './types/schema'
 
