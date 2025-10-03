@@ -5,10 +5,12 @@ export interface UndefinedSchema extends BuildableSchema<undefined, undefined> {
 
 }
 
-export function _undefined(): UndefinedSchema {
+function _undefined(): UndefinedSchema {
   return {
     '@build': () => {
       return build(() => import('./undefined').then(m => m.default()))
     },
   }
 }
+
+export { _undefined as undefined }
