@@ -1,8 +1,10 @@
 import type { CommonOptions, DefaultCommonOptions } from './options'
 import type { SetCommonOption } from './utils'
 
+export type ObjectShape = 'strict' | 'strip' | 'passthrough'
+
 export interface ObjectOptions extends CommonOptions {
-  shape: 'strict' | 'strip' | 'passthrough'
+  shape: ObjectShape
 }
 
 export interface DefaultObjectOptions extends DefaultCommonOptions, Omit<ObjectOptions, keyof CommonOptions> {
