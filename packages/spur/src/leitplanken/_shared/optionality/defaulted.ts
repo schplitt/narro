@@ -8,6 +8,8 @@ export function createDefaultedCheckable<TOutput>(d: DefaultInput<TOutput>): Bra
     '~id': defaultedSymbol,
     '~c': (v) => {
       // If the value is undefined or null, use the default value
+      // missing key is ALSO allowed
+      // NO own logic for object needed!!
       const passed = v === undefined || v === null
       return {
         passed,

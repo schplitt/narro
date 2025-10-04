@@ -1,6 +1,6 @@
 import type { SourceCheck, SourceCheckable } from '../../types/schema'
 
-const undefinedSymbol = Symbol('undefined')
+export const undefinedSymbol = Symbol('undefined')
 
 const checkUndefined: SourceCheck<undefined> = v => typeof v === 'undefined'
 

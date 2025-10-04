@@ -6,6 +6,8 @@ export const undefinableSymbol = Symbol('undefinable')
 export const undefinableCheckable: BranchCheckable<undefined> = {
   '~id': undefinableSymbol,
   '~c': (v) => {
+    // key MUST be there and value MUST be undefined
+    // own logic needed for object!!
     const passed = v === undefined
     return {
       passed,

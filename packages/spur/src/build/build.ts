@@ -1,4 +1,4 @@
-import type { SchemaReport } from '../types/report'
+import type { SchemaReport, SchemaReportFailure } from '../types/report'
 import type { BranchCheckable, BranchCheckableImport, Checkable, CheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from '../types/schema'
 import { deduplicateCheckables } from './utils'
 
@@ -32,21 +32,32 @@ export function buildSchema<TOutput>(
 
     const sourceResult = sourceCheckable['~c'](input)
     // when the source is not of the type we expect, we cannot continue with the child checkables
+    const failedIds = new Set<symbol>()
+    failedIds.add(sourceCheckable['~id'])
     if (!sourceResult) {
       // here we build the sourceReport from the checkables
       sourceReport = {
         passed: false,
         score: 0,
+        failedIds,
       }
     }
     else {
+      const passedIds = new Set<symbol>()
+      passedIds.add(sourceCheckable['~id'])
       // if the source checkable passed, we continue with the child checkables and add 1 to the score for each valid
       sourceReport = deduplicatedChildCheckables.reduce((acc, checkable) => {
         const result = checkable['~c'](input)
         if (result) {
           acc.score += 1
+          acc.passedIds!.add(checkable['~id'])
         }
         else {
+          if (!(acc as SchemaReportFailure).failedIds) {
+            (acc as SchemaReportFailure).failedIds = new Set<symbol>()
+          }
+          (acc as SchemaReportFailure).failedIds.add(checkable['~id'])
+
           acc.passed = false
         }
         return acc
@@ -54,6 +65,7 @@ export function buildSchema<TOutput>(
         passed: true,
         value: input,
         score: 1,
+        passedIds,
       } as SchemaReport<TOutput>)
 
       // remove the value from the report if it did not pass
@@ -73,7 +85,7 @@ export function buildSchema<TOutput>(
     // if none passed, we return the one with the higher score and put the other into the unionReports
     // if both passed (for whatever reason), we should throw an error as this should not happen
     if (sourceReport.passed && optionalityReport?.passed) {
-      throw new Error('Both source and optionality checkables passed, this should not happen')
+      throw new Error('Both source and optionality checkables passed, this should never happen')
     }
 
     // if only one passed, return that one

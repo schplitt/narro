@@ -1,9 +1,9 @@
 import type { DefaultObjectOptions, MakeObjectPassthrough, MakeObjectStrict, MakeObjectStrip, ObjectOptions } from '../../options/objectOptions'
-import type { CommonOptions, ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BuildableSchema, DefaultInput } from '../../types/schema'
+import type { ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { BranchCheckableImport, BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput, Prettify } from '../../types/utils'
 
-export type ObjectEntries = Record<string, BuildableSchema<unknown, unknown, CommonOptions>>
+export type ObjectEntries = Record<string, BuildableSchema<any, any, any>>
 
 type InferObjectOutput<T extends ObjectEntries> = {
   [K in keyof T as T[K] extends ExtractOptionalSchema<T[K]> | ExtractExactOptionalSchema<T[K]> ? never : K]: InferOutput<T[K]>
@@ -44,7 +44,6 @@ export interface ObjectSchema<TEntries extends ObjectEntries, TOutput = InferObj
   nullable: () => CreateObjectSchema<TEntries, MakeNullable<TOptions>>
   nullish: () => CreateObjectSchema<TEntries, MakeNullish<TOptions>>
 
-  // TODO: default value should be dependent on Input not output
   default: (value: DefaultInput<TInput>) => CreateObjectSchema<TEntries, MakeDefaulted<TOptions>>
 
   strict: () => CreateObjectSchema<TEntries, MakeObjectStrict<TOptions>>
@@ -54,6 +53,77 @@ export interface ObjectSchema<TEntries extends ObjectEntries, TOutput = InferObj
   transform: <TTransformOutput>(fn: (input: Prettify<TOutput>) => TTransformOutput) => BuildableSchema<TTransformOutput, TInput, TOptions>
 }
 
-export function object<TEntries extends ObjectEntries>(_structure: TEntries): ObjectSchema<TEntries> {
-  return 1 as any
+export function object<TEntries extends ObjectEntries>(entries: TEntries): ObjectSchema<TEntries, InferObjectOutput<TEntries>, InferObjectInput<TEntries>> {
+  // eslint-disable-next-line ts/explicit-function-return-type
+  const sourceCheckableImport = () => import('./object').then(m => m.default)
+
+  let optionalityBranchCheckableImport: BranchCheckableImport<any> | undefined
+
+  let shapeTransform: 'strip' | 'strict' | 'passthrough' = 'strip'
+
+  const o: ObjectSchema<TEntries> = {
+    'default': (value) => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
+      return o as any
+    },
+
+    'optional': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
+      return o as any
+    },
+
+    'exactOptional': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
+      return o as any
+    },
+
+    'undefinable': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
+      return o as any
+    },
+
+    'required': () => {
+      optionalityBranchCheckableImport = undefined
+      return o as any
+    },
+
+    'nullable': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
+      return o as any
+    },
+
+    'nullish': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
+      return o as any
+    },
+
+    'strict': () => {
+      shapeTransform = 'strict'
+      return o as any
+    },
+
+    'strip': () => {
+      shapeTransform = 'strip'
+      return o as any
+    },
+
+    'passthrough': () => {
+      shapeTransform = 'passthrough'
+      return o as any
+    },
+
+    '~build': async () => {
+      return import('../../build/objectBuild').then(m => m.buildEvaluableObjectSchema(sourceCheckableImport, optionalityBranchCheckableImport, entries, shapeTransform))
+    },
+
+    'transform': (fn) => {
+      return {
+        '~build': async () => {
+          return import('../../build/objectBuild').then(m => m.buildEvaluableObjectSchemaWithTransform(sourceCheckableImport, optionalityBranchCheckableImport, entries, shapeTransform, fn as any))
+        },
+      }
+    },
+  }
+
+  return o
 }

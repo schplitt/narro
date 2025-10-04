@@ -6,6 +6,11 @@ export interface SchemaReportSuccess<T> {
   value: T
 
   /**
+   * To keep track of what checkables passed
+   */
+  passedIds: Set<symbol>
+
+  /**
    * Aggregated score of all checks
    * Can be negative
    */
@@ -30,6 +35,9 @@ export interface SchemaReportFailure {
   passed: false
 
   value?: undefined
+
+  passedIds?: Set<symbol>
+  failedIds: Set<symbol>
 
   /**
    * Aggregated score of all checks

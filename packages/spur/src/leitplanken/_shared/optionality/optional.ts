@@ -4,7 +4,9 @@ import { undefinableCheckable } from './undefinable'
 export const optionalSymbol = Symbol('optional')
 
 export const optionalCheckable: BranchCheckable<undefined> = {
-  // is the same as undefinable (unless for object properties which has its own logic)
+  // is the same as undefinable
+  // key can be there and value undefined OR key can be missing
+  // -> NO own logic needed for object!!
   ...undefinableCheckable,
   '~id': optionalSymbol,
 }

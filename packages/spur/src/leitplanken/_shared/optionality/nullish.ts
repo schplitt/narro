@@ -1,11 +1,13 @@
 import type { SchemaReport } from '../../../types/report'
 import type { BranchCheckable } from '../../../types/schema'
 
-export const nullableSymbol = Symbol('nullable')
+export const nullishSymbol = Symbol('nullish')
 
-export const nullableCheckable: BranchCheckable<null | undefined> = {
-  '~id': nullableSymbol,
+export const nullishCheckable: BranchCheckable<null | undefined> = {
+  '~id': nullishSymbol,
   '~c': (v) => {
+    // key MUST be present here for an object
+    // own logic for object needed!!
     const passed = v === null || v === undefined
     return {
       passed,
@@ -15,4 +17,4 @@ export const nullableCheckable: BranchCheckable<null | undefined> = {
   },
 }
 
-export default nullableCheckable
+export default nullishCheckable
