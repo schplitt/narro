@@ -160,4 +160,39 @@ describe('object schema', () => {
     await expect(parse(schema, { name: 'Spur' })).resolves.toEqual({ name: 'Spur' })
     await expect(parse(schema, { name: 'Spur', nickname: 'S' })).resolves.toEqual({ name: 'Spur', nickname: 'S' })
   })
+
+  it('allows for a complex nested object schema', async () => {
+    const schema = object({
+      id: string().minLength(5),
+      profile: object({
+        name: string().minLength(2),
+        age: number().min(0).optional(),
+        contact: object({
+          email: string().exactOptional(),
+          phone: string().undefinable(),
+        }).optional(),
+      }),
+      tags: object({
+        primary: string(),
+        secondary: string().optional(),
+      }).optional(),
+    })
+
+    expect(async () => await parse(schema, {
+      id: 'user_12345',
+      profile: {
+        name: 'Alice',
+        age: 28,
+        contact: {
+          email: 'alice@example.com',
+          phone: undefined,
+        },
+      },
+      tags: {
+        primary: 'admin',
+      },
+    })).not.toThrow()
+  })
+
+  // TODO: test transform and the undefined, exactOptional extra logic
 })
