@@ -19,6 +19,10 @@ export interface UnionSchema<TSchemas extends readonly BuildableSchema<unknown, 
   transform: <TTransformOutput>(fn: (input: TOutput) => TTransformOutput) => BuildableSchema<TTransformOutput, TInput, TCommonOptions>
 }
 
-export function union<TSchemas extends readonly BuildableSchema<unknown, unknown, CommonOptions>[]>(_schemas: TSchemas): UnionSchema<TSchemas> {
+// NOTE: overload keeps default generics when schema is contextually typed inside
+// object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
+export function union<TSchemas extends readonly BuildableSchema<unknown, unknown, CommonOptions>[]>(_schemas: TSchemas): UnionSchema<TSchemas, InferUnionOutput<TSchemas>, InferUnionInput<TSchemas>, DefaultCommonOptions>
+export function union<TSchemas extends readonly BuildableSchema<unknown, unknown, CommonOptions>[], TOutput, TInput, TCommonOptions extends CommonOptions>(_schemas: TSchemas): UnionSchema<TSchemas, TOutput, TInput, TCommonOptions>
+export function union<TSchemas extends readonly BuildableSchema<unknown, unknown, CommonOptions>[], TOutput = InferUnionOutput<TSchemas>, TInput = InferUnionInput<TSchemas>, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_schemas: TSchemas): UnionSchema<TSchemas, TOutput, TInput, TCommonOptions> {
   return 1 as any
 }

@@ -12,6 +12,10 @@ export interface BooleanSchema<TOutput = boolean, TInput = boolean, TCommonOptio
   nullish: () => BooleanSchema<boolean | undefined | null, boolean | undefined | null, MakeNullish<TCommonOptions>>
 }
 
-export function boolean(): BooleanSchema {
+// NOTE: overload keeps default generics when schema is contextually typed inside
+// object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
+export function boolean(): BooleanSchema<boolean, boolean, DefaultCommonOptions>
+export function boolean<TOutput, TInput, TCommonOptions extends CommonOptions>(): BooleanSchema<TOutput, TInput, TCommonOptions>
+export function boolean<TOutput = boolean, TInput = boolean, TCommonOptions extends CommonOptions = DefaultCommonOptions>(): BooleanSchema<TOutput, TInput, TCommonOptions> {
   return 1 as any
 }

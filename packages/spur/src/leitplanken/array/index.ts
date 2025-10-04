@@ -21,6 +21,10 @@ export interface ArraySchema<TSchema extends BuildableSchema<unknown, unknown, C
   transform: <TTransformOutput>(fn: (input: TOutput) => TTransformOutput) => BuildableSchema<TTransformOutput, TInput, TCommonOptions>
 }
 
-export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>>(_schema: TSchema): ArraySchema<TSchema> {
+// NOTE: overload keeps default generics when schema is contextually typed inside
+// object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
+export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>>(_schema: TSchema): ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema>, DefaultCommonOptions>
+export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>, TOutput, TInput, TCommonOptions extends CommonOptions>(_schema: TSchema): ArraySchema<TSchema, TOutput, TInput, TCommonOptions>
+export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>, TOutput = InferArrayOutput<TSchema>, TInput = InferArrayInput<TSchema>, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_schema: TSchema): ArraySchema<TSchema, TOutput, TInput, TCommonOptions> {
   return 1 as any
 }

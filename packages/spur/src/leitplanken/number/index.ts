@@ -16,6 +16,10 @@ export interface NumberSchema<TOutput = number, TInput = number, TCommonOptions 
   nullish: () => NumberSchema<number | undefined | null, number | undefined | null, MakeNullish<TCommonOptions>>
 }
 
+// NOTE: overload keeps default generics when schema is contextually typed inside
+// object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
+export function number(): NumberSchema<number, number, DefaultCommonOptions>
+export function number<TOutput, TInput, TCommonOptions extends CommonOptions>(): NumberSchema<TOutput, TInput, TCommonOptions>
 export function number<TOutput = number, TInput = number, TCommonOptions extends CommonOptions = DefaultCommonOptions>(): NumberSchema<TOutput, TInput, TCommonOptions> {
   let optionalityBranchCheckableImport: BranchCheckableImport<any> | undefined
 

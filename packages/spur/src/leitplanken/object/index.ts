@@ -1,9 +1,16 @@
 import type { DefaultObjectOptions, MakeObjectPassthrough, MakeObjectStrict, MakeObjectStrip, ObjectOptions } from '../../options/objectOptions'
-import type { ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { CommonOptions, ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BranchCheckableImport, BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput, Prettify } from '../../types/utils'
+import type { NumberSchema } from '../number'
+import type { StringSchema } from '../string'
+import { number } from '../number'
+import { string } from '../string'
 
-export type ObjectEntries = Record<string, BuildableSchema<any, any, any>>
+export interface ObjectEntries {
+  [key: string]: BuildableSchema<any, any, any>
+
+}
 
 type InferObjectOutput<T extends ObjectEntries> = {
   [K in keyof T as T[K] extends ExtractOptionalSchema<T[K]> | ExtractExactOptionalSchema<T[K]> ? never : K]: InferOutput<T[K]>

@@ -11,6 +11,10 @@ export interface LiteralSchema<TLiteral extends string | number, TOutput = TLite
   nullish: () => LiteralSchema<TLiteral, TLiteral | undefined | null, TLiteral | undefined | null, MakeNullish<TCommonOptions>>
 }
 
-export function literal<TLiteral extends string | number>(_value: TLiteral): LiteralSchema<TLiteral> {
+// NOTE: overload keeps default generics when schema is contextually typed inside
+// object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
+export function literal<TLiteral extends string | number>(_value: TLiteral): LiteralSchema<TLiteral, TLiteral, TLiteral, DefaultCommonOptions>
+export function literal<TLiteral extends string | number, TOutput, TInput, TCommonOptions extends CommonOptions>(_value: TLiteral): LiteralSchema<TLiteral, TOutput, TInput, TCommonOptions>
+export function literal<TLiteral extends string | number, TOutput = TLiteral, TInput = TLiteral, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_value: TLiteral): LiteralSchema<TLiteral, TOutput, TInput, TCommonOptions> {
   return 1 as any
 }

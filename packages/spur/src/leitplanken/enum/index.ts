@@ -13,8 +13,12 @@ export interface EnumSchema<TEnum extends (string | number)[], TOutput = InferEn
   nullish: () => EnumSchema<TEnum, InferEnumType<TEnum> | undefined | null, InferEnumType<TEnum> | undefined | null, MakeNullish<TCommonOptions>>
 }
 
-function _enum<const TEnum extends (string | number)[]>(_values: TEnum): EnumSchema<TEnum> {
+// NOTE: overload keeps default generics when schema is contextually typed inside
+// object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
+export function enum_<const TEnum extends (string | number)[]>(_values: TEnum): EnumSchema<TEnum, InferEnumType<TEnum>, InferEnumType<TEnum>, DefaultCommonOptions>
+export function enum_<const TEnum extends (string | number)[], TOutput, TInput, TCommonOptions extends CommonOptions>(_values: TEnum): EnumSchema<TEnum, TOutput, TInput, TCommonOptions>
+export function enum_<const TEnum extends (string | number)[], TOutput = InferEnumType<TEnum>, TInput = InferEnumType<TEnum>, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_values: TEnum): EnumSchema<TEnum, TOutput, TInput, TCommonOptions> {
   return 1 as any
 }
 
-export { _enum as enum }
+export { enum_ as enum }

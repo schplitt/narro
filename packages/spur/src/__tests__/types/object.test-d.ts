@@ -4,7 +4,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { array } from '../../leitplanken/array'
 import { boolean } from '../../leitplanken/boolean'
-import { oneOf } from '../../leitplanken/enum'
+import { enum_ } from '../../leitplanken/enum'
 import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
@@ -66,16 +66,16 @@ describe('objectSchema - basic types', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ version: 1 }>()
   })
 
-  it('object with oneOf property', () => {
+  it('object with enum property', () => {
     const _schema = object({
-      color: oneOf(['red', 'green', 'blue']),
+      color: enum_(['red', 'green', 'blue']),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ color: 'red' | 'green' | 'blue' }>()
   })
 
-  it('object with mixed oneOf property', () => {
+  it('object with mixed enum property', () => {
     const _schema = object({
-      value: oneOf(['none', 42, 'all']),
+      value: enum_(['none', 42, 'all']),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ value: 'none' | 42 | 'all' }>()
   })
@@ -89,7 +89,7 @@ describe('objectSchema - basic types', () => {
 
   it('object with complex union property', () => {
     const _schema = object({
-      field: union([literal('exact'), oneOf(['a', 'b']), boolean()]),
+      field: union([literal('exact'), enum_(['a', 'b']), boolean()]),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ field: 'exact' | 'a' | 'b' | boolean }>()
   })
@@ -178,9 +178,9 @@ describe('objectSchema - optional properties', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ theme?: 'dark' }>()
   })
 
-  it('object with optional oneOf property', () => {
+  it('object with optional enum property', () => {
     const _schema = object({
-      priority: oneOf(['low', 'medium', 'high']).optional(),
+      priority: enum_(['low', 'medium', 'high']).optional(),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{ priority?: 'low' | 'medium' | 'high' }>()
   })
@@ -277,10 +277,10 @@ describe('objectSchema - with defaults', () => {
     }>()
   })
 
-  it('object with oneOf defaults', () => {
+  it('object with enum defaults', () => {
     const _schema = object({
-      level: oneOf(['debug', 'info', 'warn', 'error']).default('info'),
-      size: oneOf([1, 2, 3, 4, 5]).default(3),
+      level: enum_(['debug', 'info', 'warn', 'error']).default('info'),
+      size: enum_([1, 2, 3, 4, 5]).default(3),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       level: 'debug' | 'info' | 'warn' | 'error'
@@ -1916,7 +1916,7 @@ describe('objectSchema - transform: chained transforms', () => {
 
 describe('objectSchema - transform: literals & enums', () => {
   it('preserves template literal combination', () => {
-    const base = object({ tag: literal('X'), mode: oneOf(['a', 'b']) })
+    const base = object({ tag: literal('X'), mode: enum_(['a', 'b']) })
     const _mapped = base.transform(v => ({ combo: `${v.tag}:${v.mode}` as const }))
     expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<{ combo: `${'X'}:${'a' | 'b'}` }>()
   })
@@ -1931,11 +1931,23 @@ describe('objectSchema - transform: wide object collapse', () => {
       d: number().nullable(),
       e: boolean(),
       f: literal('fix'),
-      g: oneOf(['x', 'y', 'z']),
+      g: enum_(['x', 'y', 'z']),
       h: array(string()),
       i: union([number(), string()]),
       j: object({ inner: string().default('ok') }),
     })
+    expectTypeOf<InferOutput<typeof base>>().toEqualTypeOf<{
+      a: string
+      b?: string
+      c: number
+      d: number | null
+      e: boolean
+      f: 'fix'
+      g: 'x' | 'y' | 'z'
+      h: string[]
+      i: number | string
+      j: { inner: string }
+    }>()
     const _mapped = base.transform(v => ({
       totalKeys: Object.keys(v).length,
       hasOptionalB: typeof v.b === 'string',
