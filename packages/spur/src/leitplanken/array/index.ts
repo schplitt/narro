@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BuildableSchema, DefaultInput } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 
 type InferArrayOutput<T extends BuildableSchema<unknown, unknown, CommonOptions>> = Array<InferOutput<T>>
@@ -26,5 +26,89 @@ export interface ArraySchema<TSchema extends BuildableSchema<unknown, unknown, C
 export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>>(_schema: TSchema): ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema>, DefaultCommonOptions>
 export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>, TOutput, TInput, TCommonOptions extends CommonOptions>(_schema: TSchema): ArraySchema<TSchema, TOutput, TInput, TCommonOptions>
 export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOptions>, TOutput = InferArrayOutput<TSchema>, TInput = InferArrayInput<TSchema>, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_schema: TSchema): ArraySchema<TSchema, TOutput, TInput, TCommonOptions> {
-  return 1 as any
+  const elementSchema = _schema
+
+  // eslint-disable-next-line ts/explicit-function-return-type
+  const sourceCheckableImport = () => import('./array').then(m => m.default)
+
+  let optionalityBranchCheckableImport: BranchCheckableImport<any> | undefined
+
+  const childCheckableImports: CheckableImport<any>[] = []
+
+  const a: ArraySchema<TSchema, TOutput, TInput, TCommonOptions> = {
+    'minLength': (minLength) => {
+      childCheckableImports.push(() => import('../_shared/minLength').then(m => m.default(minLength)))
+      return a
+    },
+
+    'maxLength': (maxLength) => {
+      childCheckableImports.push(() => import('../_shared/maxLength').then(m => m.default(maxLength)))
+      return a
+    },
+
+    'length': (length) => {
+      childCheckableImports.push(() => import('../_shared/length').then(m => m.default(length)))
+      return a
+    },
+
+    'default': (value) => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
+      return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema> | undefined | null, MakeDefaulted<TCommonOptions>>
+    },
+
+    'optional': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
+      return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeOptional<TCommonOptions>>
+    },
+
+    'exactOptional': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
+      return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeExactOptional<TCommonOptions>>
+    },
+
+    'undefinable': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
+      return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeUndefinable<TCommonOptions>>
+    },
+
+    'required': () => {
+      optionalityBranchCheckableImport = undefined
+      return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema>, MakeRequired<TCommonOptions>>
+    },
+
+    'nullable': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
+      return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | null, InferArrayInput<TSchema> | null, MakeNullable<TCommonOptions>>
+    },
+
+    'nullish': () => {
+      optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
+      return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined | null, InferArrayInput<TSchema> | undefined | null, MakeNullish<TCommonOptions>>
+    },
+
+    '~build': async () => {
+      return import('../../build/arrayBuild').then(m => m.buildEvaluableArraySchema(
+        sourceCheckableImport,
+        optionalityBranchCheckableImport,
+        childCheckableImports,
+        elementSchema,
+      ))
+    },
+
+    'transform': (fn) => {
+      return {
+        '~build': async () => {
+          return import('../../build/arrayBuild').then(m => m.buildEvaluableArraySchemaWithTransform(
+            sourceCheckableImport,
+            optionalityBranchCheckableImport,
+            childCheckableImports,
+            elementSchema,
+            fn as any,
+          ))
+        },
+      }
+    },
+  }
+
+  return a
 }
