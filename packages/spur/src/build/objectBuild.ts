@@ -143,6 +143,10 @@ export function buildObjectSchema<TOutput extends object>(
           // TODO: do we really want to "count them twice"?
           // for now dont do it
           // acc.score += 1
+          if (!result.passedIds) {
+            result.passedIds = new Set<symbol>()
+          }
+
           const ids = checkIds(result.passedIds, key, input as object)
           if (ids) {
             // we have a failure here as the ids check failed
