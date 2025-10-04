@@ -4,7 +4,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { array } from '../../leitplanken/array'
 import { boolean } from '../../leitplanken/boolean'
-import { oneOf } from '../../leitplanken/enum'
+import { enum_ } from '../../leitplanken/enum'
 import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
@@ -338,7 +338,7 @@ describe('transform edge cases', () => {
   })
 })
 
-describe('edge cases - literal and oneOf complexity', () => {
+describe('edge cases - literal and enum complexity', () => {
   it('object with all literal types', () => {
     const _schema = object({
       stringLit: literal('exact'),
@@ -358,12 +358,12 @@ describe('edge cases - literal and oneOf complexity', () => {
     }>()
   })
 
-  it('object with all oneOf types', () => {
+  it('object with all enum types', () => {
     const _schema = object({
-      colors: oneOf(['red', 'green', 'blue']),
-      numbers: oneOf([1, 2, 3, 4, 5]),
-      mixed: oneOf(['none', 0, 'all', 100]),
-      single: oneOf(['only']),
+      colors: enum_(['red', 'green', 'blue']),
+      numbers: enum_([1, 2, 3, 4, 5]),
+      mixed: enum_(['none', 0, 'all', 100]),
+      single: enum_(['only']),
     })
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<{
       colors: 'red' | 'green' | 'blue'
@@ -373,14 +373,14 @@ describe('edge cases - literal and oneOf complexity', () => {
     }>()
   })
 
-  it('nested arrays with literal and oneOf elements', () => {
+  it('nested arrays with literal and enum elements', () => {
     const _schema = array(array(object({
       type: literal('item'),
-      status: oneOf(['active', 'inactive', 'pending']),
-      priority: oneOf([1, 2, 3]).default(2),
+      status: enum_(['active', 'inactive', 'pending']),
+      priority: enum_([1, 2, 3]).default(2),
       metadata: object({
         version: literal(1),
-        flags: array(oneOf(['read', 'write', 'execute'])),
+        flags: array(enum_(['read', 'write', 'execute'])),
       }).optional(),
     })))
 
@@ -395,7 +395,7 @@ describe('edge cases - literal and oneOf complexity', () => {
     }>>>()
   })
 
-  it('literal and oneOf through all optionality states', () => {
+  it('literal and enum through all optionality states', () => {
     const _schema1 = literal('test')
     const _schema2 = literal('test').optional()
     const _schema3 = literal('test').optional().required()
@@ -410,10 +410,10 @@ describe('edge cases - literal and oneOf complexity', () => {
     expectTypeOf<InferOutput<typeof _schema5>>().toEqualTypeOf<'test' | undefined | null>()
     expectTypeOf<InferOutput<typeof _schema6>>().toEqualTypeOf<'test' | undefined>()
 
-    const _enum1 = oneOf(['a', 'b'])
-    const _enum2 = oneOf(['a', 'b']).optional()
-    const _enum3 = oneOf(['a', 'b']).nullable().required()
-    const _enum4 = oneOf(['a', 'b']).default('a').nullish()
+    const _enum1 = enum_(['a', 'b'])
+    const _enum2 = enum_(['a', 'b']).optional()
+    const _enum3 = enum_(['a', 'b']).nullable().required()
+    const _enum4 = enum_(['a', 'b']).default('a').nullish()
 
     expectTypeOf<InferOutput<typeof _enum1>>().toEqualTypeOf<'a' | 'b'>()
     expectTypeOf<InferOutput<typeof _enum2>>().toEqualTypeOf<'a' | 'b' | undefined>()
@@ -421,24 +421,24 @@ describe('edge cases - literal and oneOf complexity', () => {
     expectTypeOf<InferOutput<typeof _enum4>>().toEqualTypeOf<'a' | 'b' | undefined | null>()
   })
 
-  it('complex object with mixed literal, oneOf, and primitives', () => {
+  it('complex object with mixed literal, enum, and primitives', () => {
     const _schema = object({
       config: object({
         env: literal('production'),
         debug: boolean().default(false),
-        logLevel: oneOf(['error', 'warn', 'info', 'debug']).default('info'),
-        port: oneOf([3000, 8080, 9000]),
+        logLevel: enum_(['error', 'warn', 'info', 'debug']).default('info'),
+        port: enum_([3000, 8080, 9000]),
         features: object({
           auth: boolean().default(true),
-          cache: oneOf(['redis', 'memory', 'none']).optional(),
+          cache: enum_(['redis', 'memory', 'none']).optional(),
           compression: literal('gzip').nullable(),
         }),
         servers: array(object({
           name: string(),
           type: literal('web'),
-          status: oneOf(['running', 'stopped', 'error']),
+          status: enum_(['running', 'stopped', 'error']),
           config: object({
-            cpu: oneOf([1, 2, 4, 8]).default(2),
+            cpu: enum_([1, 2, 4, 8]).default(2),
             memory: literal('512MB'),
           }),
         })),
@@ -474,7 +474,7 @@ describe('edge cases - literal and oneOf complexity', () => {
       api: object({
         endpoint: union([literal('v1'), literal('v2'), string()]),
         method: union([
-          oneOf(['GET', 'POST']),
+          enum_(['GET', 'POST']),
           literal('PUT'),
           literal('DELETE'),
         ]),
@@ -534,19 +534,19 @@ describe('edge cases - union complexity', () => {
       type: union([
         literal('user'),
         literal('admin'),
-        oneOf(['guest', 'member']),
+        enum_(['guest', 'member']),
       ]),
       metadata: union([
         object({ version: literal(1), legacy: boolean().default(false) }),
         object({ version: literal(2), features: array(string()) }),
-        object({ version: literal(3), config: oneOf(['basic', 'advanced']) }),
+        object({ version: literal(3), config: enum_(['basic', 'advanced']) }),
       ]).optional(),
       values: array(union([
         string(),
         number(),
         boolean(),
         literal('null'),
-        oneOf(['empty', 'unknown']),
+        enum_(['empty', 'unknown']),
       ])),
     }))
 
@@ -574,8 +574,8 @@ describe('edge cases - union complexity', () => {
       literal(3.14),
 
       // OneOf schemas
-      oneOf(['red', 'green', 'blue']),
-      oneOf([100, 200, 300]).default(200),
+      enum_(['red', 'green', 'blue']),
+      enum_([100, 200, 300]).default(200),
 
       // Nested union
       union([literal('nested'), boolean()]),
@@ -1023,7 +1023,7 @@ describe('edge cases - performance stress tests', () => {
       numberUndef: number().undefinable(),
       booleanUndef: boolean().undefinable(),
       literalUndef: literal('test').undefinable(),
-      enumUndef: oneOf(['a', 'b', 'c']).undefinable(),
+      enumUndef: enum_(['a', 'b', 'c']).undefinable(),
       arrayUndef: array(string()).undefinable(),
       objectUndef: object({ nested: string() }).undefinable(),
       unionUndef: union([string(), number()]).undefinable(),

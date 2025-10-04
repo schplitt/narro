@@ -3,10 +3,9 @@ import type { InferInput, InferOutput } from '../../types/utils'
 import { describe, expectTypeOf, it } from 'vitest'
 
 import { boolean } from '../../leitplanken/boolean'
-import { oneOf } from '../../leitplanken/enum'
+import { enum_ } from '../../leitplanken/enum'
 import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
-import { object } from '../../leitplanken/object'
 import { string } from '../../leitplanken/string'
 import { union } from '../../leitplanken/union'
 
@@ -38,10 +37,10 @@ describe('unionSchema - basic types', () => {
     expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<'hello' | 42 | 'world' | undefined | null>()
   })
 
-  it('union of oneOf schemas', () => {
+  it('union of enum schemas', () => {
     const _schema = union([
-      oneOf(['red', 'green']),
-      oneOf([1, 2, 3]),
+      enum_(['red', 'green']),
+      enum_([1, 2, 3]),
     ])
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'red' | 'green' | 1 | 2 | 3>()
   })
@@ -50,7 +49,7 @@ describe('unionSchema - basic types', () => {
     const _schema = union([
       string(),
       literal(42),
-      oneOf(['active', 'inactive']),
+      enum_(['active', 'inactive']),
       boolean(),
     ])
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<string | 42 | 'active' | 'inactive' | boolean>()
@@ -144,7 +143,7 @@ describe('unionSchema - chained operations', () => {
   })
 
   it('union nullish then required', () => {
-    const _schema = union([oneOf(['x', 'y']), number()]).nullish().required()
+    const _schema = union([enum_(['x', 'y']), number()]).nullish().required()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'x' | 'y' | number>()
   })
 
@@ -162,8 +161,8 @@ describe('unionSchema - complex scenarios', () => {
       boolean(),
       literal('exact'),
       literal(99),
-      oneOf(['red', 'green', 'blue']),
-      oneOf([1, 2, 3]),
+      enum_(['red', 'green', 'blue']),
+      enum_([1, 2, 3]),
     ])
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | boolean | 'exact' | 99 | 'red' | 'green' | 'blue' | 1 | 2 | 3
@@ -176,7 +175,7 @@ describe('unionSchema - complex scenarios', () => {
       number().optional(),
       boolean().nullable(),
       literal('test').nullish(),
-      oneOf(['a', 'b']).default('a'),
+      enum_(['a', 'b']).default('a'),
     ])
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | undefined | boolean | null | 'test' | 'a' | 'b'
@@ -201,23 +200,23 @@ describe('unionSchema - complex scenarios', () => {
     >()
   })
 
-  it('union of complex oneOf schemas', () => {
+  it('union of complex enum schemas', () => {
     const _schema = union([
-      oneOf(['error', 'warn', 'info']),
-      oneOf([100, 200, 300, 400, 500]),
-      oneOf(['GET', 'POST', 'PUT', 'DELETE']),
+      enum_(['error', 'warn', 'info']),
+      enum_([100, 200, 300, 400, 500]),
+      enum_(['GET', 'POST', 'PUT', 'DELETE']),
     ])
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       'error' | 'warn' | 'info' | 100 | 200 | 300 | 400 | 500 | 'GET' | 'POST' | 'PUT' | 'DELETE'
     >()
   })
 
-  it('union with overlapping literal and oneOf types', () => {
+  it('union with overlapping literal and enum types', () => {
     const _schema = union([
       literal('test'),
-      oneOf(['test', 'other']),
+      enum_(['test', 'other']),
       literal(42),
-      oneOf([42, 100]),
+      enum_([42, 100]),
     ])
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       'test' | 'other' | 42 | 100
@@ -263,8 +262,8 @@ describe('unionSchema - edge cases', () => {
       literal(1),
       literal(2),
       literal(3),
-      oneOf(['x', 'y', 'z']),
-      oneOf([10, 20, 30]),
+      enum_(['x', 'y', 'z']),
+      enum_([10, 20, 30]),
     ]).optional()
 
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
@@ -325,7 +324,7 @@ describe('unionSchema - undefinable', () => {
       number(),
       boolean(),
       literal('exact'),
-      oneOf(['red', 'green']),
+      enum_(['red', 'green']),
     ]).undefinable()
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<
       string | number | boolean | 'exact' | 'red' | 'green' | undefined
@@ -343,7 +342,7 @@ describe('unionSchema - undefinable', () => {
       number().nullable(),
       boolean().nullish(),
       literal('test').undefinable(),
-      oneOf(['a', 'b']).default('a'),
+      enum_(['a', 'b']).default('a'),
     ]).undefinable()
 
     type Output = InferOutput<typeof _schema>
@@ -387,7 +386,7 @@ describe('unionSchema - transform: optional / nullable roots', () => {
     expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<boolean | null>()
   })
   it('nullish union broad mapping', () => {
-    const base = union([oneOf(['a', 'b']), number()]).nullish()
+    const base = union([enum_(['a', 'b']), number()]).nullish()
     const _mapped = base.transform(v => (v == null ? v : typeof v === 'number' ? v : (v.length as number)))
     expectTypeOf<InferOutput<typeof _mapped>>().toEqualTypeOf<number | undefined | null>()
   })

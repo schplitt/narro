@@ -4,7 +4,7 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import { array } from '../../leitplanken/array'
 import { boolean } from '../../leitplanken/boolean'
-import { oneOf } from '../../leitplanken/enum'
+import { enum_ } from '../../leitplanken/enum'
 import { literal } from '../../leitplanken/literal'
 import { number } from '../../leitplanken/number'
 import { object } from '../../leitplanken/object'
@@ -37,18 +37,18 @@ describe('arraySchema - basic types', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<42[]>()
   })
 
-  it('array of oneOf strings', () => {
-    const _schema = array(oneOf(['red', 'green', 'blue']))
+  it('array of enum strings', () => {
+    const _schema = array(enum_(['red', 'green', 'blue']))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('red' | 'green' | 'blue')[]>()
   })
 
-  it('array of oneOf numbers', () => {
-    const _schema = array(oneOf([1, 2, 3]))
+  it('array of enum numbers', () => {
+    const _schema = array(enum_([1, 2, 3]))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<(1 | 2 | 3)[]>()
   })
 
-  it('array of mixed oneOf', () => {
-    const _schema = array(oneOf(['hello', 42, 'world']))
+  it('array of mixed enum', () => {
+    const _schema = array(enum_(['hello', 42, 'world']))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('hello' | 42 | 'world')[]>()
   })
 
@@ -58,7 +58,7 @@ describe('arraySchema - basic types', () => {
   })
 
   it('array of complex union', () => {
-    const _schema = array(union([literal('test'), oneOf([1, 2, 3]), boolean()]))
+    const _schema = array(union([literal('test'), enum_([1, 2, 3]), boolean()]))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('test' | 1 | 2 | 3 | boolean)[]>()
   })
 
@@ -158,24 +158,24 @@ describe('arraySchema - with element validation', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<42 | null>>()
   })
 
-  it('array of oneOf with defaults', () => {
-    const _schema = array(oneOf(['a', 'b', 'c']))
+  it('array of enum with defaults', () => {
+    const _schema = array(enum_(['a', 'b', 'c']))
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
     expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<('a' | 'b' | 'c')[]>()
   })
 
-  it('array of optional oneOf', () => {
-    const _schema = array(oneOf([1, 2, 3]).optional())
+  it('array of optional enum', () => {
+    const _schema = array(enum_([1, 2, 3]).optional())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
-  it('array of undefinable oneOf', () => {
-    const _schema = array(oneOf([1, 2, 3]).undefinable())
+  it('array of undefinable enum', () => {
+    const _schema = array(enum_([1, 2, 3]).undefinable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
-  it('array of nullish oneOf', () => {
-    const _schema = array(oneOf(['x', 'y']).nullish())
+  it('array of nullish enum', () => {
+    const _schema = array(enum_(['x', 'y']).nullish())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'x' | 'y' | undefined | null>>()
   })
 
@@ -709,8 +709,8 @@ describe('arraySchema - undefinable', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<'test' | undefined>>()
   })
 
-  it('array of undefinable oneOf', () => {
-    const _schema = array(oneOf([1, 2, 3]).undefinable())
+  it('array of undefinable enum', () => {
+    const _schema = array(enum_([1, 2, 3]).undefinable())
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<Array<1 | 2 | 3 | undefined>>()
   })
 
