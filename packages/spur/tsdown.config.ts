@@ -8,15 +8,6 @@ export default defineConfig([
     format: 'esm',
   },
   {
-    entry: './src/sync.ts',
-    unbundle: false,
-    dts: true,
-    format: 'esm',
-    outputOptions: {
-      inlineDynamicImports: true,
-    },
-  },
-  {
     entry: './src/inline.ts',
     unbundle: false,
     dts: true,
