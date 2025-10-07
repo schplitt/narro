@@ -11,7 +11,7 @@ export async function parse<TSchema extends BuildableSchema<any, any, any> | Eva
   return schema['~build']().then(s => s.parse(data)) as Promise<InferOutput<TSchema>>
 }
 
-export async function safeParse<TSchema extends BuildableSchema<any, any, any> | EvaluableSchema<any> | Promise<EvaluableSchema<any>>>(schema: TSchema, data: unknown): Promise<SchemaReport> {
+export async function safeParse<TSchema extends BuildableSchema<any, any, any> | EvaluableSchema<any> | Promise<EvaluableSchema<any>>>(schema: TSchema, data: unknown): Promise<SchemaReport<InferOutput<TSchema>>> {
   schema = await schema
   if ('safeParse' in schema) {
     return schema.safeParse(data)
