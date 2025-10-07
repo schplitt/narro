@@ -1,11 +1,7 @@
 import type { DefaultObjectOptions, MakeObjectPassthrough, MakeObjectStrict, MakeObjectStrip, ObjectOptions } from '../../options/objectOptions'
-import type { CommonOptions, ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
+import type { ExtractDefaultedSchema, ExtractExactOptionalSchema, ExtractOptionalSchema, InferOptionalityInputType, InferOptionalityOutputType, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BranchCheckableImport, BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput, Prettify } from '../../types/utils'
-import type { NumberSchema } from '../number'
-import type { StringSchema } from '../string'
-import { number } from '../number'
-import { string } from '../string'
 
 export interface ObjectEntries {
   [key: string]: BuildableSchema<any, any, any>
