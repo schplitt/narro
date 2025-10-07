@@ -6,4 +6,5 @@ export default antfu({
   yaml: true,
   test: true,
   stylistic: true,
+  markdown: true,
 })
