@@ -2,7 +2,7 @@ import { safeParse as safeParseAsync, string as spurStringAsync } from 'spur'
 import { safeParse as safeParseInlined, string as spurStringInline } from 'spur/inline'
 import { safeParse as safeParseSync, string as spurStringSync } from 'spur/sync'
 
-import { maxLength, minLength, pipe, safeParse as vSafeParse, string as vString } from 'valibot'
+import * as v from 'valibot'
 import { bench, describe } from 'vitest'
 import { z } from 'zod'
 
@@ -25,7 +25,7 @@ const spurInlineBuilt = await spurStringInline().minLength(3).maxLength(12)['~bu
 const zValid = z.string().min(3).max(12)
 
 // Valibot schema (with constraints for fair comparison)
-const vSchema = pipe(vString(), minLength(3), maxLength(12))
+const vSchema = v.pipe(v.string(), v.minLength(3), v.maxLength(12))
 
 describe('string: valid parse', () => {
   bench('spur unbuild async valid', () => {
@@ -44,7 +44,7 @@ describe('string: valid parse', () => {
     zValid.safeParse(validString)
   })
   bench('valibot valid', () => {
-    vSafeParse(vSchema, validString)
+    v.safeParse(vSchema, validString)
   })
 })
 
@@ -65,6 +65,6 @@ describe('string: invalid parse', () => {
     zValid.safeParse(invalidString)
   })
   bench('valibot invalid', () => {
-    vSafeParse(vSchema, invalidString)
+    v.safeParse(vSchema, invalidString)
   })
 })
