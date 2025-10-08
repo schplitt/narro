@@ -19,6 +19,7 @@ export function mergeOptionality<TOutput>(
   }
 
   const optionalityReport = optionalityBranchCheckable['~c'](input) as SchemaReport<TOutput>
+
   if (!optionalityReport.passed) {
     delete optionalityReport.value
   }
@@ -40,9 +41,7 @@ export function mergeOptionality<TOutput>(
   const higherScoreReport = sourceReport.score >= optionalityReport.score ? sourceReport : optionalityReport
   const lowerScoreReport = higherScoreReport === sourceReport ? optionalityReport : sourceReport
 
-  if (lowerScoreReport) {
-    higherScoreReport.unionReports = [lowerScoreReport]
-  }
+  higherScoreReport.unionReports = [lowerScoreReport]
 
   return higherScoreReport
 }
