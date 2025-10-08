@@ -98,4 +98,45 @@ describe('enum schema', () => {
     const nullableThenOptionalNull = await safeParse(nullableThenOptional, null)
     expect(nullableThenOptionalNull.passed).toBe(false)
   })
+
+  it('supports boolean enum', async () => {
+    const schema = enumSchema([true, false])
+
+    await expect(parse(schema, true)).resolves.toBe(true)
+    await expect(parse(schema, false)).resolves.toBe(false)
+
+    const miss = await safeParse(schema, 'true')
+    expect(miss.passed).toBe(false)
+  })
+
+  it('supports boolean enum with optional modifier', async () => {
+    const schema = enumSchema([true, false]).optional()
+
+    const hit = await safeParse(schema, true)
+    expect(hit.passed).toBe(true)
+    expect(hit.value).toBe(true)
+
+    const optionalReport = await safeParse(schema, undefined)
+    expect(optionalReport.passed).toBe(true)
+    expect(optionalReport.value).toBeUndefined()
+  })
+
+  it('supports boolean enum with default modifier', async () => {
+    const schema = enumSchema([true, false]).default(false)
+
+    await expect(parse(schema, undefined)).resolves.toBe(false)
+    await expect(parse(schema, null)).resolves.toBe(false)
+    await expect(parse(schema, true)).resolves.toBe(true)
+  })
+
+  it('supports mixed enum with booleans', async () => {
+    const schema = enumSchema(['yes', 'no', true, false])
+
+    await expect(parse(schema, 'yes')).resolves.toBe('yes')
+    await expect(parse(schema, true)).resolves.toBe(true)
+    await expect(parse(schema, false)).resolves.toBe(false)
+
+    const miss = await safeParse(schema, 'true')
+    expect(miss.passed).toBe(false)
+  })
 })

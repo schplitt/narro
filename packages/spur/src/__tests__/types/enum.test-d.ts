@@ -240,3 +240,47 @@ describe('enumSchema - undefinable', () => {
     expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'a' | 'b' | undefined>()
   })
 })
+
+describe('enumSchema - boolean enums', () => {
+  it('boolean enum schema', () => {
+    const _schema = enum_([true, false])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | false>()
+  })
+
+  it('optional boolean enum schema', () => {
+    const _schema = enum_([true, false]).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | false | undefined>()
+  })
+
+  it('nullable boolean enum schema', () => {
+    const _schema = enum_([true, false]).nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | false | null>()
+  })
+
+  it('nullish boolean enum schema', () => {
+    const _schema = enum_([true, false]).nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | false | undefined | null>()
+  })
+
+  it('boolean enum with default true', () => {
+    const _schema = enum_([true, false]).default(true)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | false>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<true | false | undefined | null>()
+  })
+
+  it('boolean enum with default false', () => {
+    const _schema = enum_([true, false]).default(false)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | false>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<true | false | undefined | null>()
+  })
+
+  it('mixed enum with boolean', () => {
+    const _schema = enum_(['yes', 'no', true, false])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<'yes' | 'no' | true | false>()
+  })
+
+  it('single boolean enum', () => {
+    const _schema = enum_([true])
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true>()
+  })
+})

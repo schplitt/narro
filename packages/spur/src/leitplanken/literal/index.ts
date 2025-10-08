@@ -1,7 +1,7 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
 import type { BranchCheckableImport, BuildableSchema, DefaultInput, EvaluableSchema, SourceCheckableImport } from '../../types/schema'
 
-export interface LiteralSchema<TLiteral extends string | number, TOutput = TLiteral, TInput = TLiteral, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
+export interface LiteralSchema<TLiteral extends string | number | boolean, TOutput = TLiteral, TInput = TLiteral, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
   default: (value: DefaultInput<TOutput>) => LiteralSchema<TLiteral, TLiteral, TLiteral | undefined | null, MakeDefaulted<TCommonOptions>>
   optional: () => LiteralSchema<TLiteral, TLiteral | undefined, TLiteral | undefined, MakeOptional<TCommonOptions>>
   exactOptional: () => LiteralSchema<TLiteral, TLiteral | undefined, TLiteral | undefined, MakeExactOptional<TCommonOptions>>
@@ -13,9 +13,9 @@ export interface LiteralSchema<TLiteral extends string | number, TOutput = TLite
 
 // NOTE: overload keeps default generics when schema is contextually typed inside
 // object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
-export function literal<TLiteral extends string | number>(_value: TLiteral): LiteralSchema<TLiteral, TLiteral, TLiteral, DefaultCommonOptions>
-export function literal<TLiteral extends string | number, TOutput, TInput, TCommonOptions extends CommonOptions>(_value: TLiteral): LiteralSchema<TLiteral, TOutput, TInput, TCommonOptions>
-export function literal<TLiteral extends string | number, TOutput = TLiteral, TInput = TLiteral, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_value: TLiteral): LiteralSchema<TLiteral, TOutput, TInput, TCommonOptions> {
+export function literal<TLiteral extends string | number | boolean>(_value: TLiteral): LiteralSchema<TLiteral, TLiteral, TLiteral, DefaultCommonOptions>
+export function literal<TLiteral extends string | number | boolean, TOutput, TInput, TCommonOptions extends CommonOptions>(_value: TLiteral): LiteralSchema<TLiteral, TOutput, TInput, TCommonOptions>
+export function literal<TLiteral extends string | number | boolean, TOutput = TLiteral, TInput = TLiteral, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_value: TLiteral): LiteralSchema<TLiteral, TOutput, TInput, TCommonOptions> {
   let optionalityBranchCheckableImport: BranchCheckableImport<any> | undefined
 
   const sourceCheckableImport: SourceCheckableImport<TLiteral> = () => import('./literal').then(m => m.default(_value))
