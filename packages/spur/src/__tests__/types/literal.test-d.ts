@@ -211,3 +211,42 @@ describe('literalSchema - undefinable', () => {
     expectTypeOf<InferOutput<typeof _schema3>>().toEqualTypeOf<-1 | undefined>()
   })
 })
+
+describe('literalSchema - boolean literals', () => {
+  it('true literal schema', () => {
+    const _schema = literal(true)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true>()
+  })
+
+  it('false literal schema', () => {
+    const _schema = literal(false)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<false>()
+  })
+
+  it('optional true literal schema', () => {
+    const _schema = literal(true).optional()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | undefined>()
+  })
+
+  it('nullable false literal schema', () => {
+    const _schema = literal(false).nullable()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<false | null>()
+  })
+
+  it('nullish true literal schema', () => {
+    const _schema = literal(true).nullish()
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true | undefined | null>()
+  })
+
+  it('true literal with default', () => {
+    const _schema = literal(true).default(true)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<true>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<true | undefined | null>()
+  })
+
+  it('false literal with default', () => {
+    const _schema = literal(false).default(false)
+    expectTypeOf<InferOutput<typeof _schema>>().toEqualTypeOf<false>()
+    expectTypeOf<InferInput<typeof _schema>>().toEqualTypeOf<false | undefined | null>()
+  })
+})

@@ -100,4 +100,45 @@ describe('literal schema', () => {
     const nullableThenOptionalNull = await safeParse(nullableThenOptional, null)
     expect(nullableThenOptionalNull.passed).toBe(false)
   })
+
+  it('supports boolean true literal', async () => {
+    const schema = literal(true)
+
+    await expect(parse(schema, true)).resolves.toBe(true)
+
+    const miss = await safeParse(schema, false)
+    expect(miss.passed).toBe(false)
+  })
+
+  it('supports boolean false literal', async () => {
+    const schema = literal(false)
+
+    await expect(parse(schema, false)).resolves.toBe(false)
+
+    const miss = await safeParse(schema, true)
+    expect(miss.passed).toBe(false)
+  })
+
+  it('supports boolean literals with optional modifier', async () => {
+    const schema = literal(true).optional()
+
+    const hit = await safeParse(schema, true)
+    expect(hit.passed).toBe(true)
+    expect(hit.value).toBe(true)
+
+    const optionalResult = await safeParse(schema, undefined)
+    expect(optionalResult.passed).toBe(true)
+    expect(optionalResult.value).toBeUndefined()
+
+    const miss = await safeParse(schema, false)
+    expect(miss.passed).toBe(false)
+  })
+
+  it('supports boolean literals with default modifier', async () => {
+    const schema = literal(true).default(true)
+
+    await expect(parse(schema, true)).resolves.toBe(true)
+    await expect(parse(schema, undefined)).resolves.toBe(true)
+    await expect(parse(schema, null)).resolves.toBe(true)
+  })
 })
