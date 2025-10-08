@@ -1,3 +1,4 @@
+export * from './leitplanken/enum'
 export * from './leitplanken/literal'
 export * from './leitplanken/number'
 export * from './leitplanken/string'
