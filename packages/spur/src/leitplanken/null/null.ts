@@ -1,14 +1,12 @@
 import type { SourceCheck, SourceCheckable } from '../../types/schema'
 
-const nullSymbol = Symbol('null')
+export const nullSymbol = Symbol('null')
 
-const checkNull: SourceCheck<null> = v => v === null
+const checkNull: SourceCheck<null> = value => value === null
 
-export function createNullCheckable(): SourceCheckable<null> {
-  return {
-    '~id': nullSymbol,
-    '~c': checkNull,
-  }
+export const nullCheckable: SourceCheckable<null> = {
+  '~id': nullSymbol,
+  '~c': checkNull,
 }
 
-export default createNullCheckable
+export default nullCheckable
