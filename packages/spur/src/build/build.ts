@@ -4,7 +4,7 @@ import { deduplicateCheckables } from './utils'
 
 export async function buildEvaluableSchema<TOutput>(
   sourceCheckableImport: SourceCheckableImport<TOutput>,
-  optionalityBranchCheckableImport: BranchCheckableImport<TOutput> | undefined,
+  optionalityBranchCheckableImport: BranchCheckableImport<TOutput> | undefined = undefined,
   childCheckableImports: CheckableImport<TOutput>[] = [],
 ): Promise<EvaluableSchema<TOutput>> {
   // we start with importing the source checkable and then all other checkables

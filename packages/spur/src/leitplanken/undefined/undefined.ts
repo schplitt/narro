@@ -2,13 +2,11 @@ import type { SourceCheck, SourceCheckable } from '../../types/schema'
 
 export const undefinedSymbol = Symbol('undefined')
 
-const checkUndefined: SourceCheck<undefined> = v => typeof v === 'undefined'
+const checkUndefined: SourceCheck<undefined> = value => typeof value === 'undefined'
 
-export function createUndefinedCheckable(): SourceCheckable<undefined> {
-  return {
-    '~id': undefinedSymbol,
-    '~c': checkUndefined,
-  }
+export const undefinedCheckable: SourceCheckable<undefined> = {
+  '~id': undefinedSymbol,
+  '~c': checkUndefined,
 }
 
-export default createUndefinedCheckable
+export default undefinedCheckable
