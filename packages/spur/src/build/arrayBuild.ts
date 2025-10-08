@@ -1,6 +1,6 @@
 import type { SchemaReport, SchemaReportFailure } from '../types/report'
 import type { BranchCheckable, BranchCheckableImport, BuildableSchema, Checkable, CheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from '../types/schema'
-import { deduplicateCheckables } from './utils'
+import { deduplicateCheckables, mergeOptionality } from './utils'
 
 export async function buildEvaluableArraySchema<TElementOutput, TArrayOutput extends unknown[]>(
   sourceCheckableImport: SourceCheckableImport<TArrayOutput>,
@@ -136,35 +136,7 @@ export function buildArraySchema<TElementOutput, TArrayOutput extends unknown[]>
       sourceReport = baseReport
     }
 
-    const optionalityReport = optionalityBranchCheckable ? optionalityBranchCheckable['~c'](input) : undefined
-    if (optionalityReport && !optionalityReport.passed) {
-      delete optionalityReport.value
-    }
-
-    if (sourceReport.passed && optionalityReport?.passed) {
-      throw new Error('Both source and optionality checkables passed, this should never happen')
-    }
-
-    if (sourceReport.passed) {
-      if (optionalityReport) {
-        sourceReport.unionReports = [optionalityReport]
-      }
-      return sourceReport
-    }
-
-    if (optionalityReport?.passed) {
-      optionalityReport.unionReports = [sourceReport]
-      return optionalityReport
-    }
-
-    const higherScoreReport = sourceReport.score >= (optionalityReport?.score ?? -1) ? sourceReport : optionalityReport!
-    const lowerScoreReport = higherScoreReport === sourceReport ? optionalityReport : sourceReport
-
-    if (lowerScoreReport) {
-      higherScoreReport.unionReports = [lowerScoreReport]
-    }
-
-    return higherScoreReport
+    return mergeOptionality(input, sourceReport, optionalityBranchCheckable)
   }
 
   return {

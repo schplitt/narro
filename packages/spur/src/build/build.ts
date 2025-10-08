@@ -1,6 +1,6 @@
 import type { SchemaReport, SchemaReportFailure } from '../types/report'
 import type { BranchCheckable, BranchCheckableImport, Checkable, CheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from '../types/schema'
-import { deduplicateCheckables } from './utils'
+import { deduplicateCheckables, mergeOptionality } from './utils'
 
 export async function buildEvaluableSchema<TOutput>(
   sourceCheckableImport: SourceCheckableImport<TOutput>,
@@ -75,42 +75,7 @@ export function buildSchema<TOutput>(
     }
 
     // now after the checks are done, we continue with the optionality checkable if present
-    const optionalityReport = optionalityBranchCheckable ? optionalityBranchCheckable['~c'](input) : undefined
-    // remove the value prop if the optionality report did not pass
-    if (optionalityReport && !optionalityReport.passed) {
-      delete optionalityReport.value
-    }
-
-    // now we return the report that "passed" and put the other report into the unionReports
-    // if none passed, we return the one with the higher score and put the other into the unionReports
-    // if both passed (for whatever reason), we should throw an error as this should not happen
-    if (sourceReport.passed && optionalityReport?.passed) {
-      throw new Error('Both source and optionality checkables passed, this should never happen')
-    }
-
-    // if only one passed, return that one
-    if (sourceReport.passed) {
-      if (optionalityReport) {
-        sourceReport.unionReports = [optionalityReport]
-      }
-      return sourceReport
-    }
-    if (optionalityReport?.passed) {
-      if (sourceReport) {
-        optionalityReport.unionReports = [sourceReport]
-      }
-      return optionalityReport
-    }
-
-    // both failed, return the one with the higher score and put the other into the unionReports
-    const higherScoreReport = sourceReport.score >= (optionalityReport?.score ?? -1) ? sourceReport : optionalityReport!
-    const lowerScoreReport = higherScoreReport === sourceReport ? optionalityReport : sourceReport
-
-    if (lowerScoreReport) {
-      higherScoreReport.unionReports = [lowerScoreReport]
-    }
-
-    return higherScoreReport
+    return mergeOptionality(input, sourceReport, optionalityBranchCheckable)
   }
 
   return {
