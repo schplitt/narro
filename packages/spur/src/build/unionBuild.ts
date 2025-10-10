@@ -10,7 +10,7 @@ export async function buildEvaluableUnionSchema<TSchemas extends readonly Builda
   }
 
   const optionalityPromise = optionalityBranchCheckableImport?.() ?? undefined
-  const evaluableSchemasPromise = Promise.all(schemas.map(schema => schema['~build']()))
+  const evaluableSchemasPromise = Promise.all(schemas.map(schema => schema.build()))
 
   const [optionalityBranchCheckable, evaluableSchemas] = await Promise.all([optionalityPromise, evaluableSchemasPromise])
 

@@ -33,58 +33,78 @@ export function union<TSchemas extends readonly BuildableSchema<unknown, unknown
   let optionalityBranchCheckableImport: BranchCheckableImport<any> | undefined
 
   const u: UnionSchema<TSchemas, TOutput, TInput, TCommonOptions> = {
-    'default': (value) => {
+    default: (value) => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
       return u as any as UnionSchema<TSchemas, InferUnionOutput<TSchemas>, TInput | undefined | null, MakeDefaulted<TCommonOptions>>
     },
 
-    'optional': () => {
+    optional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
       return u as any as UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined, InferUnionInput<TSchemas> | undefined, MakeOptional<TCommonOptions>>
     },
 
-    'exactOptional': () => {
+    exactOptional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
       return u as any as UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined, InferUnionInput<TSchemas> | undefined, MakeExactOptional<TCommonOptions>>
     },
 
-    'undefinable': () => {
+    undefinable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
       return u as any as UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined, InferUnionInput<TSchemas> | undefined, MakeUndefinable<TCommonOptions>>
     },
 
-    'required': () => {
+    required: () => {
       optionalityBranchCheckableImport = undefined
       return u as any as UnionSchema<TSchemas, InferUnionOutput<TSchemas>, InferUnionInput<TSchemas>, MakeRequired<TCommonOptions>>
     },
 
-    'nullable': () => {
+    nullable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
       return u as any as UnionSchema<TSchemas, InferUnionOutput<TSchemas> | null, InferUnionInput<TSchemas> | null, MakeNullable<TCommonOptions>>
     },
 
-    'nullish': () => {
+    nullish: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
       return u as any as UnionSchema<TSchemas, InferUnionOutput<TSchemas> | undefined | null, InferUnionInput<TSchemas> | undefined | null, MakeNullish<TCommonOptions>>
     },
 
-    '~build': async () => {
+    build: async () => {
       return import('../../build/unionBuild').then(m => m.buildEvaluableUnionSchema<TSchemas, TOutput>(
         schemas,
         optionalityBranchCheckableImport,
       ))
     },
 
-    'transform': (fn) => {
-      return {
-        '~build': async () => {
+    parse: async (input) => {
+      const built = await u.build()
+      return built.parse(input)
+    },
+
+    safeParse: async (input) => {
+      const built = await u.build()
+      return built.safeParse(input)
+    },
+
+    transform: <TTransformOutput>(fn: (input: TOutput) => TTransformOutput) => {
+      const transformed: BuildableSchema<TTransformOutput, TInput, TCommonOptions> = {
+        build: async () => {
           return import('../../build/unionBuild').then(m => m.buildEvaluableUnionSchemaWithTransform(
             schemas,
             optionalityBranchCheckableImport,
-            fn as any,
+            fn,
           ))
         },
+        parse: async (input) => {
+          const built = await transformed.build()
+          return built.parse(input)
+        },
+        safeParse: async (input) => {
+          const built = await transformed.build()
+          return built.safeParse(input)
+        },
       }
+
+      return transformed
     },
   }
 

@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, DefaultInput, EvaluableSchema, SourceCheckableImport } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, DefaultInput, SourceCheckableImport } from '../../types/schema'
 
 export interface BooleanSchema<TOutput = boolean, TInput = boolean, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
 
@@ -23,49 +23,58 @@ export function boolean<TOutput = boolean, TInput = boolean, TCommonOptions exte
 
   const b: BooleanSchema<TOutput, TInput, TCommonOptions> = {
 
-    'default': (value) => {
+    default: (value) => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
       return b as any as BooleanSchema<boolean, boolean | undefined | null, MakeDefaulted<TCommonOptions>>
     },
 
-    'optional': () => {
+    optional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
       return b as any as BooleanSchema<boolean | undefined, boolean | undefined, MakeOptional<TCommonOptions>>
     },
 
-    'exactOptional': () => {
+    exactOptional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
       return b as any as BooleanSchema<boolean | undefined, boolean | undefined, MakeExactOptional<TCommonOptions>>
     },
 
-    'undefinable': () => {
+    undefinable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
       return b as any as BooleanSchema<boolean | undefined, boolean | undefined, MakeUndefinable<TCommonOptions>>
     },
 
-    'required': () => {
+    required: () => {
       optionalityBranchCheckableImport = undefined
       return b as any as BooleanSchema<boolean, boolean, MakeRequired<TCommonOptions>>
     },
 
-    'nullable': () => {
+    nullable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
       return b as any as BooleanSchema<boolean | null, boolean | null, MakeNullable<TCommonOptions>>
     },
 
-    'nullish': () => {
+    nullish: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
       return b as any as BooleanSchema<boolean | undefined | null, boolean | undefined | null, MakeNullish<TCommonOptions>>
     },
 
-    '~build': () => {
+    build: async () => {
       return import('../../build/build').then(({ buildEvaluableSchema }) => {
         return buildEvaluableSchema(
           sourceCheckableImport,
           optionalityBranchCheckableImport,
-          [],
-        ) as Promise<EvaluableSchema<TOutput>>
+        )
       })
+    },
+
+    parse: async (input) => {
+      const built = await b.build()
+      return built.parse(input)
+    },
+
+    safeParse: async (input) => {
+      const built = await b.build()
+      return built.safeParse(input)
     },
   }
 

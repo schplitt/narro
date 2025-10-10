@@ -1,6 +1,5 @@
-import { safeParse as safeParseAsync, string as spurStringAsync } from 'spur'
-import { safeParse as safeParseInlined, string as spurStringInline } from 'spur/inline'
-import { safeParse as safeParseSync, string as spurStringSync } from 'spur/sync'
+import { string as spurStringAsync } from 'spur'
+import { string as spurStringInline } from 'spur/inline'
 
 import * as v from 'valibot'
 import { bench, describe } from 'vitest'
@@ -13,13 +12,10 @@ const invalidString = 'a'
 const spurAsyncUnbuild = spurStringAsync().minLength(3).maxLength(12)
 
 // Async spur schemas (built once)
-const spurAsyncBuilt = await spurStringAsync().minLength(3).maxLength(12)['~build']()
-
-// Sync spur schemas
-const spurSyncBuilt = spurStringSync().minLength(3).maxLength(12)['~build']()
+const spurAsyncBuilt = await spurStringAsync().minLength(3).maxLength(12).build()
 
 // Inline spur schemas
-const spurInlineBuilt = await spurStringInline().minLength(3).maxLength(12)['~build']()
+const spurInlineBuilt = await spurStringInline().minLength(3).maxLength(12).build()
 
 // Zod
 const zValid = z.string().min(3).max(12)
@@ -29,16 +25,13 @@ const vSchema = v.pipe(v.string(), v.minLength(3), v.maxLength(12))
 
 describe('string: valid parse', () => {
   bench('spur unbuild async valid', () => {
-    safeParseAsync(spurAsyncUnbuild, validString)
+    spurAsyncUnbuild.safeParse(validString)
   })
   bench('spur async valid', () => {
-    safeParseAsync(spurAsyncBuilt, validString)
-  })
-  bench('spur sync valid', () => {
-    safeParseSync(spurSyncBuilt, validString)
+    spurAsyncBuilt.safeParse(validString)
   })
   bench('spur inline valid', () => {
-    safeParseInlined(spurInlineBuilt, validString)
+    spurInlineBuilt.safeParse(validString)
   })
   bench('zod valid', () => {
     zValid.safeParse(validString)
@@ -50,16 +43,13 @@ describe('string: valid parse', () => {
 
 describe('string: invalid parse', () => {
   bench('spur unbuild async invalid', () => {
-    safeParseAsync(spurAsyncUnbuild, invalidString)
+    spurAsyncUnbuild.safeParse(validString)
   })
   bench('spur async invalid', () => {
-    safeParseAsync(spurAsyncBuilt, invalidString)
-  })
-  bench('spur sync invalid', () => {
-    safeParseSync(spurSyncBuilt, invalidString)
+    spurAsyncBuilt.safeParse(validString)
   })
   bench('spur inline invalid', () => {
-    safeParseInlined(spurInlineBuilt, invalidString)
+    spurInlineBuilt.safeParse(invalidString)
   })
   bench('zod invalid', () => {
     zValid.safeParse(invalidString)

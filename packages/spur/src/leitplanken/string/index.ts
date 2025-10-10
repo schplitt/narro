@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput, EvaluableSchema } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput } from '../../types/schema'
 
 export interface StringSchema<TOutput = string, TInput = string, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
   minLength: (minLength: number) => StringSchema<TOutput, TInput, TCommonOptions>
@@ -32,74 +32,85 @@ export function string<TOutput = string, TInput = string, TCommonOptions extends
 
   const s: StringSchema<TOutput, TInput, TCommonOptions> = {
 
-    'length': (length) => {
+    length: (length) => {
       childCheckableImports.push(() => import('../_shared/length').then(m => m.default(length)))
       return s
     },
 
-    'minLength': (minLength) => {
+    minLength: (minLength) => {
       childCheckableImports.push(() => import('../_shared/minLength').then(m => m.default(minLength)))
       return s
     },
 
-    'maxLength': (maxLength) => {
+    maxLength: (maxLength) => {
       childCheckableImports.push(() => import('../_shared/maxLength').then(m => m.default(maxLength)))
       return s
     },
 
-    'endsWith': (end) => {
+    endsWith: (end) => {
       childCheckableImports.push(() => import('./endsWith').then(m => m.default(end)))
       return s
     },
 
-    'startsWith': (start) => {
+    startsWith: (start) => {
       childCheckableImports.push(() => import('./startsWith').then(m => m.default(start)))
       return s
     },
 
-    'default': (value) => {
+    default: (value) => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
       return s as any as StringSchema<string, string | undefined | null, MakeDefaulted<TCommonOptions>>
     },
 
-    'optional': () => {
+    optional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
       return s as any as StringSchema<string | undefined, string | undefined, MakeOptional<TCommonOptions>>
     },
 
-    'exactOptional': () => {
+    exactOptional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
       return s as any as StringSchema<string | undefined, string | undefined, MakeExactOptional<TCommonOptions>>
     },
 
-    'undefinable': () => {
+    undefinable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
       return s as any as StringSchema<string | undefined, string | undefined, MakeUndefinable<TCommonOptions>>
     },
 
-    'required': () => {
+    required: () => {
       optionalityBranchCheckableImport = undefined
       return s as any as StringSchema<string, string, MakeRequired<TCommonOptions>>
     },
 
-    'nullable': () => {
+    nullable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
       return s as any as StringSchema<string | null, string | null, MakeNullable<TCommonOptions>>
     },
 
-    'nullish': () => {
+    nullish: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
       return s as any as StringSchema<string | undefined | null, string | undefined | null, MakeNullish<TCommonOptions>>
     },
 
-    '~build': () => {
+    // @ts-expect-error - TODO: Currently the types are not correct as TOutput can be different due to optionality
+    build: async () => {
       return import('../../build/build').then(({ buildEvaluableSchema }) => {
         return buildEvaluableSchema(
           sourceCheckableImport,
           optionalityBranchCheckableImport,
           childCheckableImports,
-        ) as Promise<EvaluableSchema<TOutput>>
+        )
       })
+    },
+
+    parse: async (input: unknown) => {
+      const built = await s.build()
+      return built.parse(input)
+    },
+
+    safeParse: async (input: unknown) => {
+      const built = await s.build()
+      return built.safeParse(input)
     },
   }
 
