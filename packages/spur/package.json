@@ -3,10 +3,27 @@
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@10.15.1",
-  "description": "Monorepo for Spur",
-  "author": "",
-  "license": "ISC",
-  "keywords": [],
+  "description": "Lightweight TypeScript-first schema validation library with Zod-like API",
+  "author": "schplitt",
+  "license": "MIT",
+  "homepage": "https://github.com/schplitt/spur/tree/main/packages/spur#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schplitt/spur.git",
+    "directory": "packages/spur"
+  },
+  "bugs": {
+    "url": "https://github.com/schplitt/spur/issues"
+  },
+  "keywords": [
+    "typescript",
+    "validation",
+    "schema",
+    "parser",
+    "data-validation",
+    "spur",
+    "zod-alternative"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -28,7 +45,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "typecheck": "vitest --typecheck",

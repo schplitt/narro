@@ -4,9 +4,23 @@
   "version": "0.0.0",
   "packageManager": "pnpm@10.15.1",
   "description": "Monorepo for Spur",
-  "author": "",
-  "license": "ISC",
-  "keywords": [],
+  "author": "schplitt",
+  "license": "MIT",
+  "homepage": "https://github.com/schplitt/spur#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schplitt/spur.git"
+  },
+  "bugs": {
+    "url": "https://github.com/schplitt/spur/issues"
+  },
+  "keywords": [
+    "spur",
+    "typescript",
+    "schema",
+    "validation",
+    "monorepo"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
@@ -15,6 +29,9 @@
     "lint:fix": "eslint . --fix",
     "release": "bumpp -r",
     "prerelease": "eslint . && tsc --noEmit && vitest run"
+  },
+  "dependencies": {
+    "bumpp": "^10.3.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.2.2",
