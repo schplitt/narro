@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, DefaultInput, EvaluableSchema, SourceCheckableImport } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, DefaultInput, SourceCheckableImport } from '../../types/schema'
 
 export type Enum = [string | number | boolean, ...(string | number | boolean)[]]
 

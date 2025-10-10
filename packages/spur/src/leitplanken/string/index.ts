@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput, EvaluableSchema } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput } from '../../types/schema'
 
 export interface StringSchema<TOutput = string, TInput = string, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
   minLength: (minLength: number) => StringSchema<TOutput, TInput, TCommonOptions>

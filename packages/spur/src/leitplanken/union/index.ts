@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, DefaultInput, EvaluableSchema } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, DefaultInput } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 
 // TODO: primitives like string and number could be extended to have like "1" | "2" | (string & {}) as output to keep typehints

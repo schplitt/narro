@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput, EvaluableSchema } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput } from '../../types/schema'
 
 // TODO: could have typesafe default with (number & {}) | <default>
 

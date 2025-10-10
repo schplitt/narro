@@ -1,4 +1,4 @@
-import type { BuildableSchema, EvaluableSchema, SourceCheckableImport } from '../../types/schema'
+import type { BuildableSchema, SourceCheckableImport } from '../../types/schema'
 
 export interface NullSchema extends BuildableSchema<null, null> {
 

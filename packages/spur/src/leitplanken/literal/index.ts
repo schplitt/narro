@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, DefaultInput, EvaluableSchema, SourceCheckableImport } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, DefaultInput, SourceCheckableImport } from '../../types/schema'
 
 export interface LiteralSchema<TLiteral extends string | number | boolean, TOutput = TLiteral, TInput = TLiteral, TCommonOptions extends CommonOptions = DefaultCommonOptions> extends BuildableSchema<TOutput, TInput, TCommonOptions> {
   default: (value: DefaultInput<TOutput>) => LiteralSchema<TLiteral, TLiteral, TLiteral | undefined | null, MakeDefaulted<TCommonOptions>>
