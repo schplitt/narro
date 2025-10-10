@@ -21,49 +21,58 @@ export function literal<TLiteral extends string | number | boolean, TOutput = TL
   const sourceCheckableImport: SourceCheckableImport<TLiteral> = () => import('./literal').then(m => m.default(_value))
 
   const l: LiteralSchema<TLiteral, TOutput, TInput, TCommonOptions> = {
-    'default': (value) => {
+    default: (value) => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
       return l as any as LiteralSchema<TLiteral, TLiteral, TLiteral | undefined | null, MakeDefaulted<TCommonOptions>>
     },
 
-    'optional': () => {
+    optional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
       return l as any as LiteralSchema<TLiteral, TLiteral | undefined, TLiteral | undefined, MakeOptional<TCommonOptions>>
     },
 
-    'exactOptional': () => {
+    exactOptional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
       return l as any as LiteralSchema<TLiteral, TLiteral | undefined, TLiteral | undefined, MakeExactOptional<TCommonOptions>>
     },
 
-    'undefinable': () => {
+    undefinable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
       return l as any as LiteralSchema<TLiteral, TLiteral | undefined, TLiteral | undefined, MakeUndefinable<TCommonOptions>>
     },
 
-    'required': () => {
+    required: () => {
       optionalityBranchCheckableImport = undefined
       return l as any as LiteralSchema<TLiteral, TLiteral, TLiteral, MakeRequired<TCommonOptions>>
     },
 
-    'nullable': () => {
+    nullable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
       return l as any as LiteralSchema<TLiteral, TLiteral | null, TLiteral | null, MakeNullable<TCommonOptions>>
     },
 
-    'nullish': () => {
+    nullish: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
       return l as any as LiteralSchema<TLiteral, TLiteral | undefined | null, TLiteral | undefined | null, MakeNullish<TCommonOptions>>
     },
 
-    '~build': () => {
+    build: async () => {
       return import('../../build/build').then(({ buildEvaluableSchema }) => {
         return buildEvaluableSchema(
           sourceCheckableImport,
           optionalityBranchCheckableImport,
-          [],
-        ) as Promise<EvaluableSchema<TOutput>>
+        )
       })
+    },
+
+    parse: async (input) => {
+      const built = await l.build()
+      return built.parse(input)
+    },
+
+    safeParse: async (input) => {
+      const built = await l.build()
+      return built.safeParse(input)
     },
   }
 

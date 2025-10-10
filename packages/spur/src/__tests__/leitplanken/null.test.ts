@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest'
 
-import { null as nullSchema, parse, safeParse } from '../../index'
+import { null as nullSchema } from '../../index'
 
 describe('null schema', () => {
   it('accepts null values', async () => {
     const schema = nullSchema()
 
-    await expect(parse(schema, null)).resolves.toBeNull()
+    await expect(schema.parse(null)).resolves.toBeNull()
   })
 
   it('rejects non-null values', async () => {
     const schema = nullSchema()
-    const report = await safeParse(schema, 'not-null')
+    const report = await schema.safeParse('not-null')
 
     expect(report.passed).toBe(false)
     expect('value' in report).toBe(false)

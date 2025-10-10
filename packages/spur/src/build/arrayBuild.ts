@@ -11,7 +11,7 @@ export async function buildEvaluableArraySchema<TElementOutput, TArrayOutput ext
   const sourcePromise = sourceCheckableImport()
   const optionalityPromise = optionalityBranchCheckableImport ? optionalityBranchCheckableImport() : Promise.resolve(undefined)
   const checkablesPromise = Promise.all(childCheckableImports.map(ci => ci()))
-  const elementSchemaPromise = elementSchema['~build']()
+  const elementSchemaPromise = elementSchema.build()
 
   const [sourceCheckable, optionalityCheckable, checkables, evaluableElementSchema] = await Promise.all([
     sourcePromise,

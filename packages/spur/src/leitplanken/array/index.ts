@@ -1,5 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions, MakeDefaulted, MakeExactOptional, MakeNullable, MakeNullish, MakeOptional, MakeRequired, MakeUndefinable } from '../../options/options'
-import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput } from '../../types/schema'
+import type { BranchCheckableImport, BuildableSchema, CheckableImport, DefaultInput, EvaluableSchema } from '../../types/schema'
 import type { InferInput, InferOutput } from '../../types/utils'
 
 type InferArrayOutput<T extends BuildableSchema<unknown, unknown, CommonOptions>> = Array<InferOutput<T>>
@@ -36,57 +36,57 @@ export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOp
   const childCheckableImports: CheckableImport<any>[] = []
 
   const a: ArraySchema<TSchema, TOutput, TInput, TCommonOptions> = {
-    'minLength': (minLength) => {
+    minLength: (minLength) => {
       childCheckableImports.push(() => import('../_shared/minLength').then(m => m.default(minLength)))
       return a
     },
 
-    'maxLength': (maxLength) => {
+    maxLength: (maxLength) => {
       childCheckableImports.push(() => import('../_shared/maxLength').then(m => m.default(maxLength)))
       return a
     },
 
-    'length': (length) => {
+    length: (length) => {
       childCheckableImports.push(() => import('../_shared/length').then(m => m.default(length)))
       return a
     },
 
-    'default': (value) => {
+    default: (value) => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
       return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema> | undefined | null, MakeDefaulted<TCommonOptions>>
     },
 
-    'optional': () => {
+    optional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
       return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeOptional<TCommonOptions>>
     },
 
-    'exactOptional': () => {
+    exactOptional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
       return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeExactOptional<TCommonOptions>>
     },
 
-    'undefinable': () => {
+    undefinable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
       return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined, InferArrayInput<TSchema> | undefined, MakeUndefinable<TCommonOptions>>
     },
 
-    'required': () => {
+    required: () => {
       optionalityBranchCheckableImport = undefined
       return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema>, InferArrayInput<TSchema>, MakeRequired<TCommonOptions>>
     },
 
-    'nullable': () => {
+    nullable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
       return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | null, InferArrayInput<TSchema> | null, MakeNullable<TCommonOptions>>
     },
 
-    'nullish': () => {
+    nullish: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
       return a as any as ArraySchema<TSchema, InferArrayOutput<TSchema> | undefined | null, InferArrayInput<TSchema> | undefined | null, MakeNullish<TCommonOptions>>
     },
 
-    '~build': async () => {
+    build: async () => {
       return import('../../build/arrayBuild').then(m => m.buildEvaluableArraySchema(
         sourceCheckableImport,
         optionalityBranchCheckableImport,
@@ -95,18 +95,38 @@ export function array<TSchema extends BuildableSchema<unknown, unknown, CommonOp
       ))
     },
 
-    'transform': (fn) => {
-      return {
-        '~build': async () => {
+    parse: async (input) => {
+      const built = await a.build()
+      return built.parse(input)
+    },
+
+    safeParse: async (input) => {
+      const built = await a.build()
+      return built.safeParse(input)
+    },
+
+    transform: <TTransformOutput>(fn: (input: TOutput) => TTransformOutput) => {
+      const transformed: BuildableSchema<TTransformOutput, TInput, TCommonOptions> = {
+        build: async () => {
           return import('../../build/arrayBuild').then(m => m.buildEvaluableArraySchemaWithTransform(
             sourceCheckableImport,
             optionalityBranchCheckableImport,
             childCheckableImports,
             elementSchema,
-            fn as any,
+            fn,
           ))
         },
+        parse: async (input) => {
+          const built = await transformed.build()
+          return built.parse(input)
+        },
+        safeParse: async (input) => {
+          const built = await transformed.build()
+          return built.safeParse(input)
+        },
       }
+
+      return transformed
     },
   }
 

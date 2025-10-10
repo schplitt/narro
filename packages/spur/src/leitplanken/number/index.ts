@@ -29,50 +29,62 @@ export function number<TOutput = number, TInput = number, TCommonOptions extends
   const childCheckableImports: CheckableImport<number>[] = []
 
   const n: NumberSchema<TOutput, TInput, TCommonOptions> = {
-    'min': (min) => {
+    min: (min) => {
       childCheckableImports.push(() => import('./min').then(m => m.default(min)))
       return n
     },
-    'max': (max) => {
+    max: (max) => {
       childCheckableImports.push(() => import('./max').then(m => m.default(max)))
       return n
     },
-    'default': (value) => {
+    default: (value) => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/defaulted').then(m => m.default(value))
       return n as any as NumberSchema<number, number | undefined | null, MakeDefaulted<TCommonOptions>>
     },
-    'optional': () => {
+    optional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/optional').then(m => m.default)
       return n as any as NumberSchema<number | undefined, number | undefined, MakeOptional<TCommonOptions>>
     },
-    'exactOptional': () => {
+    exactOptional: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/exactOptional').then(m => m.default)
       return n as any as NumberSchema<number | undefined, number | undefined, MakeExactOptional<TCommonOptions>>
     },
-    'undefinable': () => {
+    undefinable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/undefinable').then(m => m.default)
       return n as any as NumberSchema<number | undefined, number | undefined, MakeUndefinable<TCommonOptions>>
     },
-    'required': () => {
+    required: () => {
       optionalityBranchCheckableImport = undefined
       return n as any as NumberSchema<number, number, MakeRequired<TCommonOptions>>
     },
-    'nullable': () => {
+    nullable: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullable').then(m => m.default)
       return n as any as NumberSchema<number | null, number | null, MakeNullable<TCommonOptions>>
     },
-    'nullish': () => {
+    nullish: () => {
       optionalityBranchCheckableImport = () => import('../_shared/optionality/nullish').then(m => m.default)
       return n as any as NumberSchema<number | undefined | null, number | undefined | null, MakeNullish<TCommonOptions>>
     },
-    '~build': () => {
+
+    // @ts-expect-error - Output type does not match as type could have been overwritten
+    build: async () => {
       return import('../../build/build').then(({ buildEvaluableSchema }) => {
         return buildEvaluableSchema(
           sourceCheckableImport,
           optionalityBranchCheckableImport,
           childCheckableImports,
-        ) as Promise<EvaluableSchema<TOutput>>
+        )
       })
+    },
+
+    parse: async (input) => {
+      const built = await n.build()
+      return built.parse(input)
+    },
+
+    safeParse: async (input) => {
+      const built = await n.build()
+      return built.safeParse(input)
     },
   }
 

@@ -13,13 +13,13 @@ const invalidNumber = 142
 const spurAsyncUnbuild = spurNumberAsync().min(0).max(100)
 
 // Spur async schemas (with constraints)
-const spurAsyncBuilt = await (spurNumberAsync().min(0).max(100))['~build']()
+const spurAsyncBuilt = await (spurNumberAsync().min(0).max(100)).build()
 
 // Spur sync schemas (with constraints)
-const spurSyncBuilt = spurNumberSync().min(0).max(100)['~build']()
+const spurSyncBuilt = spurNumberSync().min(0).max(100).build()
 
 // Spur inline schemas (with constraints)
-const spurInlineBuilt = await spurNumberInline().min(0).max(100)['~build']()
+const spurInlineBuilt = await spurNumberInline().min(0).max(100).build()
 
 // Zod schemas (with constraints)
 const zValid = z.number().min(0).max(100)

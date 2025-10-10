@@ -25,7 +25,7 @@ export async function buildEvaluableObjectSchema<TOutput extends object>(
   const optionalityPromise = optionalityBranchCheckableImport ? optionalityBranchCheckableImport() : Promise.resolve(undefined)
   const objectSchemasPromise: Promise<ObjectSchemas[]> = Promise.all(
     Object.entries(objectEntries).map(async ([key, schema]) => {
-      const builtSchema = await schema['~build']()
+      const builtSchema = await schema.build()
       return { key, schema: builtSchema }
     }),
   )
