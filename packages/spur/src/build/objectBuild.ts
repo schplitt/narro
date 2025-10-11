@@ -181,16 +181,16 @@ export function buildObjectSchema<TOutput extends object>(
           break
         case 'strict':
         {
-          // we check if there are any extra keys in the input object that are not in the value
+          // we check if there are any extra keys in the input object that are not in the returned data from the source
           let hasExtraKeys = false
           for (const key in input as object) {
             if (!(key in (sourceReport.data as object))) {
               hasExtraKeys = true
-            }
-            if (hasExtraKeys) {
               break
             }
           }
+          if (!hasExtraKeys)
+            break
           // we have an extra key, so we fail the report
           (sourceReport as any as SchemaReportFailure).success = false
           // we add the source checkable id to the failed ids

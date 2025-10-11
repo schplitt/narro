@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { number, string } from '../../index'
+import { number, string, undefined as undefinedSchema } from '../../index'
 import { object } from '../../leitplanken/object'
 
 describe('object schema', () => {
@@ -176,6 +176,148 @@ describe('object schema', () => {
     })
 
     expect(res.success).toBe(true)
+  })
+
+  describe('property optionality enforcement', () => {
+    describe('exactOptional entries', () => {
+      it('fails when key is present', async () => {
+        const schema = object({
+          label: string().exactOptional(),
+        })
+
+        const result = await schema.safeParse({ label: undefined })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when key is omitted', async () => {
+        const schema = object({
+          label: string().exactOptional(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({})
+      })
+    })
+
+    describe('nullish entries', () => {
+      it('fails when key is omitted', async () => {
+        const schema = object({
+          label: string().nullish(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when key is present', async () => {
+        const schema = object({
+          label: string().nullish(),
+        })
+
+        const result = await schema.safeParse({ label: undefined })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ label: undefined })
+      })
+    })
+
+    describe('undefinable entries', () => {
+      it('fails when key is omitted', async () => {
+        const schema = object({
+          label: string().undefinable(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when key is present', async () => {
+        const schema = object({
+          label: string().undefinable(),
+        })
+
+        const result = await schema.safeParse({ label: undefined })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ label: undefined })
+      })
+    })
+
+    describe('undefined schema entries', () => {
+      it('fails when key is omitted', async () => {
+        const schema = object({
+          label: undefinedSchema(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when key is present', async () => {
+        const schema = object({
+          label: undefinedSchema(),
+        })
+
+        const result = await schema.safeParse({ label: undefined })
+
+        expect(result.success).toBe(true)
+        // property must stay present even when value is undefined
+        expect(result.data).toEqual({ label: undefined })
+      })
+    })
+  })
+
+  describe('shape modifiers', () => {
+    it('strict fails when unknown keys exist', async () => {
+      const schema = object({
+        label: string(),
+      }).strict()
+
+      const result = await schema.safeParse({ label: 'Spur', alias: 'Team' })
+
+      expect(result.success).toBe(false)
+      expect('data' in result).toBe(false)
+    })
+
+    it('strict passes without unknown keys', async () => {
+      const schema = object({
+        label: string(),
+      }).strict()
+
+      const result = await schema.safeParse({ label: 'Spur' })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({ label: 'Spur' })
+    })
+
+    it('passthrough retains unknown keys', async () => {
+      const schema = object({
+        label: string(),
+      }).passthrough()
+
+      const result = await schema.safeParse({ label: 'Spur', alias: 'Team' })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({ label: 'Spur', alias: 'Team' })
+    })
+
+    it('strip removes unknown keys', async () => {
+      const schema = object({
+        label: string(),
+      }).strip()
+
+      const result = await schema.safeParse({ label: 'Spur', alias: 'Team' })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({ label: 'Spur' })
+      expect(Object.prototype.hasOwnProperty.call(result.data, 'alias')).toBe(false)
+    })
   })
 
   // TODO: test transform and the undefined, exactOptional extra logic
