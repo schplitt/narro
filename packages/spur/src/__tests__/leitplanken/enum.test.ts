@@ -42,6 +42,30 @@ describe('enum schema', () => {
     expect(nullReport.success).toBe(false)
   })
 
+  it('supports exactOptional modifier', async () => {
+    const schema = enumSchema(['exact', 'other']).exactOptional()
+
+    const undefinedReport = await schema.safeParse(undefined)
+    expect(undefinedReport.success).toBe(true)
+    expect(undefinedReport.data).toBeUndefined()
+
+    const definedReport = await schema.safeParse('exact')
+    expect(definedReport.success).toBe(true)
+    expect(definedReport.data).toBe('exact')
+  })
+
+  it('supports undefinable modifier', async () => {
+    const schema = enumSchema(['undef', 'other']).undefinable()
+
+    const undefinedReport = await schema.safeParse(undefined)
+    expect(undefinedReport.success).toBe(true)
+    expect(undefinedReport.data).toBeUndefined()
+
+    const definedReport = await schema.safeParse('undef')
+    expect(definedReport.success).toBe(true)
+    expect(definedReport.data).toBe('undef')
+  })
+
   it('supports default modifier', async () => {
     const schema = enumSchema(['fallback', 'value']).default('fallback')
 
