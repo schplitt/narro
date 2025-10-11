@@ -31,10 +31,10 @@ export async function buildEvaluableUnionSchemaWithTransform<
   return {
     safeParse: (input: unknown) => {
       const report = baseSchema.safeParse(input) as SchemaReport<TOutput>
-      if (report.passed) {
+      if (report.success) {
         return {
           ...report,
-          value: transformFn(report.value),
+          data: transformFn(report.data),
         } as SchemaReport<TTransformOutput>
       }
 
@@ -60,16 +60,16 @@ export function buildUnionSchema<TOutput>(
 
     for (const schema of evaluableSchemas) {
       const report = schema.safeParse(input) as SchemaReport<TOutput>
-      if (!report.passed) {
-        delete (report as any).value
+      if (!report.success) {
+        delete (report as any).data
       }
       reports.push(report)
     }
 
     if (optionalityBranchCheckable) {
       const optionalityReport = optionalityBranchCheckable['~c'](input) as SchemaReport<TOutput>
-      if (!optionalityReport.passed) {
-        delete optionalityReport.value
+      if (!optionalityReport.success) {
+        delete optionalityReport.data
       }
       reports.push(optionalityReport)
     }
@@ -89,8 +89,8 @@ export function buildUnionSchema<TOutput>(
 
     const remainingReports = reports.filter(report => report !== bestReport)
     if (remainingReports.length > 0) {
-      const existingUnionReports = bestReport.unionReports ?? []
-      bestReport.unionReports = existingUnionReports.length > 0
+      const existingUnionReports = bestReport.metaData.unionReports ?? []
+      bestReport.metaData.unionReports = existingUnionReports.length > 0
         ? [...existingUnionReports, ...remainingReports]
         : remainingReports
     }
@@ -102,8 +102,8 @@ export function buildUnionSchema<TOutput>(
     safeParse,
     parse: (input: unknown) => {
       const report = safeParse(input)
-      if (report.passed) {
-        return report.value as TOutput
+      if (report.success) {
+        return report.data as TOutput
       }
       throw new Error('Input did not match any union branch')
     },
@@ -114,16 +114,16 @@ function selectBetterReport<TOutput>(
   currentBest: SchemaReport<TOutput>,
   candidate: SchemaReport<TOutput>,
 ): SchemaReport<TOutput> {
-  if (candidate.passed) {
-    if (!currentBest.passed) {
+  if (candidate.success) {
+    if (!currentBest.success) {
       return candidate
     }
-    return candidate.score > currentBest.score ? candidate : currentBest
+    return candidate.metaData.score > currentBest.metaData.score ? candidate : currentBest
   }
 
-  if (currentBest.passed) {
+  if (currentBest.success) {
     return currentBest
   }
 
-  return candidate.score > currentBest.score ? candidate : currentBest
+  return candidate.metaData.score > currentBest.metaData.score ? candidate : currentBest
 }

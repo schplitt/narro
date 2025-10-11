@@ -13,7 +13,7 @@ describe('null schema', () => {
     const schema = nullSchema()
     const report = await schema.safeParse('not-null')
 
-    expect(report.passed).toBe(false)
-    expect('value' in report).toBe(false)
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
   })
 })

@@ -14,8 +14,8 @@ describe('enum schema', () => {
     const schema = enumSchema(['one', 'two'])
     const report = await schema.safeParse('three')
 
-    expect(report.passed).toBe(false)
-    expect('value' in report).toBe(false)
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
   })
 
   it('supports numeric enums', async () => {
@@ -24,22 +24,22 @@ describe('enum schema', () => {
     await expect(schema.parse(2)).resolves.toBe(2)
 
     const miss = await schema.safeParse(4)
-    expect(miss.passed).toBe(false)
+    expect(miss.success).toBe(false)
   })
 
   it('supports optional modifier', async () => {
     const schema = enumSchema(['optional', 'other']).optional()
 
     const hit = await schema.safeParse('optional')
-    expect(hit.passed).toBe(true)
-    expect(hit.value).toBe('optional')
+    expect(hit.success).toBe(true)
+    expect(hit.data).toBe('optional')
 
     const optionalReport = await schema.safeParse(undefined)
-    expect(optionalReport.passed).toBe(true)
-    expect(optionalReport.value).toBeUndefined()
+    expect(optionalReport.success).toBe(true)
+    expect(optionalReport.data).toBeUndefined()
 
     const nullReport = await schema.safeParse(null)
-    expect(nullReport.passed).toBe(false)
+    expect(nullReport.success).toBe(false)
   })
 
   it('supports default modifier', async () => {
@@ -54,30 +54,30 @@ describe('enum schema', () => {
     const schema = enumSchema(['nullable']).nullable()
 
     const nullReport = await schema.safeParse(null)
-    expect(nullReport.passed).toBe(true)
-    expect(nullReport.value).toBeNull()
+    expect(nullReport.success).toBe(true)
+    expect(nullReport.data).toBeNull()
 
     const undefinedReport = await schema.safeParse(undefined)
-    expect(undefinedReport.passed).toBe(false)
+    expect(undefinedReport.success).toBe(false)
   })
 
   it('supports nullish modifier', async () => {
     const schema = enumSchema([1, 2]).nullish()
 
     const undefinedReport = await schema.safeParse(undefined)
-    expect(undefinedReport.passed).toBe(true)
-    expect(undefinedReport.value).toBeUndefined()
+    expect(undefinedReport.success).toBe(true)
+    expect(undefinedReport.data).toBeUndefined()
 
     const nullReport = await schema.safeParse(null)
-    expect(nullReport.passed).toBe(true)
-    expect(nullReport.value).toBeNull()
+    expect(nullReport.success).toBe(true)
+    expect(nullReport.data).toBeNull()
   })
 
   it('applies required after optional', async () => {
     const schema = enumSchema(['value']).optional().required()
 
     const report = await schema.safeParse(undefined)
-    expect(report.passed).toBe(false)
+    expect(report.success).toBe(false)
   })
 
   it('uses last optionality modifier wins semantics', async () => {
@@ -85,18 +85,18 @@ describe('enum schema', () => {
     const nullableThenOptional = enumSchema(['x', 'y']).nullable().optional()
 
     const optionalThenNullableNull = await optionalThenNullable.safeParse(null)
-    expect(optionalThenNullableNull.passed).toBe(true)
-    expect(optionalThenNullableNull.value).toBeNull()
+    expect(optionalThenNullableNull.success).toBe(true)
+    expect(optionalThenNullableNull.data).toBeNull()
 
     const optionalThenNullableUndefined = await optionalThenNullable.safeParse(undefined)
-    expect(optionalThenNullableUndefined.passed).toBe(false)
+    expect(optionalThenNullableUndefined.success).toBe(false)
 
     const nullableThenOptionalUndefined = await nullableThenOptional.safeParse(undefined)
-    expect(nullableThenOptionalUndefined.passed).toBe(true)
-    expect(nullableThenOptionalUndefined.value).toBeUndefined()
+    expect(nullableThenOptionalUndefined.success).toBe(true)
+    expect(nullableThenOptionalUndefined.data).toBeUndefined()
 
     const nullableThenOptionalNull = await nullableThenOptional.safeParse(null)
-    expect(nullableThenOptionalNull.passed).toBe(false)
+    expect(nullableThenOptionalNull.success).toBe(false)
   })
 
   it('supports boolean enum', async () => {
@@ -106,19 +106,19 @@ describe('enum schema', () => {
     await expect(schema.parse(false)).resolves.toBe(false)
 
     const miss = await schema.safeParse('true')
-    expect(miss.passed).toBe(false)
+    expect(miss.success).toBe(false)
   })
 
   it('supports boolean enum with optional modifier', async () => {
     const schema = enumSchema([true, false]).optional()
 
     const hit = await schema.safeParse(true)
-    expect(hit.passed).toBe(true)
-    expect(hit.value).toBe(true)
+    expect(hit.success).toBe(true)
+    expect(hit.data).toBe(true)
 
     const optionalReport = await schema.safeParse(undefined)
-    expect(optionalReport.passed).toBe(true)
-    expect(optionalReport.value).toBeUndefined()
+    expect(optionalReport.success).toBe(true)
+    expect(optionalReport.data).toBeUndefined()
   })
 
   it('supports boolean enum with default modifier', async () => {
@@ -137,6 +137,6 @@ describe('enum schema', () => {
     await expect(schema.parse(false)).resolves.toBe(false)
 
     const miss = await schema.safeParse('true')
-    expect(miss.passed).toBe(false)
+    expect(miss.success).toBe(false)
   })
 })

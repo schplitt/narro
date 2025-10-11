@@ -24,8 +24,8 @@ describe('object schema', () => {
 
     const report = await schema.safeParse({ name: 'A', age: -5 })
 
-    expect(report.passed).toBe(false)
-    expect('value' in report).toBe(false)
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
   })
 
   it('supports optional modifier', async () => {
@@ -37,10 +37,8 @@ describe('object schema', () => {
     expect(value).toEqual({ name: 'Spur' })
 
     const optionalResult = await schema.safeParse(undefined)
-    expect(optionalResult.passed).toBe(true)
-    if (optionalResult.passed) {
-      expect(optionalResult.value).toBeUndefined()
-    }
+    expect(optionalResult.success).toBe(true)
+    expect(optionalResult.data).toBeUndefined()
   })
 
   it('supports exactOptional modifier', async () => {
@@ -49,10 +47,8 @@ describe('object schema', () => {
     }).exactOptional()
 
     const report = await schema.safeParse(undefined)
-    expect(report.passed).toBe(true)
-    if (report.passed) {
-      expect(report.value).toBeUndefined()
-    }
+    expect(report.success).toBe(true)
+    expect(report.data).toBeUndefined()
   })
 
   it('supports undefinable modifier', async () => {
@@ -61,16 +57,12 @@ describe('object schema', () => {
     }).undefinable()
 
     const undefinedResult = await schema.safeParse(undefined)
-    expect(undefinedResult.passed).toBe(true)
-    if (undefinedResult.passed) {
-      expect(undefinedResult.value).toBeUndefined()
-    }
+    expect(undefinedResult.success).toBe(true)
+    expect(undefinedResult.data).toBeUndefined()
 
     const definedResult = await schema.safeParse({ active: 'yes' })
-    expect(definedResult.passed).toBe(true)
-    if (definedResult.passed) {
-      expect(definedResult.value).toEqual({ active: 'yes' })
-    }
+    expect(definedResult.success).toBe(true)
+    expect(definedResult.data).toEqual({ active: 'yes' })
   })
 
   it('supports nullable modifier', async () => {
@@ -79,13 +71,11 @@ describe('object schema', () => {
     }).nullable()
 
     const nullResult = await schema.safeParse(null)
-    expect(nullResult.passed).toBe(true)
-    if (nullResult.passed) {
-      expect(nullResult.value).toBeNull()
-    }
+    expect(nullResult.success).toBe(true)
+    expect(nullResult.data).toBeNull()
 
     const undefinedResult = await schema.safeParse(undefined)
-    expect(undefinedResult.passed).toBe(false)
+    expect(undefinedResult.success).toBe(false)
   })
 
   it('supports nullish modifier', async () => {
@@ -94,16 +84,12 @@ describe('object schema', () => {
     }).nullish()
 
     const nullResult = await schema.safeParse(null)
-    expect(nullResult.passed).toBe(true)
-    if (nullResult.passed) {
-      expect(nullResult.value).toBeNull()
-    }
+    expect(nullResult.success).toBe(true)
+    expect(nullResult.data).toBeNull()
 
     const undefinedResult = await schema.safeParse(undefined)
-    expect(undefinedResult.passed).toBe(true)
-    if (undefinedResult.passed) {
-      expect(undefinedResult.value).toBeUndefined()
-    }
+    expect(undefinedResult.success).toBe(true)
+    expect(undefinedResult.data).toBeUndefined()
   })
 
   it('supports default modifier', async () => {
@@ -123,7 +109,7 @@ describe('object schema', () => {
     }).optional().required()
 
     const report = await schema.safeParse(undefined)
-    expect(report.passed).toBe(false)
+    expect(report.success).toBe(false)
   })
 
   it('uses last optionality modifier wins semantics', async () => {
@@ -135,20 +121,16 @@ describe('object schema', () => {
     }).optional().nullable()
 
     const nullableThenOptionalUndefined = await nullableThenOptional.safeParse(undefined)
-    expect(nullableThenOptionalUndefined.passed).toBe(true)
-    if (nullableThenOptionalUndefined.passed) {
-      expect(nullableThenOptionalUndefined.value).toBeUndefined()
-    }
+    expect(nullableThenOptionalUndefined.success).toBe(true)
+    expect(nullableThenOptionalUndefined.data).toBeUndefined()
     const nullableThenOptionalNull = await nullableThenOptional.safeParse(null)
-    expect(nullableThenOptionalNull.passed).toBe(false)
+    expect(nullableThenOptionalNull.success).toBe(false)
 
     const optionalThenNullableNull = await optionalThenNullable.safeParse(null)
-    expect(optionalThenNullableNull.passed).toBe(true)
-    if (optionalThenNullableNull.passed) {
-      expect(optionalThenNullableNull.value).toBeNull()
-    }
+    expect(optionalThenNullableNull.success).toBe(true)
+    expect(optionalThenNullableNull.data).toBeNull()
     const optionalThenNullableUndefined = await optionalThenNullable.safeParse(undefined)
-    expect(optionalThenNullableUndefined.passed).toBe(false)
+    expect(optionalThenNullableUndefined.success).toBe(false)
   })
 
   it('allows nested optional entries', async () => {
@@ -178,7 +160,7 @@ describe('object schema', () => {
       }).optional(),
     })
 
-    expect(async () => await schema.parse({
+    const res = await schema.safeParse({
       id: 'user_12345',
       profile: {
         name: 'Alice',
@@ -191,7 +173,9 @@ describe('object schema', () => {
       tags: {
         primary: 'admin',
       },
-    })).not.toThrow()
+    })
+
+    expect(res.success).toBe(true)
   })
 
   // TODO: test transform and the undefined, exactOptional extra logic

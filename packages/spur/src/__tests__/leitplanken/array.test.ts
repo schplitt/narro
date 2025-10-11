@@ -16,22 +16,22 @@ describe('array schema', () => {
 
     const report = await schema.safeParse([1, -1])
 
-    expect(report.passed).toBe(false)
+    expect(report.success).toBe(false)
   })
 
   it('supports optional modifier on the array schema', async () => {
     const schema = array(string()).optional()
 
     const report = await schema.safeParse(undefined)
-    expect(report.passed).toBe(true)
-    expect(report.value).toBeUndefined()
+    expect(report.success).toBe(true)
+    expect(report.data).toBeUndefined()
   })
 
   it('enforces array-level minLength constraint', async () => {
     const schema = array(string()).minLength(2)
 
     const report = await schema.safeParse(['only-one'])
-    expect(report.passed).toBe(false)
+    expect(report.success).toBe(false)
   })
 
   it('allows transforming the parsed array result', async () => {
