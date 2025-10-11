@@ -15,23 +15,23 @@ describe('union schema', () => {
 
     const report = await schema.safeParse(true)
 
-    expect(report.passed).toBe(false)
-    expect('value' in report).toBe(false)
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
   })
 
   it('supports optional modifier', async () => {
     const schema = union([number(), string()]).optional()
 
     const definedReport = await schema.safeParse('ok')
-    expect(definedReport.passed).toBe(true)
-    expect(definedReport.value).toBe('ok')
+    expect(definedReport.success).toBe(true)
+    expect(definedReport.data).toBe('ok')
 
     const optionalReport = await schema.safeParse(undefined)
-    expect(optionalReport.passed).toBe(true)
-    expect(optionalReport.value).toBeUndefined()
+    expect(optionalReport.success).toBe(true)
+    expect(optionalReport.data).toBeUndefined()
 
     const nullReport = await schema.safeParse(null)
-    expect(nullReport.passed).toBe(false)
+    expect(nullReport.success).toBe(false)
   })
 
   it('supports default modifier', async () => {

@@ -1,14 +1,32 @@
 import type { BranchCheckable } from '../../../types/schema'
-import { undefinableCheckable } from './undefinable'
 
 export const optionalSymbol = Symbol('optional')
 
 export const optionalCheckable: BranchCheckable<undefined> = {
-  // is the same as undefinable
-  // key can be there and value undefined OR key can be missing
-  // -> NO own logic needed for object!!
-  ...undefinableCheckable,
   '~id': optionalSymbol,
+  '~c': (v) => {
+    // key can be there and value undefined OR key can be missing
+    // -> NO own logic needed for object!!
+    const passed = v === undefined
+    if (passed) {
+      return {
+        success: true,
+        data: undefined,
+        metaData: {
+          passedIds: new Set([optionalSymbol]),
+          score: 1,
+        },
+      }
+    }
+
+    return {
+      success: false,
+      metaData: {
+        failedIds: new Set([optionalSymbol]),
+        score: 0,
+      },
+    }
+  },
 }
 
 export default optionalCheckable

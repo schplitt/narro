@@ -42,10 +42,10 @@ export async function buildEvaluableArraySchemaWithTransform<TElementOutput, TAr
   return {
     safeParse: (input: unknown) => {
       const report = baseSchema.safeParse(input)
-      if (report.passed) {
+      if (report.success) {
         return {
           ...report,
-          value: transformFn(report.value),
+          data: transformFn(report.data),
         }
       }
       return report as SchemaReport<TTransformOutput>
@@ -72,9 +72,11 @@ export function buildArraySchema<TElementOutput, TArrayOutput extends unknown[]>
 
     if (!isSourceValid) {
       sourceReport = {
-        passed: false,
-        score: 0,
-        failedIds,
+        success: false,
+        metaData: {
+          score: 0,
+          failedIds,
+        },
       }
     }
     else {
@@ -82,55 +84,65 @@ export function buildArraySchema<TElementOutput, TArrayOutput extends unknown[]>
       passedIds.add(sourceCheckable['~id'])
 
       const baseReport = {
-        passed: true,
-        value: [] as unknown as TArrayOutput,
-        score: 1,
-        passedIds,
+        success: true,
+        data: [] as unknown as TArrayOutput,
+        metaData: {
+          score: 1,
+          passedIds,
+        },
       } as SchemaReport<TArrayOutput>
 
       for (const checkable of childCheckables) {
         const result = checkable['~c'](input as TArrayOutput)
         if (result) {
-          baseReport.score += 1
-          baseReport.passedIds!.add(checkable['~id'])
+          baseReport.metaData.score += 1
+          baseReport.metaData.passedIds!.add(checkable['~id'])
         }
         else {
-          (baseReport as unknown as SchemaReportFailure).passed = false
+          (baseReport as unknown as SchemaReportFailure).success = false
           const failureReport = baseReport as unknown as SchemaReportFailure
-          failureReport.failedIds ??= new Set<symbol>()
-          failureReport.failedIds.add(checkable['~id'])
+          failureReport.metaData.failedIds ??= new Set<symbol>()
+          failureReport.metaData.failedIds.add(checkable['~id'])
         }
       }
 
-      if (baseReport.passed) {
+      if (baseReport.success) {
         const parsedElements: TElementOutput[] = []
 
-        for (const element of input as unknown[]) {
+        for (let inputIndex = 0; inputIndex < input.length; inputIndex++) {
+          const element = input[inputIndex]
           const elementReport = elementSchema.safeParse(element)
-          baseReport.score += elementReport.score
+          // PATH PLACEHOLDER: set array element path metadata here when available
 
-          if (elementReport.passed) {
-            parsedElements.push(elementReport.value)
+          elementReport.metaData.path = {
+            pathType: 'arrayLikeElement',
+            index: inputIndex,
+          }
+
+          baseReport.metaData.score += elementReport.metaData.score
+
+          if (elementReport.success) {
+            parsedElements.push(elementReport.data)
           }
           else {
-            (baseReport as unknown as SchemaReportFailure).passed = false
+            (baseReport as unknown as SchemaReportFailure).success = false
             const failureReport = baseReport as unknown as SchemaReportFailure
-            failureReport.failedIds ??= new Set<symbol>()
-            if (elementReport.failedIds) {
-              elementReport.failedIds.forEach(id => failureReport.failedIds!.add(id))
+            failureReport.metaData.failedIds ??= new Set<symbol>()
+            if (elementReport.metaData.failedIds) {
+              elementReport.metaData.failedIds.forEach(id => failureReport.metaData.failedIds!.add(id))
             }
           }
         }
 
-        if (baseReport.passed) {
-          baseReport.value = parsedElements as unknown as TArrayOutput
+        if (baseReport.success) {
+          baseReport.data = parsedElements as unknown as TArrayOutput
         }
         else {
-          delete (baseReport as SchemaReportFailure).value
+          delete (baseReport as SchemaReportFailure).data
         }
       }
       else {
-        delete (baseReport as SchemaReportFailure).value
+        delete (baseReport as SchemaReportFailure).data
       }
 
       sourceReport = baseReport
@@ -143,8 +155,8 @@ export function buildArraySchema<TElementOutput, TArrayOutput extends unknown[]>
     safeParse,
     parse: (input: unknown) => {
       const report = safeParse(input)
-      if (report.passed) {
-        return report.value as TArrayOutput
+      if (report.success) {
+        return report.data as TArrayOutput
       }
       throw new Error('Input did not pass schema checks')
     },
