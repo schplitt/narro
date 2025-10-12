@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { number, string } from '../../index'
+import { _null, undefined as _undefined, literal, number, string, union } from '../../index'
 import { object } from '../../leitplanken/object'
 
 describe('object schema', () => {
@@ -179,4 +179,20 @@ describe('object schema', () => {
   })
 
   // TODO: test transform and the undefined, exactOptional extra logic
+
+  it('should work with the speciall cases (temp)', async () => {
+    const schema = object({
+      fallback: union([
+        _null(),
+        _undefined(),
+        literal('disabled'),
+        // @ts-expect-error - type error for now
+      ]).default(null),
+    })
+
+    const result = await schema.safeParse({ id: true })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ fallback: null })
+  })
 })
