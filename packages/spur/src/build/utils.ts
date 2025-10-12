@@ -45,3 +45,71 @@ export function mergeOptionality<TOutput>(
 
   return higherScoreReport
 }
+
+/**
+ * Flatten a union report tree into a list of candidates, removing nested union metadata in-place.
+ */
+export function flattenUnionReportCandidates<TOutput>(reports: SchemaReport<TOutput>[]): SchemaReport<TOutput>[] {
+  const flattened: SchemaReport<TOutput>[] = []
+
+  function collect(report: SchemaReport<TOutput>): void {
+    flattened.push(report)
+    const unionReports = report.metaData.unionReports
+    if (!unionReports) {
+      return
+    }
+    delete report.metaData.unionReports
+    for (const nested of unionReports) {
+      collect(nested)
+    }
+  }
+
+  for (const report of reports) {
+    collect(report)
+  }
+
+  return flattened
+}
+
+/**
+ * Pick the preferred report from a flattened candidate list, prioritizing successful reports with the highest score.
+ * Remaining candidates are reattached as union reports on the selected report.
+ */
+export function selectPreferredUnionReport<TOutput>(reports: SchemaReport<TOutput>[]): SchemaReport<TOutput> {
+  let bestSuccessful: SchemaReport<TOutput> | undefined
+  let bestSuccessfulScore = -Infinity
+  let bestOverall: SchemaReport<TOutput> | undefined
+  let bestOverallScore = -Infinity
+
+  for (const report of reports) {
+    const score = report.metaData.score
+
+    if (score > bestOverallScore) {
+      bestOverall = report
+      bestOverallScore = score
+    }
+
+    if (report.success && score > bestSuccessfulScore) {
+      bestSuccessful = report
+      bestSuccessfulScore = score
+    }
+  }
+
+  const selected = bestSuccessful ?? bestOverall
+
+  const remainder: SchemaReport<TOutput>[] = []
+  for (const report of reports) {
+    if (report !== selected) {
+      remainder.push(report)
+    }
+  }
+
+  if (remainder.length > 0) {
+    selected!.metaData.unionReports = remainder
+  }
+  else if (selected!.metaData.unionReports) {
+    delete selected!.metaData.unionReports
+  }
+
+  return selected!
+}
