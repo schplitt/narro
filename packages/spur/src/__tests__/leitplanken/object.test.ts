@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { _null, undefined as _undefined, literal, number, string, union } from '../../index'
+import { _null, _undefined, literal, number, string, union } from '../../index'
 import { object } from '../../leitplanken/object'
 
 describe('object schema', () => {
@@ -251,7 +251,7 @@ describe('object schema', () => {
     describe('undefined schema entries', () => {
       it('fails when key is omitted', async () => {
         const schema = object({
-          label: undefinedSchema(),
+          label: _undefined(),
         })
 
         const result = await schema.safeParse({})
@@ -261,7 +261,7 @@ describe('object schema', () => {
 
       it('passes when key is present', async () => {
         const schema = object({
-          label: undefinedSchema(),
+          label: _undefined(),
         })
 
         const result = await schema.safeParse({ label: undefined })
@@ -328,7 +328,6 @@ describe('object schema', () => {
         _null(),
         _undefined(),
         literal('disabled'),
-        // @ts-expect-error - type error for now
       ]).default(null),
     })
 
