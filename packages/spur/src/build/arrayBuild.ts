@@ -134,15 +134,11 @@ export function buildArraySchema<TElementOutput, TArrayOutput extends unknown[]>
           }
         }
 
-        if (baseReport.success) {
-          baseReport.data = parsedElements as unknown as TArrayOutput
-        }
-        else {
-          delete (baseReport as SchemaReportFailure).data
-        }
+        baseReport.data = parsedElements as unknown as TArrayOutput
       }
-      else {
-        delete (baseReport as SchemaReportFailure).data
+
+      if (!baseReport.success) {
+        delete baseReport.data
       }
 
       sourceReport = baseReport

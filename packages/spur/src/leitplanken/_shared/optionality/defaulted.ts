@@ -1,3 +1,4 @@
+import type { SchemaReportFailure, SchemaReportSuccess } from '../../../types/report'
 import type { BranchCheckable, DefaultInput } from '../../../types/schema'
 
 export const defaultedSymbol = Symbol('defaulted')
@@ -11,7 +12,7 @@ export function createDefaultedCheckable<TOutput>(d: DefaultInput<TOutput>): Bra
       // NO own logic for object needed!!
       const passed = v === undefined || v === null
       if (passed) {
-        const data = typeof d === 'function' ? (d as () => TOutput)() : d
+        const data = (typeof d === 'function' ? (d as () => TOutput)() : d) as TOutput
         return {
           success: true,
           data,
@@ -19,7 +20,7 @@ export function createDefaultedCheckable<TOutput>(d: DefaultInput<TOutput>): Bra
             passedIds: new Set([defaultedSymbol]),
             score: 1,
           },
-        }
+        } satisfies SchemaReportSuccess<TOutput>
       }
 
       return {
@@ -28,7 +29,7 @@ export function createDefaultedCheckable<TOutput>(d: DefaultInput<TOutput>): Bra
           failedIds: new Set([defaultedSymbol]),
           score: 0,
         },
-      }
+      } satisfies SchemaReportFailure
     },
   }
 }
