@@ -6,7 +6,7 @@ import { exactOptionalSymbol } from '../leitplanken/_shared/optionality/exactOpt
 import { nullishSymbol } from '../leitplanken/_shared/optionality/nullish'
 import { undefinableSymbol } from '../leitplanken/_shared/optionality/undefinable'
 import { undefinedSymbol } from '../leitplanken/undefined/undefined'
-import { mergeOptionality } from './utils'
+import { flattenUnionReportCandidates, mergeOptionality, selectPreferredUnionReport } from './utils'
 
 interface ObjectSchemas {
   key: string
@@ -106,45 +106,26 @@ export function buildObjectSchema<TOutput extends object>(
         //   - if the key is present, it means the value was actually "undefined" and the key was present -> fail
         //   - if the key is not present, it means the value was valid and the key was not present -> pass
         const { key, schema } = value
-        const result = schema.safeParse((input)[key as keyof object])
-        result.metaData.path = {
+        const propertyReport = schema.safeParse((input)[key as keyof object])
+
+        const propertyCandidates = flattenUnionReportCandidates([propertyReport])
+        validatePropertyCandidates(propertyCandidates, key, input as object)
+        const selectedCandidate = selectPreferredUnionReport(propertyCandidates)
+
+        selectedCandidate.metaData.path = {
           pathType: 'objectProperty',
           key,
         }
-        // PATH PLACEHOLDER: set object path metadata here when available
-        // add their score in any case
-        acc.metaData.score += result.metaData.score
 
-        if (result.success) {
-          // TODO: do we really want to "count them twice"?
-          // for now dont do it
-          // acc.score += 1
-          if (!result.metaData.passedIds) {
-            result.metaData.passedIds = new Set<symbol>()
-          }
+        acc.metaData.score += selectedCandidate.metaData.score
+        acc.metaData.childReports!.push(selectedCandidate)
 
-          const ids = checkIds(result.metaData.passedIds, key, input as object)
-          if (ids) {
-            // we have a failure here as the ids check failed
-            acc.success = false
-            // TODO: think about what we want to do with the 4 special cases here
-            ids.forEach(() => {
-              // reduce the score by 1 for each failed id (to compensate them pass on the upper level)
-              acc.metaData.score -= 1
-            })
-          }
-          else {
-            // TODO: do we add them to the passed set?
-            // if we
-            // concat the value to the object
-            (acc.data as any)[key] = result.data
-          }
+        if (selectedCandidate.success) {
+          (acc.data as any)[key] = selectedCandidate.data
         }
         else {
           acc.success = false
         }
-
-        acc.metaData.childReports!.push(result)
 
         return acc
       }, {
@@ -247,4 +228,51 @@ export function checkIds(passedIds: Set<symbol>, key: string, source: object): s
 
   if (incorrectlyParsedIds.length > 0)
     return incorrectlyParsedIds
+}
+
+function validatePropertyCandidates(
+  candidates: SchemaReport<any>[],
+  key: string,
+  source: object,
+): void {
+  for (let index = 0; index < candidates.length; index++) {
+    const candidate = candidates[index]!
+
+    // could there be an issue here as we dont check the ones that dont pass?
+    if (!candidate.success) {
+      continue
+    }
+
+    if (!candidate.metaData.passedIds) {
+      candidate.metaData.passedIds = new Set<symbol>()
+    }
+
+    const failedIds = checkIds(candidate.metaData.passedIds, key, source)
+    if (!failedIds || failedIds.length === 0) {
+      continue
+    }
+
+    const failureMeta: SchemaReportFailure['metaData'] = {
+      score: candidate.metaData.score - failedIds.length,
+      failedIds: new Set<symbol>(failedIds),
+    }
+
+    if (candidate.metaData.passedIds && candidate.metaData.passedIds.size > 0) {
+      failureMeta.passedIds = candidate.metaData.passedIds
+    }
+    if (candidate.metaData.unionReports) {
+      failureMeta.unionReports = candidate.metaData.unionReports
+    }
+    if (candidate.metaData.childReports) {
+      failureMeta.childReports = candidate.metaData.childReports
+    }
+    if (candidate.metaData.path) {
+      failureMeta.path = candidate.metaData.path
+    }
+
+    candidates[index] = {
+      success: false,
+      metaData: failureMeta,
+    } satisfies SchemaReportFailure
+  }
 }
