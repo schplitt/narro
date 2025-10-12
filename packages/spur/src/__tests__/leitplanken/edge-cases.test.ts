@@ -2534,4 +2534,918 @@ describe('schema edge cases', () => {
       })
     })
   })
+
+  describe('runtime edge cases - deep union labyrinth', () => {
+    it('parses union of nested array-object intersections with defaults', async () => {
+      const schema = union([
+        array(array(object({
+          id: string(),
+          payload: union([
+            object({ type: literal('A'), value: number().default(0) }).passthrough(),
+            object({ type: literal('B'), value: string().default('x') }).strip(),
+            object({ type: literal('C'), value: array(number()).default([]) }).strict(),
+          ]),
+        }).passthrough()).minLength(1)).minLength(1),
+        object({
+          fallback: union([
+            literal('none'),
+            object({ reason: string(), retry: number().default(0) }).passthrough(),
+            array(union([
+              literal('retry'),
+              object({ action: literal('wait'), seconds: number().min(0) }),
+            ])).minLength(1),
+          ]).default('none'),
+        }).default({ fallback: 'none' }).passthrough(),
+        literal('primitive'),
+      ]).default('primitive')
+
+      const primitiveResult = await schema.parse(undefined)
+      expect(primitiveResult).toBe('primitive')
+
+      const objectResult = await schema.parse({ fallback: { reason: 'timeout' } })
+      expect(objectResult).toEqual({ fallback: { reason: 'timeout', retry: 0 } })
+
+      const arrayResult = await schema.parse([
+        [
+          {
+            id: 'item',
+            payload: { type: 'A' },
+            extra: 'keep',
+          },
+        ],
+      ])
+
+      expect(arrayResult).toEqual([
+        [
+          {
+            id: 'item',
+            payload: { type: 'A', value: 0 },
+            extra: 'keep',
+          },
+        ],
+      ])
+    })
+
+    it('selects correct branch when nested unions share literals', async () => {
+      const schema = union([
+        object({
+          kind: literal('vector'),
+          data: array(number().min(0)).length(3),
+        }).strict(),
+        object({
+          kind: literal('matrix'),
+          data: array(array(number().min(0)).length(3)).length(3),
+        }).strip(),
+        object({
+          kind: literal('tensor'),
+          data: array(array(array(number().min(0)).length(2)).length(2)).length(2),
+        }).passthrough(),
+      ])
+
+      const vector = await schema.parse({ kind: 'vector', data: [1, 2, 3] })
+      expect(vector).toEqual({ kind: 'vector', data: [1, 2, 3] })
+
+      const matrix = await schema.parse({
+        kind: 'matrix',
+        data: [
+          [1, 2, 3],
+          [4, 5, 6],
+          [7, 8, 9],
+        ],
+        ignore: true,
+      })
+      expect(matrix).toEqual({
+        kind: 'matrix',
+        data: [
+          [1, 2, 3],
+          [4, 5, 6],
+          [7, 8, 9],
+        ],
+      })
+
+      const tensor = await schema.parse({
+        kind: 'tensor',
+        data: [
+          [
+            [1, 2],
+            [3, 4],
+          ],
+          [
+            [5, 6],
+            [7, 8],
+          ],
+        ],
+        meta: 'keep',
+      })
+      expect(tensor).toEqual({
+        kind: 'tensor',
+        data: [
+          [
+            [1, 2],
+            [3, 4],
+          ],
+          [
+            [5, 6],
+            [7, 8],
+          ],
+        ],
+        meta: 'keep',
+      })
+    })
+
+    it('handles massively nested union of unions with nullish defaults', async () => {
+      const schema = union([
+        union([
+          union([
+            object({
+              tag: literal('alpha'),
+              payload: union([
+                object({ value: string().minLength(1) }),
+                array(string().minLength(1)).minLength(1),
+              ]),
+            }).passthrough(),
+            object({
+              tag: literal('beta'),
+              payload: union([
+                number().min(0),
+                boolean(),
+              ]).nullish(),
+            }).strip(),
+          ]).nullish(),
+          union([
+            literal('gamma'),
+            literal('delta'),
+            array(number().min(0)).default([0]),
+          ]),
+        ]),
+        literal('epsilon'),
+      ]).nullish().default('epsilon')
+
+      const defaultResult = await schema.parse(undefined)
+      expect(defaultResult).toBe('epsilon')
+
+      const epsilonResult = await schema.parse('epsilon')
+      expect(epsilonResult).toBe('epsilon')
+
+      const alphaResult = await schema.parse({
+        tag: 'alpha',
+        payload: ['value'],
+        extra: 1,
+      })
+      expect(alphaResult).toEqual({ tag: 'alpha', payload: ['value'], extra: 1 })
+
+      const betaResult = await schema.parse({ tag: 'beta', payload: null })
+      expect(betaResult).toEqual({ tag: 'beta', payload: null })
+
+      const arrayResult = await schema.parse([1, 2, 3])
+      expect(arrayResult).toEqual([1, 2, 3])
+    })
+
+    it('rejects invalid branch when nested unions require shape', async () => {
+      const schema = union([
+        object({
+          config: object({
+            mode: enumSchema(['a', 'b']),
+            options: union([
+              object({ retries: number().min(0) }),
+              array(object({ key: string(), value: number() })).minLength(1),
+            ]),
+          }).strict(),
+        }),
+        literal('skip'),
+      ])
+
+      const failure = await schema.safeParse({
+        config: {
+          mode: 'a',
+          options: [{ key: 'x', value: 'wrong' }],
+        },
+      })
+
+      expect(failure.success).toBe(false)
+    })
+
+    it('parses multi-branch union with deep defaults', async () => {
+      const schema = union([
+        object({
+          variant: literal('x'),
+          payload: object({
+            nested: union([
+              object({ value: string().default('a') }).passthrough(),
+              array(number().default(1)).default([1, 2, 3]),
+              literal('static'),
+            ]).default({ value: 'a' }),
+          }).passthrough(),
+        }).default({ variant: 'x', payload: { nested: { value: 'a' } } }),
+        object({ variant: literal('y'), payload: array(string()).default([]) }).default({ variant: 'y', payload: [] }),
+        object({ variant: literal('z'), payload: nullSchema() }).default({ variant: 'z', payload: null }),
+      ]).default({ variant: 'z', payload: null })
+
+      const defaultResult = await schema.parse(undefined)
+      expect(defaultResult).toEqual({ variant: 'z', payload: null })
+
+      const xResult = await schema.parse({ variant: 'x', payload: {} })
+      expect(xResult).toEqual({ variant: 'x', payload: { nested: { value: 'a' } } })
+
+      const yResult = await schema.parse({ variant: 'y' })
+      expect(yResult).toEqual({ variant: 'y', payload: [] })
+
+      const zResult = await schema.parse({ variant: 'z', payload: null })
+      expect(zResult).toEqual({ variant: 'z', payload: null })
+    })
+
+    it('handles deep object/array union mesh with passthrough and strip', async () => {
+      const schema = object({
+        layers: array(
+          union([
+            object({
+              type: literal('object'),
+              value: object({
+                id: string(),
+                data: union([
+                  object({ details: string() }).strip(),
+                  array(object({ edge: number() }).passthrough()).minLength(1),
+                ]),
+              }).passthrough(),
+            }).passthrough(),
+            object({
+              type: literal('array'),
+              value: array(
+                union([
+                  number(),
+                  union([
+                    string().minLength(1),
+                    object({ wrap: literal('wrap'), inner: boolean() }).strict(),
+                  ]),
+                ]),
+              ),
+            }).strip(),
+          ]),
+        ).minLength(2),
+      }).passthrough()
+
+      const result = await schema.parse({
+        layers: [
+          {
+            type: 'object',
+            value: {
+              id: 'layer-1',
+              data: { details: 'info', extra: true },
+              passthrough: 'keep',
+            },
+          },
+          {
+            type: 'array',
+            value: [
+              1,
+              'text',
+              { wrap: 'wrap', inner: false },
+            ],
+            stripme: 'gone',
+          },
+        ],
+        root: 'keep',
+      })
+
+      expect(result).toEqual({
+        layers: [
+          {
+            type: 'object',
+            value: {
+              id: 'layer-1',
+              data: { details: 'info' },
+              passthrough: 'keep',
+            },
+          },
+          {
+            type: 'array',
+            value: [1, 'text', { wrap: 'wrap', inner: false }],
+          },
+        ],
+        root: 'keep',
+      })
+    })
+
+    it('rejects when deeply nested union branch fails validations', async () => {
+      const schema = object({
+        layers: array(
+          union([
+            object({
+              type: literal('object'),
+              value: object({
+                id: string(),
+                data: union([
+                  object({ details: string().minLength(5) }),
+                  array(object({ edge: number().min(0) })).minLength(1),
+                ]),
+              }).strict(),
+            }),
+            object({
+              type: literal('array'),
+              value: array(number().min(0)).length(3),
+            }),
+          ]),
+        ).length(2),
+      })
+
+      const failure = await schema.safeParse({
+        layers: [
+          {
+            type: 'object',
+            value: {
+              id: 'layer-1',
+              data: { details: 'abc' },
+            },
+          },
+          {
+            type: 'array',
+            value: [1, 2],
+          },
+        ],
+      })
+
+      expect(failure.success).toBe(false)
+    })
+
+    it('parses extremely nested optional arrays of unions', async () => {
+      const schema = array(
+        array(
+          union([
+            array(
+              union([
+                string().optional().default('x'),
+                number().optional().default(0),
+                union([
+                  literal('leaf'),
+                  object({ tag: literal('node'), children: array(number()).optional() }).passthrough(),
+                ]).optional().default('leaf'),
+              ]),
+            ).default(['leaf']),
+            object({ key: string(), value: union([boolean(), nullSchema()]) }).optional().default({ key: 'key', value: null }),
+          ]).optional().default(['leaf']),
+        ).optional().default([['leaf']]),
+      ).optional().default([[['leaf']]])
+
+      const defaultResult = await schema.parse(undefined)
+      expect(defaultResult).toEqual([[['leaf']]])
+
+      const provided = await schema.parse([
+        [
+          [
+            'hello',
+            5,
+            { tag: 'node', children: [1, 2, 3], extra: true },
+          ],
+          { key: 'value', value: true },
+        ],
+      ])
+
+      expect(provided).toEqual([
+        [
+          [
+            'hello',
+            5,
+            { tag: 'node', children: [1, 2, 3], extra: true },
+          ],
+          { key: 'value', value: true },
+        ],
+      ])
+    })
+
+    it('rejects extremely nested optional arrays when validations fail', async () => {
+      const schema = array(
+        array(
+          union([
+            array(
+              union([
+                string().minLength(2),
+                number().min(0),
+                literal('leaf'),
+              ]),
+            ),
+            object({ key: string().minLength(3), value: union([boolean(), nullSchema()]) }),
+          ]),
+        ),
+      )
+
+      const failure = await schema.safeParse([
+        [
+          [
+            'x',
+            -1,
+            'leaf',
+          ],
+          { key: 'ab', value: true },
+        ],
+      ])
+
+      expect(failure.success).toBe(false)
+    })
+
+    it('parses nested union transformations combining arrays and objects', async () => {
+      const schema = union([
+        object({
+          type: literal('sum'),
+          payload: array(number()).minLength(1).transform(values => ({ total: values.reduce((sum, value) => sum + value, 0) })),
+        }),
+        object({
+          type: literal('concat'),
+          payload: array(string()).minLength(1).transform(values => ({ joined: values.join('-') })),
+        }),
+        object({
+          type: literal('mix'),
+          payload: array(
+            union([
+              object({ kind: literal('num'), value: number() }),
+              object({ kind: literal('str'), value: string() }),
+            ]),
+          ).minLength(1).transform(values => ({
+            numbers: values.filter(item => item.kind === 'num').map(item => item.value),
+            strings: values.filter(item => item.kind === 'str').map(item => item.value),
+          })),
+        }).passthrough(),
+      ])
+
+      const sumResult = await schema.parse({ type: 'sum', payload: [1, 2, 3] })
+      expect(sumResult).toEqual({ type: 'sum', payload: { total: 6 } })
+
+      const concatResult = await schema.parse({ type: 'concat', payload: ['a', 'b'] })
+      expect(concatResult).toEqual({ type: 'concat', payload: { joined: 'a-b' } })
+
+      const mixResult = await schema.parse({
+        type: 'mix',
+        payload: [
+          { kind: 'num', value: 1 },
+          { kind: 'str', value: 'x' },
+          { kind: 'num', value: 2 },
+        ],
+        retain: true,
+      })
+      expect(mixResult).toEqual({
+        type: 'mix',
+        payload: {
+          numbers: [1, 2],
+          strings: ['x'],
+        },
+        retain: true,
+      })
+    })
+
+    it('rejects nested union transformations when payload invalid', async () => {
+      const schema = union([
+        object({ type: literal('sum'), payload: array(number()).minLength(1) }),
+        object({ type: literal('concat'), payload: array(string()).minLength(1) }),
+        object({ type: literal('mix'), payload: array(object({ kind: enumSchema(['num', 'str']), value: union([number(), string()]) })).minLength(1) }),
+      ])
+
+      const failure = await schema.safeParse({ type: 'sum', payload: [] })
+      expect(failure.success).toBe(false)
+    })
+  })
+
+  describe('runtime edge cases - recursive pipeline meshes', () => {
+    function createPipelineSchema() {
+      const conditionSchema = union([
+        boolean(),
+        object({
+          left: string(),
+          right: union([string(), number()]),
+          operator: enumSchema(['eq', 'neq', 'in', 'gt', 'lt']),
+        }).strict(),
+        object({
+          any: array(union([
+            object({ predicate: string() }).passthrough(),
+            literal(true),
+            literal(false),
+          ])).minLength(1),
+        }).passthrough(),
+      ])
+
+      const ioStage = object({
+        kind: literal('io'),
+        request: object({
+          method: enumSchema(['GET', 'POST', 'PUT', 'DELETE']).default('GET'),
+          url: string().startsWith('https://'),
+          headers: object({
+            'Authorization': string().optional(),
+            'X-Trace': string().optional(),
+          }).strip().optional(),
+          body: union([
+            object({ type: literal('json'), payload: object({}).passthrough() }).passthrough(),
+            object({ type: literal('form'), payload: array(object({ key: string(), value: string() })) }).strip(),
+            nullSchema(),
+          ]).default(null),
+        }).passthrough(),
+        response: union([
+          object({ status: number().min(200).max(599), schema: object({}).passthrough().optional() }).passthrough(),
+          nullSchema(),
+        ]).default(null),
+      }).passthrough()
+
+      const computeStage = object({
+        kind: literal('compute'),
+        operations: array(
+          union([
+            object({ type: literal('map'), expression: string().minLength(3) }).strict(),
+            object({ type: literal('filter'), expression: string().minLength(3) }).strip(),
+            object({ type: literal('reduce'), expression: string().minLength(3), initial: number().optional() }).passthrough(),
+          ]),
+        ).minLength(1),
+        context: object({
+          timeoutMs: number().min(0).max(10_000).default(1000),
+          parallelism: number().min(1).max(64).default(1),
+        }).passthrough(),
+      }).strip()
+
+      const branchStage = object({
+        kind: literal('branch'),
+        predicate: conditionSchema,
+        positive: array(object({ step: string(), weight: number().min(0).default(1) })).minLength(1),
+        negative: array(object({ step: string(), weight: number().min(0).default(1) })).optional(),
+      }).passthrough()
+
+      const stageSchema = union([ioStage, computeStage, branchStage])
+
+      return object({
+        name: string().minLength(3),
+        stages: array(stageSchema).minLength(3),
+        metadata: object({
+          id: string().minLength(5),
+          tags: array(string()).nullish(),
+          retries: number().min(0).max(5).default(0),
+        }).passthrough(),
+        settings: union([
+          object({ mode: literal('strict'), audit: boolean().default(false) }).strict(),
+          object({ mode: literal('loose'), audit: boolean().default(true), window: number().min(0).default(5) }).passthrough(),
+          literal('inherit'),
+        ]).default('inherit'),
+      }).strict()
+    }
+
+    it('parses pipeline with mixed io, compute, and branch stages', async () => {
+      const schema = createPipelineSchema()
+
+      const result = await schema.parse({
+        name: 'pipeline-main',
+        stages: [
+          {
+            kind: 'io',
+            request: {
+              url: 'https://api.example.com/list',
+              headers: {
+                Authorization: 'Bearer token',
+              },
+            },
+            response: {
+              status: 200,
+              schema: { ok: true },
+              extra: 'keep',
+            },
+            keep: 'root',
+          },
+          {
+            kind: 'compute',
+            operations: [
+              { type: 'map', expression: 'item.id' },
+              { type: 'filter', expression: 'item.active' },
+              { type: 'reduce', expression: 'acc + item.value', initial: 0, extra: 'keep' },
+            ],
+            context: { timeoutMs: 500, extra: 'keep' },
+          },
+          {
+            kind: 'branch',
+            predicate: {
+              any: [
+                { predicate: 'env == production', extra: 'keep' },
+                true,
+              ],
+            },
+            positive: [
+              { step: 'notify', weight: 2 },
+            ],
+          },
+        ],
+        metadata: {
+          id: 'pipe-001',
+          tags: ['critical'],
+          info: 'retain',
+        },
+        settings: { mode: 'loose', audit: true },
+      })
+
+      expect(result).toEqual({
+        name: 'pipeline-main',
+        stages: [
+          {
+            keep: 'extra',
+            kind: 'io',
+            request: {
+              method: 'GET',
+              url: 'https://api.example.com/list',
+              headers: {
+                Authorization: 'Bearer token',
+              },
+              body: null,
+            },
+            response: {
+              status: 200,
+              schema: { ok: true },
+            },
+          },
+          {
+            kind: 'compute',
+            operations: [
+              { type: 'map', expression: 'item.id' },
+              { type: 'filter', expression: 'item.active' },
+              { type: 'reduce', expression: 'acc + item.value', initial: 0, extra: 'keep' },
+            ],
+            context: { timeoutMs: 500, parallelism: 1, extra: 'keep' },
+          },
+          {
+            kind: 'branch',
+            predicate: {
+              any: [
+                {
+                  predicate: 'env == production',
+                  extra: 'keep',
+                },
+                true,
+              ],
+            },
+            positive: [
+              { step: 'notify', weight: 2 },
+            ],
+            negative: undefined,
+          },
+        ],
+        metadata: {
+          id: 'pipe-001',
+          tags: ['critical'],
+          retries: 0,
+          info: 'retain',
+        },
+        settings: { mode: 'loose', audit: true, window: 5 },
+      })
+    })
+
+    it('rejects pipeline when compute stage expression too short', async () => {
+      const schema = createPipelineSchema()
+
+      const report = await schema.safeParse({
+        name: 'pipe',
+        stages: [
+          {
+            kind: 'io',
+            request: { url: 'https://api.example.com' },
+          },
+          {
+            kind: 'compute',
+            operations: [
+              { type: 'map', expression: 'x' },
+            ],
+            context: {},
+          },
+          {
+            kind: 'branch',
+            predicate: false,
+            positive: [{ step: 'noop' }],
+          },
+        ],
+        metadata: { id: 'pipe-1' },
+      })
+
+      expect(report.success).toBe(false)
+    })
+
+    it('applies defaults when io stage omits response and headers', async () => {
+      const schema = createPipelineSchema()
+
+      const result = await schema.parse({
+        name: 'pipe-two',
+        stages: [
+          {
+            kind: 'io',
+            request: { url: 'https://example.com/api', method: 'POST', body: { type: 'json', payload: { foo: 'bar' } } },
+          },
+          {
+            kind: 'compute',
+            operations: [{ type: 'filter', expression: 'item.valid' }],
+            context: { parallelism: 4 },
+          },
+          {
+            kind: 'branch',
+            predicate: { left: 'result', right: 10, operator: 'gt' },
+            positive: [{ step: 'alert' }],
+            negative: [{ step: 'archive', weight: 0 }],
+          },
+        ],
+        metadata: { id: 'pipe-002', tags: null },
+      })
+
+      expect(result.stages[0]).toEqual({
+        kind: 'io',
+        request: {
+          method: 'POST',
+          url: 'https://example.com/api',
+          headers: undefined,
+          body: { type: 'json', payload: { foo: 'bar' } },
+        },
+        response: null,
+      })
+
+      expect(result.stages[1]).toEqual({
+        kind: 'compute',
+        operations: [{ type: 'filter', expression: 'item.valid' }],
+        context: { timeoutMs: 1000, parallelism: 4 },
+      })
+
+      expect(result.settings).toBe('inherit')
+    })
+
+    it('handles deeply nested predicate unions on branch stage arrays', async () => {
+      const schema = createPipelineSchema()
+
+      const result = await schema.parse({
+        name: 'pipe-three',
+        stages: [
+          {
+            kind: 'io',
+            request: { url: 'https://example.com/root' },
+          },
+          {
+            kind: 'compute',
+            operations: [{ type: 'map', expression: 'item.value' }],
+            context: {},
+          },
+          {
+            kind: 'branch',
+            predicate: {
+              any: [
+                {
+                  predicate: 'hasFeature("beta")',
+                  extra: 'keep',
+                },
+                {
+                  predicate: 'user.role == "admin"',
+                },
+                false,
+              ],
+            },
+            positive: [{ step: 'enable-feature' }],
+            negative: [{ step: 'log' }],
+          },
+        ],
+        metadata: { id: 'pipe-003' },
+        settings: { mode: 'strict' },
+      })
+
+      expect(result.stages[2]).toEqual({
+        kind: 'branch',
+        predicate: {
+          any: [
+            { predicate: 'hasFeature("beta")' },
+            { predicate: 'user.role == "admin"' },
+            false,
+          ],
+        },
+        positive: [{ step: 'enable-feature', weight: 1 }],
+        negative: [{ step: 'log', weight: 1 }],
+      })
+    })
+
+    it('rejects pipeline when branch negative step missing weight constraint', async () => {
+      const schema = createPipelineSchema()
+
+      const report = await schema.safeParse({
+        name: 'pipe-four',
+        stages: [
+          {
+            kind: 'io',
+            request: { url: 'https://example.com/root' },
+          },
+          {
+            kind: 'compute',
+            operations: [{ type: 'reduce', expression: 'acc + item', initial: 0 }],
+            context: {},
+          },
+          {
+            kind: 'branch',
+            predicate: true,
+            positive: [{ step: 'pass' }],
+            negative: [{ step: 'fail', weight: -1 }],
+          },
+        ],
+        metadata: { id: 'pipe-004' },
+      })
+
+      expect(report.success).toBe(false)
+    })
+
+    it('parses pipeline when settings choose strict branch with defaults', async () => {
+      const schema = createPipelineSchema()
+
+      const result = await schema.parse({
+        name: 'pipe-five',
+        stages: [
+          {
+            kind: 'io',
+            request: { url: 'https://example.com/root', headers: { Authorization: 'Basic xyz' } },
+          },
+          {
+            kind: 'compute',
+            operations: [
+              { type: 'map', expression: 'item * 2' },
+              { type: 'filter', expression: 'item > 10' },
+            ],
+            context: { timeoutMs: 200 },
+          },
+          {
+            kind: 'branch',
+            predicate: { left: 'count', right: 0, operator: 'gt' },
+            positive: [{ step: 'emit' }],
+          },
+        ],
+        metadata: { id: 'pipe-005', tags: ['test'] },
+        settings: { mode: 'strict', audit: true },
+      })
+
+      expect(result.settings).toEqual({ mode: 'strict', audit: true })
+      expect(result.metadata.retries).toBe(0)
+    })
+
+    it('rejects pipeline when io request url invalid', async () => {
+      const schema = createPipelineSchema()
+
+      const report = await schema.safeParse({
+        name: 'pipe-six',
+        stages: [
+          {
+            kind: 'io',
+            request: { url: 'http://insecure.local' },
+          },
+          {
+            kind: 'compute',
+            operations: [{ type: 'map', expression: 'item' }],
+            context: {},
+          },
+          {
+            kind: 'branch',
+            predicate: false,
+            positive: [{ step: 'noop' }],
+          },
+        ],
+        metadata: { id: 'pipe-006' },
+      })
+
+      expect(report.success).toBe(false)
+    })
+
+    it('supports pipelines with nested union computations returning transforms', async () => {
+      const schema = createPipelineSchema()
+
+      const result = await schema.parse({
+        name: 'pipe-seven',
+        stages: [
+          {
+            kind: 'io',
+            request: {
+              url: 'https://example.com/data',
+              body: { type: 'form', payload: [{ key: 'q', value: 'test' }] },
+            },
+          },
+          {
+            kind: 'compute',
+            operations: [
+              { type: 'reduce', expression: 'acc + item.bytes', initial: 0 },
+            ],
+            context: { parallelism: 2 },
+          },
+          {
+            kind: 'branch',
+            predicate: { any: [{ predicate: 'total > limit' }] },
+            positive: [{ step: 'throttle', weight: 3 }],
+            negative: [{ step: 'forward', weight: 1 }],
+          },
+        ],
+        metadata: { id: 'pipe-007', tags: ['metrics'] },
+      })
+
+      expect(result.stages[0]).toEqual({
+        kind: 'io',
+        request: {
+          method: 'GET',
+          url: 'https://example.com/data',
+          headers: undefined,
+          body: { type: 'form', payload: [{ key: 'q', value: 'test' }] },
+        },
+        response: null,
+      })
+      expect(result.stages[2]).toEqual({
+        kind: 'branch',
+        predicate: { any: [{ predicate: 'total > limit' }] },
+        positive: [{ step: 'throttle', weight: 3 }],
+        negative: [{ step: 'forward', weight: 1 }],
+      })
+    })
+  })
 })
