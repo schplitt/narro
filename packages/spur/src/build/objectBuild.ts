@@ -107,14 +107,15 @@ export function buildObjectSchema<TOutput extends object>(
         //   - if the key is not present, it means the value was valid and the key was not present -> pass
         const { key, schema } = value
         const propertyReport = schema.safeParse((input)[key as keyof object])
-        propertyReport.metaData.path = {
-          pathType: 'objectProperty',
-          key,
-        }
 
         const propertyCandidates = flattenUnionReportCandidates([propertyReport])
         validatePropertyCandidates(propertyCandidates, key, input as object)
         const selectedCandidate = selectPreferredUnionReport(propertyCandidates)
+
+        selectedCandidate.metaData.path = {
+          pathType: 'objectProperty',
+          key,
+        }
 
         acc.metaData.score += selectedCandidate.metaData.score
         acc.metaData.childReports!.push(selectedCandidate)
