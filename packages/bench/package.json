@@ -1,11 +1,11 @@
 {
   "name": "bench",
   "type": "module",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "packageManager": "pnpm@10.15.1",
   "description": "Benchmark suite comparing Spur with Zod and Valibot",
-  "author": "",
-  "license": "ISC",
+  "author": "schplitt",
+  "license": "MIT",
   "keywords": [
     "benchmark",
     "spur",
@@ -14,9 +14,10 @@
   ],
   "main": "src/index.mjs",
   "scripts": {
-    "bench": "vitest bench --run"
+    "bench": "vitest bench"
   },
   "dependencies": {
+    "arktype": "^2.1.23",
     "spur": "workspace:*",
     "valibot": "^1.1.0",
     "zod": "^4.1.11"
