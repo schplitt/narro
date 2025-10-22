@@ -1,5 +1,6 @@
 import type { CommonOptions, DefaultCommonOptions } from '../options/options'
 import type { SchemaReport } from './report'
+import type { Prettify } from './utils'
 
 export type Check<TInput> = (input: TInput) => boolean
 
@@ -61,4 +62,4 @@ export interface EvaluableSchema<TOutput = unknown, TInput = unknown, TOptions e
 }
 
 // TODO: if funcitons are supported in the future, it is ambiguous if a function is the default output directly OR a factory function that returns the output
-export type DefaultInput<TOutput> = NonNullable<TOutput> | (() => NonNullable<TOutput>)
+export type DefaultInput<TOutput> = Prettify<TOutput> | (() => Prettify<TOutput>)

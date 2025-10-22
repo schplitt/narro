@@ -71,11 +71,11 @@ export function buildSchema<TOutput>(
           score: 1,
         },
       } as SchemaReport<TOutput>)
+    }
 
-      // remove the data from the report if it did not pass
-      if (!sourceReport.success) {
-        delete sourceReport.data
-      }
+    // remove the data from the report if it did not pass
+    if (!sourceReport.success) {
+      delete sourceReport.data
     }
 
     // now after the checks are done, we continue with the optionality checkable if present

@@ -19,6 +19,14 @@ describe('number schema', () => {
     expect('data' in report).toBe(false)
   })
 
+  it('rejects numbers above the maximum', async () => {
+    const schema = number().max(5)
+    const report = await schema.safeParse(10)
+
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
+  })
+
   it('rejects non-number inputs', async () => {
     const schema = number()
     const report = await schema.safeParse('not-a-number')

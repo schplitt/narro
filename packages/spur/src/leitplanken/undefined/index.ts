@@ -4,7 +4,7 @@ export interface UndefinedSchema extends BuildableSchema<undefined, undefined> {
 
 }
 
-function _undefined(): UndefinedSchema {
+export function _undefined(): UndefinedSchema {
   const sourceCheckableImport: SourceCheckableImport<undefined> = () => import('./undefined').then(m => m.undefinedCheckable)
 
   const schema: UndefinedSchema = {

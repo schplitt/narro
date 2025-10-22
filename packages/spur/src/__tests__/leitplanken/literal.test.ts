@@ -41,6 +41,30 @@ describe('literal schema', () => {
     expect(nullResult.success).toBe(false)
   })
 
+  it('supports exactOptional modifier', async () => {
+    const schema = literal('exact').exactOptional()
+
+    const undefinedResult = await schema.safeParse(undefined)
+    expect(undefinedResult.success).toBe(true)
+    expect(undefinedResult.data).toBeUndefined()
+
+    const definedResult = await schema.safeParse('exact')
+    expect(definedResult.success).toBe(true)
+    expect(definedResult.data).toBe('exact')
+  })
+
+  it('supports undefinable modifier', async () => {
+    const schema = literal('maybe').undefinable()
+
+    const undefinedResult = await schema.safeParse(undefined)
+    expect(undefinedResult.success).toBe(true)
+    expect(undefinedResult.data).toBeUndefined()
+
+    const definedResult = await schema.safeParse('maybe')
+    expect(definedResult.success).toBe(true)
+    expect(definedResult.data).toBe('maybe')
+  })
+
   it('supports default modifier', async () => {
     const schema = literal('fallback').default('fallback')
 
@@ -140,5 +164,17 @@ describe('literal schema', () => {
     await expect(schema.parse(true)).resolves.toBe(true)
     await expect(schema.parse(undefined)).resolves.toBe(true)
     await expect(schema.parse(null)).resolves.toBe(true)
+  })
+
+  it('supports nullish modifier for strings', async () => {
+    const schema = literal('nullish').nullish()
+
+    const undefinedResult = await schema.safeParse(undefined)
+    expect(undefinedResult.success).toBe(true)
+    expect(undefinedResult.data).toBeUndefined()
+
+    const nullResult = await schema.safeParse(null)
+    expect(nullResult.success).toBe(true)
+    expect(nullResult.data).toBeNull()
   })
 })

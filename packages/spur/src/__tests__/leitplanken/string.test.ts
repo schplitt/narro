@@ -19,6 +19,44 @@ describe('string schema', () => {
     expect('data' in report).toBe(false)
   })
 
+  it('rejects strings that exceed maxLength', async () => {
+    const schema = string().maxLength(3)
+    const report = await schema.safeParse('longer')
+
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
+  })
+
+  it('enforces exact length constraint', async () => {
+    const schema = string().length(4)
+
+    await expect(schema.parse('code')).resolves.toBe('code')
+
+    const report = await schema.safeParse('tool')
+    expect(report.success).toBe(true)
+
+    const miss = await schema.safeParse('hi')
+    expect(miss.success).toBe(false)
+  })
+
+  it('validates startsWith constraint', async () => {
+    const schema = string().startsWith('spur')
+
+    await expect(schema.parse('spur-app')).resolves.toBe('spur-app')
+
+    const report = await schema.safeParse('app-spur')
+    expect(report.success).toBe(false)
+  })
+
+  it('validates endsWith constraint', async () => {
+    const schema = string().endsWith('-schema')
+
+    await expect(schema.parse('object-schema')).resolves.toBe('object-schema')
+
+    const report = await schema.safeParse('schema-object')
+    expect(report.success).toBe(false)
+  })
+
   it('rejects non-string inputs', async () => {
     const schema = string()
     const report = await schema.safeParse(42)
