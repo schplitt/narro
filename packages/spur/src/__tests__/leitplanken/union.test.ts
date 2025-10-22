@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { number, string, union } from '../../index'
+import { literal, number, string, union } from '../../index'
 import { array } from '../../leitplanken/array'
 import { object } from '../../leitplanken/object'
 
@@ -116,5 +116,46 @@ describe('union schema', () => {
 
     const miss = await schema.safeParse(true)
     expect(miss.success).toBe(false)
+  })
+
+  it('should correctly decide for the path with more data if both are valid', async () => {
+    const simpleSchema = object({
+      type: literal('A'),
+    })
+
+    const schema = union([
+      simpleSchema,
+      object({
+        type: string(),
+        extraKey: string(),
+        extraObjectWithMoreData: object({
+          nestedKey: number(),
+        }),
+      }),
+    ])
+
+    const simpleResult = await schema.parse({
+      type: 'A',
+    })
+
+    expect(simpleResult).toEqual({
+      type: 'A',
+    })
+
+    const result = await schema.parse({
+      type: 'A',
+      extraKey: 'extra',
+      extraObjectWithMoreData: {
+        nestedKey: 123,
+      },
+    })
+
+    expect(result).toEqual({
+      type: 'A',
+      extraKey: 'extra',
+      extraObjectWithMoreData: {
+        nestedKey: 123,
+      },
+    })
   })
 })
