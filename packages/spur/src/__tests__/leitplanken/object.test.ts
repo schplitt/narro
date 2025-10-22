@@ -336,4 +336,387 @@ describe('object schema', () => {
     expect(result.success).toBe(true)
     expect(result.data).toEqual({ fallback: null })
   })
+
+  describe('property optionality modifiers', () => {
+    describe('optional()', () => {
+      it('passes when property is missing', async () => {
+        const schema = object({
+          name: string().optional(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({})
+      })
+
+      it('passes when property is undefined', async () => {
+        const schema = object({
+          name: string().optional(),
+        })
+
+        const result = await schema.safeParse({ name: undefined })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: undefined })
+      })
+
+      it('passes when property has valid value', async () => {
+        const schema = object({
+          name: string().optional(),
+        })
+
+        const result = await schema.safeParse({ name: 'Spur' })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Spur' })
+      })
+
+      it('fails when property has invalid value', async () => {
+        const schema = object({
+          name: string().optional(),
+        })
+
+        const result = await schema.safeParse({ name: 123 })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('fails when property is null', async () => {
+        const schema = object({
+          name: string().optional(),
+        })
+
+        const result = await schema.safeParse({ name: null })
+
+        expect(result.success).toBe(false)
+      })
+    })
+
+    describe('exactOptional()', () => {
+      it('passes when property is missing', async () => {
+        const schema = object({
+          name: string().exactOptional(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({})
+      })
+
+      it('fails when property is undefined', async () => {
+        const schema = object({
+          name: string().exactOptional(),
+        })
+
+        const result = await schema.safeParse({ name: undefined })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when property has valid value', async () => {
+        const schema = object({
+          name: string().exactOptional(),
+        })
+
+        const result = await schema.safeParse({ name: 'Spur' })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Spur' })
+      })
+
+      it('fails when property has invalid value', async () => {
+        const schema = object({
+          name: string().exactOptional(),
+        })
+
+        const result = await schema.safeParse({ name: 123 })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('fails when property is null', async () => {
+        const schema = object({
+          name: string().exactOptional(),
+        })
+
+        const result = await schema.safeParse({ name: null })
+
+        expect(result.success).toBe(false)
+      })
+    })
+
+    describe('undefinable()', () => {
+      it('fails when property is missing', async () => {
+        const schema = object({
+          name: string().undefinable(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when property is undefined', async () => {
+        const schema = object({
+          name: string().undefinable(),
+        })
+
+        const result = await schema.safeParse({ name: undefined })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: undefined })
+      })
+
+      it('passes when property has valid value', async () => {
+        const schema = object({
+          name: string().undefinable(),
+        })
+
+        const result = await schema.safeParse({ name: 'Spur' })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Spur' })
+      })
+
+      it('fails when property has invalid value', async () => {
+        const schema = object({
+          name: string().undefinable(),
+        })
+
+        const result = await schema.safeParse({ name: 123 })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('fails when property is null', async () => {
+        const schema = object({
+          name: string().undefinable(),
+        })
+
+        const result = await schema.safeParse({ name: null })
+
+        expect(result.success).toBe(false)
+      })
+    })
+
+    describe('nullable()', () => {
+      it('fails when property is missing', async () => {
+        const schema = object({
+          name: string().nullable(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(false)
+      })
+
+      it('fails when property is undefined', async () => {
+        const schema = object({
+          name: string().nullable(),
+        })
+
+        const result = await schema.safeParse({ name: undefined })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when property is null', async () => {
+        const schema = object({
+          name: string().nullable(),
+        })
+
+        const result = await schema.safeParse({ name: null })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: null })
+      })
+
+      it('passes when property has valid value', async () => {
+        const schema = object({
+          name: string().nullable(),
+        })
+
+        const result = await schema.safeParse({ name: 'Spur' })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Spur' })
+      })
+
+      it('fails when property has invalid value', async () => {
+        const schema = object({
+          name: string().nullable(),
+        })
+
+        const result = await schema.safeParse({ name: 123 })
+
+        expect(result.success).toBe(false)
+      })
+    })
+
+    describe('nullish()', () => {
+      it('fails when property is missing', async () => {
+        const schema = object({
+          name: string().nullish(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when property is undefined', async () => {
+        const schema = object({
+          name: string().nullish(),
+        })
+
+        const result = await schema.safeParse({ name: undefined })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: undefined })
+      })
+
+      it('passes when property is null', async () => {
+        const schema = object({
+          name: string().nullish(),
+        })
+
+        const result = await schema.safeParse({ name: null })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: null })
+      })
+
+      it('passes when property has valid value', async () => {
+        const schema = object({
+          name: string().nullish(),
+        })
+
+        const result = await schema.safeParse({ name: 'Spur' })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Spur' })
+      })
+
+      it('fails when property has invalid value', async () => {
+        const schema = object({
+          name: string().nullish(),
+        })
+
+        const result = await schema.safeParse({ name: 123 })
+
+        expect(result.success).toBe(false)
+      })
+    })
+
+    describe('required() (default)', () => {
+      it('fails when property is missing', async () => {
+        const schema = object({
+          name: string(),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(false)
+      })
+
+      it('fails when property is undefined', async () => {
+        const schema = object({
+          name: string(),
+        })
+
+        const result = await schema.safeParse({ name: undefined })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('fails when property is null', async () => {
+        const schema = object({
+          name: string(),
+        })
+
+        const result = await schema.safeParse({ name: null })
+
+        expect(result.success).toBe(false)
+      })
+
+      it('passes when property has valid value', async () => {
+        const schema = object({
+          name: string(),
+        })
+
+        const result = await schema.safeParse({ name: 'Spur' })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Spur' })
+      })
+
+      it('fails when property has invalid value', async () => {
+        const schema = object({
+          name: string(),
+        })
+
+        const result = await schema.safeParse({ name: 123 })
+
+        expect(result.success).toBe(false)
+      })
+    })
+
+    describe('default()', () => {
+      it('uses default when property is missing', async () => {
+        const schema = object({
+          name: string().default('Default'),
+        })
+
+        const result = await schema.safeParse({})
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Default' })
+      })
+
+      it('uses default when property is undefined', async () => {
+        const schema = object({
+          name: string().default('Default'),
+        })
+
+        const result = await schema.safeParse({ name: undefined })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Default' })
+      })
+
+      it('uses default when property is null', async () => {
+        const schema = object({
+          name: string().default('Default'),
+        })
+
+        const result = await schema.safeParse({ name: null })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Default' })
+      })
+
+      it('uses provided value when property has valid value', async () => {
+        const schema = object({
+          name: string().default('Default'),
+        })
+
+        const result = await schema.safeParse({ name: 'Spur' })
+
+        expect(result.success).toBe(true)
+        expect(result.data).toEqual({ name: 'Spur' })
+      })
+
+      it('fails when property has invalid value', async () => {
+        const schema = object({
+          name: string().default('Default'),
+        })
+
+        const result = await schema.safeParse({ name: 123 })
+
+        expect(result.success).toBe(false)
+      })
+    })
+  })
 })
