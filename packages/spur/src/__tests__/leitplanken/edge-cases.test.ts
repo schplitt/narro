@@ -254,7 +254,7 @@ describe('schema edge cases', () => {
       config: { mode: 'strict', retries: 2 },
     })
 
-    expect(report.success).toBe(false)
+    expect(report.success).toEqual(false)
   })
 
   it('normalizes heterogeneous aggregates via nested transforms', async () => {
@@ -325,7 +325,7 @@ describe('schema edge cases', () => {
       config: { mode: 'strict', retries: 1 },
     })
 
-    expect(report.success).toBe(false)
+    expect(report.success).toEqual(false)
   })
 
   it('handles workflow definitions with branching and strict metadata', async () => {
@@ -426,7 +426,7 @@ describe('schema edge cases', () => {
       },
     })
 
-    expect(report.success).toBe(false)
+    expect(report.success).toEqual(false)
   })
 
   it('validates fixed-size matrices with mixed cell types', async () => {
@@ -453,14 +453,14 @@ describe('schema edge cases', () => {
       [5, '#b2', false, true],
       [9, '#c3', true, false],
     ])
-    expect(tooWide.success).toBe(false)
+    expect(tooWide.success).toEqual(false)
 
     const badValue = await schema.safeParse([
       [0, 'missing-hash', true],
       [5, '#b2', false],
       [9, '#c3', true],
     ])
-    expect(badValue.success).toBe(false)
+    expect(badValue.success).toEqual(false)
   })
 
   it('combines unions, defaults, and nullish handling inside arrays', async () => {
@@ -544,33 +544,33 @@ describe('schema edge cases', () => {
       undefined,
     ])
 
-    expect(report.success).toBe(false)
+    expect(report.success).toEqual(false)
   })
 
   describe('runtime edge cases - optionality cascades', () => {
     it('handles optional to required to nullable chain on strings', async () => {
       const schema = string().optional().required().nullable()
 
-      await expect(schema.parse('value')).resolves.toBe('value')
+      await expect(schema.parse('value')).resolves.toEqual('value')
       await expect(schema.parse(null)).resolves.toBeNull()
 
       const report = await schema.safeParse(undefined)
-      expect(report.success).toBe(false)
+      expect(report.success).toEqual(false)
     })
 
     it('handles optional to required to nullish chain on numbers', async () => {
       const schema = number().optional().required().nullish()
 
-      await expect(schema.parse(5)).resolves.toBe(5)
+      await expect(schema.parse(5)).resolves.toEqual(5)
 
       const nullReport = await schema.safeParse(null)
-      expect(nullReport.success).toBe(true)
+      expect(nullReport.success).toEqual(true)
       if (nullReport.success) {
         expect(nullReport.data).toBeNull()
       }
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(true)
+      expect(undefinedReport.success).toEqual(true)
       if (undefinedReport.success) {
         expect(undefinedReport.data).toBeUndefined()
       }
@@ -579,31 +579,31 @@ describe('schema edge cases', () => {
     it('handles optional to required to undefinable chain on booleans', async () => {
       const schema = boolean().optional().required().undefinable()
 
-      await expect(schema.parse(true)).resolves.toBe(true)
+      await expect(schema.parse(true)).resolves.toEqual(true)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(true)
+      expect(undefinedReport.success).toEqual(true)
       if (undefinedReport.success) {
         expect(undefinedReport.data).toBeUndefined()
       }
 
       const nullReport = await schema.safeParse(null)
-      expect(nullReport.success).toBe(false)
+      expect(nullReport.success).toEqual(false)
     })
 
     it('handles optional to required to nullable to nullish chain on strings', async () => {
       const schema = string().optional().required().nullable().nullish()
 
-      await expect(schema.parse('abc')).resolves.toBe('abc')
+      await expect(schema.parse('abc')).resolves.toEqual('abc')
 
       const nullReport = await schema.safeParse(null)
-      expect(nullReport.success).toBe(true)
+      expect(nullReport.success).toEqual(true)
       if (nullReport.success) {
         expect(nullReport.data).toBeNull()
       }
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(true)
+      expect(undefinedReport.success).toEqual(true)
       if (undefinedReport.success) {
         expect(undefinedReport.data).toBeUndefined()
       }
@@ -613,39 +613,39 @@ describe('schema edge cases', () => {
       const schema = string().optional().default('fallback').nullable().default('final')
 
       const result = await schema.parse(undefined)
-      expect(result).toBe('final')
+      expect(result).toEqual('final')
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe('final')
+      expect(nullResult).toEqual('final')
 
       const provided = await schema.parse('given')
-      expect(provided).toBe('given')
+      expect(provided).toEqual('given')
     })
 
     it('handles number defaults through optional chains', async () => {
       const schema = number().default(1).optional().default(2).nullable().default(3)
 
       const defaultResult = await schema.parse(undefined)
-      expect(defaultResult).toBe(3)
+      expect(defaultResult).toEqual(3)
 
       const provided = await schema.parse(5)
-      expect(provided).toBe(5)
+      expect(provided).toEqual(5)
 
       const nullProvided = await schema.parse(null)
-      expect(nullProvided).toBe(3)
+      expect(nullProvided).toEqual(3)
     })
 
     it('handles boolean defaults with nullish transitions', async () => {
       const schema = boolean().nullish().default(true).optional().default(false)
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe(false)
+      expect(undefinedResult).toEqual(false)
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe(false)
+      expect(nullResult).toEqual(false)
 
       const trueResult = await schema.parse(true)
-      expect(trueResult).toBe(true)
+      expect(trueResult).toEqual(true)
     })
 
     it('handles array optionality chains with defaults', async () => {
@@ -682,60 +682,60 @@ describe('schema edge cases', () => {
       const schema = union([string(), number()]).optional().default('fallback').nullable().default('final')
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe('final')
+      expect(undefinedResult).toEqual('final')
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe('final')
+      expect(nullResult).toEqual('final')
 
       const providedString = await schema.parse('value')
-      expect(providedString).toBe('value')
+      expect(providedString).toEqual('value')
 
       const providedNumber = await schema.parse(42)
-      expect(providedNumber).toBe(42)
+      expect(providedNumber).toEqual(42)
     })
 
     it('handles literal optionality chains', async () => {
       const schema = literal('const').optional().nullable().nullish().default('const')
 
       const resultUndefined = await schema.parse(undefined)
-      expect(resultUndefined).toBe('const')
+      expect(resultUndefined).toEqual('const')
 
       const resultNull = await schema.parse(null)
-      expect(resultNull).toBe('const')
+      expect(resultNull).toEqual('const')
 
       const resultProvided = await schema.parse('const')
-      expect(resultProvided).toBe('const')
+      expect(resultProvided).toEqual('const')
 
       const failure = await schema.safeParse('other')
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('handles enum optionality chains', async () => {
       const schema = enumSchema(['a', 'b']).optional().required().nullable().default('a')
 
       const provided = await schema.parse('b')
-      expect(provided).toBe('b')
+      expect(provided).toEqual('b')
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe('a')
+      expect(nullResult).toEqual('a')
 
       const failure = await schema.safeParse('c')
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('handles nullish after required chain on literal', async () => {
       const schema = literal(10).nullable().required().nullish()
 
-      await expect(schema.parse(10)).resolves.toBe(10)
+      await expect(schema.parse(10)).resolves.toEqual(10)
 
       const nullReport = await schema.safeParse(null)
-      expect(nullReport.success).toBe(true)
+      expect(nullReport.success).toEqual(true)
       if (nullReport.success) {
         expect(nullReport.data).toBeNull()
       }
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(true)
+      expect(undefinedReport.success).toEqual(true)
       if (undefinedReport.success) {
         expect(undefinedReport.data).toBeUndefined()
       }
@@ -755,7 +755,7 @@ describe('schema edge cases', () => {
       expect(resultProvided).toEqual({ nested: { value: 1 } })
 
       const failure = await schema.safeParse({ nested: { value: -1 } })
-      expect(failure.success).toBe(true)
+      expect(failure.success).toEqual(true)
     })
 
     it('handles optional arrays inside optional objects', async () => {
@@ -772,7 +772,7 @@ describe('schema edge cases', () => {
       expect(provided).toEqual({ list: ['ok'] })
 
       const failure = await schema.safeParse({ list: [''] })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('handles optional union of objects with nullish defaults', async () => {
@@ -794,7 +794,7 @@ describe('schema edge cases', () => {
       expect(provided).toEqual({ type: 'B', value: 'hello' })
 
       const failure = await schema.safeParse({ type: 'B', value: '' })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('handles optional arrays with nullish defaults returning explicit fallback', async () => {
@@ -842,7 +842,7 @@ describe('schema edge cases', () => {
       expect(provided).toEqual({ entries: [{ id: 'a', value: 5 }] })
 
       const failure = await schema.safeParse({ entries: [{ id: 'a', value: -1 }] })
-      expect(failure.success).toBe(true)
+      expect(failure.success).toEqual(true)
     })
 
     it('handles optional nested arrays with nullish entries', async () => {
@@ -855,7 +855,7 @@ describe('schema edge cases', () => {
       expect(provided).toEqual([1, null, undefined, 3])
 
       const failure = await schema.safeParse([-1])
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('handles optional objects with multiple optional properties', async () => {
@@ -890,59 +890,59 @@ describe('schema edge cases', () => {
       expect(provided).toEqual([2, 3])
 
       const failure = await schema.safeParse([true])
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('handles optional literal with chained defaults', async () => {
       const schema = literal('fixed').optional().default('fixed').nullable().default('fixed')
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe('fixed')
+      expect(undefinedResult).toEqual('fixed')
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe('fixed')
+      expect(nullResult).toEqual('fixed')
 
       const provided = await schema.parse('fixed')
-      expect(provided).toBe('fixed')
+      expect(provided).toEqual('fixed')
     })
 
     it('handles optional enum with chained defaults', async () => {
       const schema = enumSchema(['x', 'y']).optional().default('x').nullable().default('x')
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe('x')
+      expect(undefinedResult).toEqual('x')
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe('x')
+      expect(nullResult).toEqual('x')
 
       const provided = await schema.parse('y')
-      expect(provided).toBe('y')
+      expect(provided).toEqual('y')
     })
 
     it('handles optional boolean with chained defaults', async () => {
       const schema = boolean().optional().default(false).nullable().default(false)
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe(false)
+      expect(undefinedResult).toEqual(false)
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe(false)
+      expect(nullResult).toEqual(false)
 
       const provided = await schema.parse(true)
-      expect(provided).toBe(true)
+      expect(provided).toEqual(true)
     })
 
     it('handles optional number with chained defaults', async () => {
       const schema = number().optional().default(1).nullable().default(1)
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe(1)
+      expect(undefinedResult).toEqual(1)
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe(1)
+      expect(nullResult).toEqual(1)
 
       const provided = await schema.parse(5)
-      expect(provided).toBe(5)
+      expect(provided).toEqual(5)
     })
 
     it('handles optional array with chained defaults', async () => {
@@ -977,13 +977,13 @@ describe('schema edge cases', () => {
       const schema = object({ id: string() }).strict()
 
       const success = await schema.safeParse({ id: 'abc' })
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
       if (success.success) {
         expect(success.data).toEqual({ id: 'abc' })
       }
 
       const failure = await schema.safeParse({ id: 'abc', extra: true })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('passthrough root preserves extraneous keys', async () => {
@@ -1011,13 +1011,13 @@ describe('schema edge cases', () => {
       const schema = object({ id: string() }).passthrough().strict()
 
       const success = await schema.safeParse({ id: 'abc' })
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
       if (success.success) {
         expect(success.data).toEqual({ id: 'abc' })
       }
 
       const failure = await schema.safeParse({ id: 'abc', extra: 'value' })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('nested strict child rejects extraneous keys', async () => {
@@ -1026,10 +1026,10 @@ describe('schema edge cases', () => {
       }).passthrough()
 
       const failure = await schema.safeParse({ meta: { count: 1, extra: 2 } })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
 
       const success = await schema.safeParse({ meta: { count: 1 } })
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
       if (success.success) {
         expect(success.data).toEqual({ meta: { count: 1 } })
       }
@@ -1057,10 +1057,10 @@ describe('schema edge cases', () => {
       const schema = array(object({ value: number() }).strict())
 
       const success = await schema.safeParse([{ value: 1 }, { value: 2 }])
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
 
       const failure = await schema.safeParse([{ value: 1, extra: true }])
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('passthrough nested arrays allow extra keys', async () => {
@@ -1106,7 +1106,7 @@ describe('schema edge cases', () => {
         root: 'remove',
       })
 
-      expect(result.success).toBe(false)
+      expect(result.success).toEqual(false)
     })
 
     it('oscillation ending in strip removes extras everywhere', async () => {
@@ -1123,10 +1123,10 @@ describe('schema edge cases', () => {
       const schema = object({ value: string() }).strict().optional()
 
       const success = await schema.safeParse(undefined)
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
 
       const failure = await schema.safeParse({ value: 'x', extra: true })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('passthrough root optional keeps extras', async () => {
@@ -1167,7 +1167,7 @@ describe('schema edge cases', () => {
       }).passthrough()
 
       const failure = await schema.safeParse({ child: { name: 'x', extra: 'no' } })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('passthrough mixed with strict ensures selective rejection', async () => {
@@ -1182,14 +1182,14 @@ describe('schema edge cases', () => {
         passthroughChild: { y: 1, extra: true },
         stripChild: { z: false, extra: true },
       })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
 
       const success = await schema.safeParse({
         strictChild: { x: 'a' },
         passthroughChild: { y: 1, extra: true },
         stripChild: { z: false, extra: true },
       })
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
       if (success.success) {
         expect(success.data).toEqual({
           strictChild: { x: 'a' },
@@ -1249,7 +1249,7 @@ describe('schema edge cases', () => {
       expect(result).toEqual({ nested: { value: 'x', extra: true } })
 
       const failure = await schema.safeParse({ nested: { value: 'x', extra: true }, root: true })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('strip after strict ensures root extras removed', async () => {
@@ -1272,13 +1272,13 @@ describe('schema edge cases', () => {
       }).passthrough()
 
       const success = await schema.safeParse({ list: [{ id: 'a' }], extra: true })
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
       if (success.success) {
         expect(success.data).toEqual({ list: [{ id: 'a' }], extra: true })
       }
 
       const failure = await schema.safeParse({ list: [{ id: 'a', extra: true }] })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('strip nested arrays inside strict root remove extras', async () => {
@@ -1309,13 +1309,13 @@ describe('schema edge cases', () => {
         strictChild: { value: 'x', extra: true },
         flexChild: { value: 1 },
       })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
 
       const success = await schema.safeParse({
         strictChild: { value: 'x' },
         flexChild: { value: 1, extra: true },
       })
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
       if (success.success) {
         expect(success.data).toEqual({
           strictChild: { value: 'x' },
@@ -1340,7 +1340,7 @@ describe('schema edge cases', () => {
           },
         },
       })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
 
       const success = await schema.safeParse({
         level1: {
@@ -1349,7 +1349,7 @@ describe('schema edge cases', () => {
           },
         },
       })
-      expect(success.success).toBe(true)
+      expect(success.success).toEqual(true)
       if (success.success) {
         expect(success.data).toEqual({
           level1: {
@@ -1369,13 +1369,13 @@ describe('schema edge cases', () => {
       const schema = union([strictSchema, passSchema])
 
       const strictResult = await schema.safeParse({ id: 'a', tag: 'strict' })
-      expect(strictResult.success).toBe(true)
+      expect(strictResult.success).toEqual(true)
 
       const strictFailure = await schema.safeParse({ id: 'a', tag: 'strict', extra: true })
-      expect(strictFailure.success).toBe(false)
+      expect(strictFailure.success).toEqual(false)
 
       const passResult = await schema.safeParse({ id: 'a', tag: 'pass', extra: true })
-      expect(passResult.success).toBe(true)
+      expect(passResult.success).toEqual(true)
       if (passResult.success) {
         expect(passResult.data).toEqual({ id: 'a', tag: 'pass', extra: true })
       }
@@ -1413,29 +1413,29 @@ describe('schema edge cases', () => {
       ]).optional().nullable().required()
 
       const literalResult = await schema.parse('nested')
-      expect(literalResult).toBe('nested')
+      expect(literalResult).toEqual('nested')
 
       const nestedBoolean = await schema.parse(undefined)
-      expect(nestedBoolean).toBe(true)
+      expect(nestedBoolean).toEqual(true)
 
       const numberResult = await schema.parse(3)
-      expect(numberResult).toBe(3)
+      expect(numberResult).toEqual(3)
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe(true) // true through boolean().default(true)
+      expect(nullResult).toEqual(true) // true through boolean().default(true)
     })
 
     it('union default after optional returns fallback', async () => {
       const schema = union([string(), number()]).optional().default('fallback')
 
       const result = await schema.parse(undefined)
-      expect(result).toBe('fallback')
+      expect(result).toEqual('fallback')
 
       const stringResult = await schema.parse('value')
-      expect(stringResult).toBe('value')
+      expect(stringResult).toEqual('value')
 
       const numberResult = await schema.parse(1)
-      expect(numberResult).toBe(1)
+      expect(numberResult).toEqual(1)
     })
 
     it('union default then nullish reintroduces undefined', async () => {
@@ -1448,7 +1448,7 @@ describe('schema edge cases', () => {
       expect(nullResult).toBeNull()
 
       const provided = await schema.parse('y')
-      expect(provided).toBe('y')
+      expect(provided).toEqual('y')
     })
 
     it('union nested inside object with root default', async () => {
@@ -1474,7 +1474,7 @@ describe('schema edge cases', () => {
       expect(result).toEqual({ tag: 'CONST', meta: { created: 10 } })
 
       const failure = await schema.safeParse({ tag: 'WRONG', value: 10 })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('union of literal and enum matches runtime values', async () => {
@@ -1543,35 +1543,35 @@ describe('schema edge cases', () => {
       ]).optional().nullable().required()
 
       const literalString = await schema.parse('exact')
-      expect(literalString).toBe('exact')
+      expect(literalString).toEqual('exact')
 
       const literalNumber = await schema.parse(42)
-      expect(literalNumber).toBe(42)
+      expect(literalNumber).toEqual(42)
 
       const enumString = await schema.parse('green')
-      expect(enumString).toBe('green')
+      expect(enumString).toEqual('green')
 
       const enumNumber = await schema.parse(300)
-      expect(enumNumber).toBe(300)
+      expect(enumNumber).toEqual(300)
 
       const defaultEnum = await schema.parse(undefined)
-      expect(defaultEnum).toBe(200) // through enumSchema([...]).default(200)
+      expect(defaultEnum).toEqual(200) // through enumSchema([...]).default(200)
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe(200) // through enumSchema([...]).default(200)
+      expect(nullResult).toEqual(200) // through enumSchema([...]).default(200)
     })
 
     it('union optional chain accepts undefined and null with defaults', async () => {
       const schema = union([string(), number()]).optional().nullish().default('x')
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe('x')
+      expect(undefinedResult).toEqual('x')
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe('x')
+      expect(nullResult).toEqual('x')
 
       const provided = await schema.parse(5)
-      expect(provided).toBe(5)
+      expect(provided).toEqual(5)
     })
 
     it('union of nested unions handles complex objects', async () => {
@@ -1617,7 +1617,7 @@ describe('schema edge cases', () => {
       const schema = literal('test').optional().required().nullable().nullish()
 
       const value = await schema.parse('test')
-      expect(value).toBe('test')
+      expect(value).toEqual('test')
 
       const nullResult = await schema.parse(null)
       expect(nullResult).toBeNull()
@@ -1630,13 +1630,13 @@ describe('schema edge cases', () => {
       const schema = enumSchema(['a', 'b']).optional().nullable().nullish().default('a')
 
       const undefinedResult = await schema.parse(undefined)
-      expect(undefinedResult).toBe('a')
+      expect(undefinedResult).toEqual('a')
 
       const nullResult = await schema.parse(null)
-      expect(nullResult).toBe('a')
+      expect(nullResult).toEqual('a')
 
       const provided = await schema.parse('b')
-      expect(provided).toBe('b')
+      expect(provided).toEqual('b')
     })
 
     it('literal and enum combination ensures parse fidelity', async () => {
@@ -1795,13 +1795,13 @@ describe('schema edge cases', () => {
         .required()
 
       const result = await schema.parse('value')
-      expect(result).toBe('value')
+      expect(result).toEqual('value')
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('number optional chain respects transitions', async () => {
@@ -1813,13 +1813,13 @@ describe('schema edge cases', () => {
         .required()
 
       const result = await schema.parse(5)
-      expect(result).toBe(5)
+      expect(result).toEqual(5)
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('boolean optional chain respects transitions', async () => {
@@ -1831,13 +1831,13 @@ describe('schema edge cases', () => {
         .required()
 
       const result = await schema.parse(true)
-      expect(result).toBe(true)
+      expect(result).toEqual(true)
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('array optional chain respects transitions', async () => {
@@ -1852,10 +1852,10 @@ describe('schema edge cases', () => {
       expect(result).toEqual(['value'])
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('object optional chain respects transitions', async () => {
@@ -1870,10 +1870,10 @@ describe('schema edge cases', () => {
       expect(result).toEqual({ value: 'x' })
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('literal optional chain respects transitions', async () => {
@@ -1885,13 +1885,13 @@ describe('schema edge cases', () => {
         .required()
 
       const result = await schema.parse('x')
-      expect(result).toBe('x')
+      expect(result).toEqual('x')
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('enum optional chain respects transitions', async () => {
@@ -1903,13 +1903,13 @@ describe('schema edge cases', () => {
         .required()
 
       const result = await schema.parse('x')
-      expect(result).toBe('x')
+      expect(result).toEqual('x')
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('union optional chain respects transitions', async () => {
@@ -1921,16 +1921,16 @@ describe('schema edge cases', () => {
         .required()
 
       const resultString = await schema.parse('value')
-      expect(resultString).toBe('value')
+      expect(resultString).toEqual('value')
 
       const resultNumber = await schema.parse(5)
-      expect(resultNumber).toBe(5)
+      expect(resultNumber).toEqual(5)
 
       const nullResult = await schema.safeParse(null)
-      expect(nullResult.success).toBe(false)
+      expect(nullResult.success).toEqual(false)
 
       const undefinedReport = await schema.safeParse(undefined)
-      expect(undefinedReport.success).toBe(false)
+      expect(undefinedReport.success).toEqual(false)
     })
 
     it('array default chain resolves sequential defaults', async () => {
@@ -1953,10 +1953,10 @@ describe('schema edge cases', () => {
         .default('c')
 
       const result = await schema.parse(undefined)
-      expect(result).toBe('c')
+      expect(result).toEqual('c')
 
       const provided = await schema.parse('value')
-      expect(provided).toBe('value')
+      expect(provided).toEqual('value')
     })
 
     it('number default chain resolves sequential defaults', async () => {
@@ -1966,10 +1966,10 @@ describe('schema edge cases', () => {
         .default(3)
 
       const result = await schema.parse(undefined)
-      expect(result).toBe(3)
+      expect(result).toEqual(3)
 
       const provided = await schema.parse(5)
-      expect(provided).toBe(5)
+      expect(provided).toEqual(5)
     })
 
     it('boolean default chain resolves sequential defaults', async () => {
@@ -1979,10 +1979,10 @@ describe('schema edge cases', () => {
         .default(false)
 
       const result = await schema.parse(undefined)
-      expect(result).toBe(false)
+      expect(result).toEqual(false)
 
       const provided = await schema.parse(true)
-      expect(provided).toBe(true)
+      expect(provided).toEqual(true)
     })
 
     it('object default chain resolves sequential defaults', async () => {
@@ -2005,10 +2005,10 @@ describe('schema edge cases', () => {
         .default('z' as 'x')
 
       const result = await schema.parse(undefined)
-      expect(result).toBe('z')
+      expect(result).toEqual('z')
 
       const provided = await schema.parse('x')
-      expect(provided).toBe('x')
+      expect(provided).toEqual('x')
     })
 
     it('validation chain with optionality enforces constraints', async () => {
@@ -2026,16 +2026,16 @@ describe('schema edge cases', () => {
         .maxLength(50)
 
       const nullishResult = await schema.parse(undefined)
-      expect(nullishResult).toBe(undefined)
+      expect(nullishResult).toEqual(undefined)
 
       const validResult = await schema.parse('prefix-data-suffix')
-      expect(validResult).toBe('prefix-data-suffix')
+      expect(validResult).toEqual('prefix-data-suffix')
 
       const nullResult = await schema.parse(null)
       expect(nullResult).toBeNull()
 
       const failure = await schema.safeParse('pre-short')
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
   })
 
@@ -2085,7 +2085,7 @@ describe('schema edge cases', () => {
         },
       })
 
-      expect(result.level1.level2.level3.level4.level5.level6.level7.level8.level9.level10).toBe('end')
+      expect(result.level1.level2.level3.level4.level5.level6.level7.level8.level9.level10).toEqual('end')
     })
 
     it('rejects missing deep field in nested object', async () => {
@@ -2131,7 +2131,7 @@ describe('schema edge cases', () => {
         },
       })
 
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('parses deeply nested arrays of strings', async () => {
@@ -2219,7 +2219,7 @@ describe('schema edge cases', () => {
         },
       })
 
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('parses pseudo-circular node structure', async () => {
@@ -2272,7 +2272,7 @@ describe('schema edge cases', () => {
           const firstGreatGrandchild = firstGrandchild.children[0]
           expect(firstGreatGrandchild).toBeDefined()
           if (firstGreatGrandchild) {
-            expect(firstGreatGrandchild.value).toBe(4)
+            expect(firstGreatGrandchild.value).toEqual(4)
           }
         }
       }
@@ -2302,7 +2302,7 @@ describe('schema edge cases', () => {
         children: [],
       })
 
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('deep array/object mixture maintains structure', async () => {
@@ -2384,7 +2384,7 @@ describe('schema edge cases', () => {
         branch10: { leaf: { subleaf: { deepleaf: 9 } } },
       })
 
-      expect(result.branch9.leaf.subleaf.deepleaf).toBe('deep')
+      expect(result.branch9.leaf.subleaf.deepleaf).toEqual('deep')
     })
 
     it('rejects wide object when nested value invalid', async () => {
@@ -2414,7 +2414,7 @@ describe('schema edge cases', () => {
         branch10: { leaf: { subleaf: { deepleaf: 9 } } },
       })
 
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('string with all validation methods respects values', async () => {
@@ -2426,13 +2426,13 @@ describe('schema edge cases', () => {
         .default(`start${'a'.repeat(19)}end`)
 
       const defaultResult = await schema.parse(undefined)
-      expect(defaultResult).toBe(`start${'a'.repeat(19)}end`)
+      expect(defaultResult).toEqual(`start${'a'.repeat(19)}end`)
 
       const provided = await schema.parse(`start${'b'.repeat(19)}end`)
-      expect(provided).toBe(`start${'b'.repeat(19)}end`)
+      expect(provided).toEqual(`start${'b'.repeat(19)}end`)
 
       const failure = await schema.safeParse('short')
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('number with stacked validations respects constraints', async () => {
@@ -2444,16 +2444,16 @@ describe('schema edge cases', () => {
         .default(25)
 
       const defaultResult = await schema.parse(undefined)
-      expect(defaultResult).toBe(25)
+      expect(defaultResult).toEqual(25)
 
       const provided = await schema.parse(30)
-      expect(provided).toBe(30)
+      expect(provided).toEqual(30)
 
       const failureLow = await schema.safeParse(-1)
-      expect(failureLow.success).toBe(false)
+      expect(failureLow.success).toEqual(false)
 
       const failureHigh = await schema.safeParse(60)
-      expect(failureHigh.success).toBe(false)
+      expect(failureHigh.success).toEqual(false)
     })
 
     it('array with stacked validations respects constraints', async () => {
@@ -2480,14 +2480,14 @@ describe('schema edge cases', () => {
       expect(result).toHaveLength(5)
 
       const failure = await schema.safeParse([{ id: '', value: 10 }])
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('conflicting validation chain still parses runtime values', async () => {
       const schema = string().minLength(10).maxLength(5)
 
       const failure = await schema.safeParse('123456')
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('mixed optionality in complex structure matches runtime output', async () => {
@@ -2560,7 +2560,9 @@ describe('schema edge cases', () => {
       ]).default('primitive')
 
       const primitiveResult = await schema.parse(undefined)
-      expect(primitiveResult).toBe('primitive')
+      expect(primitiveResult).toEqual({
+        fallback: 'none',
+      })
 
       const objectResult = await schema.parse({ fallback: { reason: 'timeout' } })
       expect(objectResult).toEqual({ fallback: { reason: 'timeout', retry: 0 } })
@@ -2681,11 +2683,11 @@ describe('schema edge cases', () => {
         literal('epsilon'),
       ]).nullish().default('epsilon')
 
-      const defaultResult = await schema.parse(undefined)
-      expect(defaultResult).toBe('epsilon')
+      const firstUnionNullishResult = await schema.parse(undefined)
+      expect(firstUnionNullishResult).toEqual(undefined)
 
       const epsilonResult = await schema.parse('epsilon')
-      expect(epsilonResult).toBe('epsilon')
+      expect(epsilonResult).toEqual('epsilon')
 
       const alphaResult = await schema.parse({
         tag: 'alpha',
@@ -2722,7 +2724,7 @@ describe('schema edge cases', () => {
         },
       })
 
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('parses multi-branch union with deep defaults', async () => {
@@ -2741,11 +2743,11 @@ describe('schema edge cases', () => {
         object({ variant: literal('z'), payload: nullSchema() }).default({ variant: 'z', payload: null }),
       ]).default({ variant: 'z', payload: null })
 
-      const defaultResult = await schema.parse(undefined)
-      expect(defaultResult).toEqual({ variant: 'z', payload: null })
+      const firstObjectDefaultResult = await schema.parse(undefined)
+      expect(firstObjectDefaultResult).toEqual({ variant: 'x', payload: { nested: { value: 'a' } } })
 
       const xResult = await schema.parse({ variant: 'x', payload: {} })
-      expect(xResult).toEqual({ variant: 'x', payload: { nested: { value: 'a' } } })
+      expect(xResult).toEqual({ variant: 'x', payload: { nested: [1, 2, 3] } })
 
       const yResult = await schema.parse({ variant: 'y' })
       expect(yResult).toEqual({ variant: 'y', payload: [] })
@@ -2864,7 +2866,7 @@ describe('schema edge cases', () => {
         ],
       })
 
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('parses extremely nested optional arrays of unions', async () => {
@@ -2939,7 +2941,7 @@ describe('schema edge cases', () => {
         ],
       ])
 
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
 
     it('parses nested union transformations combining arrays and objects', async () => {
@@ -2999,7 +3001,7 @@ describe('schema edge cases', () => {
       ])
 
       const failure = await schema.safeParse({ type: 'sum', payload: [] })
-      expect(failure.success).toBe(false)
+      expect(failure.success).toEqual(false)
     })
   })
 
@@ -3085,10 +3087,11 @@ describe('schema edge cases', () => {
     it('parses pipeline with mixed io, compute, and branch stages', async () => {
       const schema = createPipelineSchema()
 
-      const result = await schema.parse({
+      const result = await schema.safeParse({
         name: 'pipeline-main',
         stages: [
           {
+            keep: 'root',
             kind: 'io',
             request: {
               url: 'https://api.example.com/list',
@@ -3101,7 +3104,6 @@ describe('schema edge cases', () => {
               schema: { ok: true },
               extra: 'keep',
             },
-            keep: 'root',
           },
           {
             kind: 'compute',
@@ -3133,11 +3135,16 @@ describe('schema edge cases', () => {
         settings: { mode: 'loose', audit: true },
       })
 
-      expect(result).toEqual({
+      expect(result.success).toEqual(true)
+      // @ts-expect-error - assuming type
+      expect(result.data?.stages[0]?.request?.headers).toEqual({
+        Authorization: 'Bearer token',
+      })
+      expect(result.data).toEqual({
         name: 'pipeline-main',
         stages: [
           {
-            keep: 'extra',
+            keep: 'root',
             kind: 'io',
             request: {
               method: 'GET',
@@ -3150,6 +3157,7 @@ describe('schema edge cases', () => {
             response: {
               status: 200,
               schema: { ok: true },
+              extra: 'keep',
             },
           },
           {
@@ -3214,7 +3222,7 @@ describe('schema edge cases', () => {
         metadata: { id: 'pipe-1' },
       })
 
-      expect(report.success).toBe(false)
+      expect(report.success).toEqual(false)
     })
 
     it('applies defaults when io stage omits response and headers', async () => {
@@ -3259,13 +3267,13 @@ describe('schema edge cases', () => {
         context: { timeoutMs: 1000, parallelism: 4 },
       })
 
-      expect(result.settings).toBe('inherit')
+      expect(result.settings).toEqual('inherit')
     })
 
     it('handles deeply nested predicate unions on branch stage arrays', async () => {
       const schema = createPipelineSchema()
 
-      const result = await schema.parse({
+      const input = {
         name: 'pipe-three',
         stages: [
           {
@@ -3295,15 +3303,19 @@ describe('schema edge cases', () => {
             negative: [{ step: 'log' }],
           },
         ],
-        metadata: { id: 'pipe-003' },
+        metadata: { id: 'pipe-003', tags: undefined },
         settings: { mode: 'strict' },
-      })
+      }
 
-      expect(result.stages[2]).toEqual({
+      expect(() => schema.parse(input)).not.toThrow()
+      const result = await schema.safeParse(input)
+
+      expect(result.success).toEqual(true)
+      expect(result.data?.stages[2]).toEqual({
         kind: 'branch',
         predicate: {
           any: [
-            { predicate: 'hasFeature("beta")' },
+            { predicate: 'hasFeature("beta")', extra: 'keep' },
             { predicate: 'user.role == "admin"' },
             false,
           ],
@@ -3338,7 +3350,7 @@ describe('schema edge cases', () => {
         metadata: { id: 'pipe-004' },
       })
 
-      expect(report.success).toBe(false)
+      expect(report.success).toEqual(false)
     })
 
     it('parses pipeline when settings choose strict branch with defaults', async () => {
@@ -3370,7 +3382,7 @@ describe('schema edge cases', () => {
       })
 
       expect(result.settings).toEqual({ mode: 'strict', audit: true })
-      expect(result.metadata.retries).toBe(0)
+      expect(result.metadata.retries).toEqual(0)
     })
 
     it('rejects pipeline when io request url invalid', async () => {
@@ -3397,7 +3409,7 @@ describe('schema edge cases', () => {
         metadata: { id: 'pipe-006' },
       })
 
-      expect(report.success).toBe(false)
+      expect(report.success).toEqual(false)
     })
 
     it('supports pipelines with nested union computations returning transforms', async () => {
