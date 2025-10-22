@@ -320,8 +320,6 @@ describe('object schema', () => {
     })
   })
 
-  // TODO: test transform and the undefined, exactOptional extra logic
-
   it('should work with the speciall cases (temp)', async () => {
     const schema = object({
       fallback: union([
