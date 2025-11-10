@@ -66,6 +66,15 @@ jobs:
       - name: Build
         run: pnpm -r build
 
+      - name: Download Main Benchmarks
+        uses: dawidd6/action-download-artifact@v6
+        continue-on-error: true
+        with:
+          name: benchmark-main
+          path: ./main-bench
+          workflow: benchmark-main.yml
+          branch: main
+
       - name: Run Benchmarks
         run: pnpm bench
         working-directory: ./packages/bench
@@ -73,6 +82,8 @@ jobs:
       - name: Format Benchmark Results
         run: pnpm format-results
         working-directory: ./packages/bench
+        env:
+          MAIN_BENCHMARK_PATH: ../../main-bench/benchmark-results.json
 
       - name: Comment PR with Results
         uses: actions/github-script@v7

@@ -1,0 +1,38 @@
+name: Benchmark Main
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  benchmark:
+    name: Cache Main Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: Setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm -r build
+
+      - name: Run Benchmarks
+        run: pnpm bench
+        working-directory: ./packages/bench
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-main
+          path: packages/bench/benchmark-results.json
+          retention-days: 90
