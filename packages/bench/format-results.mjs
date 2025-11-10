@@ -134,8 +134,7 @@ catch (error) {
   console.error('❌ Failed to generate benchmark report:', error.message)
 
   // Create fallback report
-  let fallback = '## 📊 Benchmark Results\n\n'
-  fallback += '⚠️ Could not parse benchmark results.\n\n'
+  let fallback = '⚠️ Could not parse benchmark results.\n\n'
   fallback += 'Please check the workflow logs for raw benchmark output.\n'
 
   writeFileSync(outputPath, fallback)
