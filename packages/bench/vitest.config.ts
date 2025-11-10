@@ -4,7 +4,8 @@ export default defineConfig({
   test: {
     include: ['bench/**/*.bench.{ts,js}'],
     benchmark: {
-
+      reporters: 'verbose',
+      outputJson: 'benchmark-results.json',
     },
   },
 })
