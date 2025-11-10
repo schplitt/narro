@@ -78,7 +78,7 @@ jobs:
       - name: Run Benchmarks
         run: pnpm bench
         working-directory: ./packages/bench
-                  
+
       - name: Format Benchmark Results
         run: pnpm format-results
         working-directory: ./packages/bench
