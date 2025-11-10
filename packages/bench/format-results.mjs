@@ -18,8 +18,7 @@ try {
   const data = readFileSync(resultsPath, 'utf-8')
   const results = JSON.parse(data)
 
-  let markdown = '## 📊 Benchmark Results\n\n'
-  markdown += '_Performance comparison of Spur vs Zod, Valibot, and ArkType_\n\n'
+  let markdown = '_Performance comparison of Spur vs Zod, Valibot, and ArkType_\n\n'
 
   // Parse Vitest benchmark JSON structure
   if (results.files) {
