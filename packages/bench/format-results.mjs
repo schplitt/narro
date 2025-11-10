@@ -31,7 +31,7 @@ try {
 
       for (const group of file.groups) {
         const suiteName = group.fullName.split(' > ').slice(1).join(' > ')
-        
+
         markdown += `### ${suiteName}\n\n`
         markdown += '| Library | ops/sec | Mean (ms) | vs Fastest |\n'
         markdown += '|---------|---------|----------|------------|\n'
@@ -44,16 +44,17 @@ try {
           const bench = sortedBenchmarks[i]
           const opsPerSec = bench.hz.toLocaleString('en-US', { maximumFractionDigits: 0 })
           const meanMs = (bench.mean * 1000).toFixed(4)
-          
+
           let comparison = ''
           if (i === 0) {
             comparison = '**fastest**'
-          } else {
+          }
+          else {
             const percentSlower = ((fastestHz / bench.hz - 1) * 100).toFixed(1)
             const timesFaster = (fastestHz / bench.hz).toFixed(2)
             comparison = `${timesFaster}x slower (${percentSlower}%)`
           }
-          
+
           markdown += `| ${bench.name} | ${opsPerSec} | ${meanMs} | ${comparison} |\n`
         }
 

@@ -84,28 +84,28 @@ jobs:
           script: |
             const fs = require('fs');
             const reportPath = 'packages/bench/report.md';
-            
+
             let body = '## 📊 Benchmark Results\n\n';
-            
+
             if (fs.existsSync(reportPath)) {
               body += fs.readFileSync(reportPath, 'utf8');
             } else {
               body += '⚠️ Benchmark results could not be generated.\n\n';
               body += 'Check the workflow logs for details.';
             }
-            
+
             // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
             });
-            
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
               comment.body.includes('📊 Benchmark Results')
             );
-            
+
             if (botComment) {
               // Update existing comment
               await github.rest.issues.updateComment({
@@ -123,4 +123,3 @@ jobs:
                 body: body
               });
             }
-
