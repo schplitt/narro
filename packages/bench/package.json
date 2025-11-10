@@ -14,7 +14,8 @@
   ],
   "main": "src/index.mjs",
   "scripts": {
-    "bench": "vitest bench"
+    "bench": "vitest bench",
+    "format-results": "node format-results.mjs"
   },
   "dependencies": {
     "arktype": "^2.1.23",
