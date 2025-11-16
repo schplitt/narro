@@ -2,7 +2,7 @@ import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
-import { number } from '../../leitplanken/number'
+import { number } from '../../schemas/number'
 
 describe('numberSchema - basic types', () => {
   it('basic number schema', () => {

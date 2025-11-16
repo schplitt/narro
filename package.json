@@ -1,12 +1,26 @@
 {
-  "name": "spur-monorepo",
+  "name": "narro-monorepo",
   "type": "module",
   "version": "0.0.0",
-  "packageManager": "pnpm@10.15.1",
-  "description": "Monorepo for Spur",
-  "author": "",
-  "license": "ISC",
-  "keywords": [],
+  "packageManager": "pnpm@10.22.0",
+  "description": "Monorepo for Narro",
+  "author": "schplitt",
+  "license": "MIT",
+  "homepage": "https://github.com/schplitt/narro#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schplitt/narro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/schplitt/narro/issues"
+  },
+  "keywords": [
+    "narro",
+    "typescript",
+    "schema",
+    "validation",
+    "monorepo"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
@@ -15,6 +29,9 @@
     "lint:fix": "eslint . --fix",
     "release": "bumpp -r",
     "prerelease": "eslint . && tsc --noEmit && vitest run"
+  },
+  "dependencies": {
+    "bumpp": "^10.3.1"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^5.2.2",

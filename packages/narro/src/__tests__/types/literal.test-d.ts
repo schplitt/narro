@@ -2,7 +2,7 @@ import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
-import { literal } from '../../leitplanken/literal'
+import { literal } from '../../schemas/literal'
 
 describe('literalSchema - basic types', () => {
   it('string literal schema', () => {

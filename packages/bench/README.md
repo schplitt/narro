@@ -1,6 +1,6 @@
-# Spur Benchmarks
+# Narro Benchmarks
 
-Performance benchmarks comparing Spur with other popular validation libraries: Zod, Valibot, and ArkType.
+Performance benchmarks comparing Narro with other popular validation libraries: Zod, Valibot, and ArkType.
 
 ## Benchmark Suites
 
@@ -32,13 +32,13 @@ pnpm bench
 
 ## Benchmark Variants
 
-Each suite tests 4 Spur configurations + 3 competitors:
+Each suite tests 4 Narro configurations + 3 competitors:
 
-### Spur Variants
-1. **spur unbuild async** - Schema built on each validation call
-2. **spur async** - Pre-built schema (recommended for production)
-3. **spur inline unbuild** - Inline export, built on each call
-4. **spur inline** - Inline export, pre-built
+### Narro Variants
+1. **narro unbuild async** - Schema built on each validation call
+2. **narro async** - Pre-built schema (recommended for production)
+3. **narro inline unbuild** - Inline export, built on each call
+4. **narro inline** - Inline export, pre-built
 
 ### Competitors
 - **zod** - Synchronous validation

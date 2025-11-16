@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { array } from '../../leitplanken/array'
-import { number } from '../../leitplanken/number'
-import { object } from '../../leitplanken/object'
-import { string } from '../../leitplanken/string'
+import { array } from '../../schemas/array'
+import { number } from '../../schemas/number'
+import { object } from '../../schemas/object'
+import { string } from '../../schemas/string'
 
 describe('array schema', () => {
   it('parses arrays when every element matches the child schema', async () => {
@@ -73,9 +73,9 @@ describe('array schema', () => {
       expect(undefinedReport.success).toBe(true)
       expect(undefinedReport.data).toBeUndefined()
 
-      const definedReport = await schema.safeParse(['spur'])
+      const definedReport = await schema.safeParse(['narro'])
       expect(definedReport.success).toBe(true)
-      expect(definedReport.data).toEqual(['spur'])
+      expect(definedReport.data).toEqual(['narro'])
     })
 
     it('supports nullable modifier', async () => {

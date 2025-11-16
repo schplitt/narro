@@ -4,13 +4,13 @@ import { literal } from '../../index'
 
 describe('literal schema', () => {
   it('accepts matching string literal', async () => {
-    const schema = literal('spur')
+    const schema = literal('narro')
 
-    await expect(schema.parse('spur')).resolves.toBe('spur')
+    await expect(schema.parse('narro')).resolves.toBe('narro')
   })
 
   it('rejects non matching values', async () => {
-    const schema = literal('spur')
+    const schema = literal('narro')
     const report = await schema.safeParse('other')
 
     expect(report.success).toBe(false)

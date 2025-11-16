@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { boolean, enum as enumSchema, literal, null as nullSchema, number, string, undefined as undefinedSchema, union } from '../../index'
-import { array } from '../../leitplanken/array'
-import { object } from '../../leitplanken/object'
+import { array } from '../../schemas/array'
+import { object } from '../../schemas/object'
 
 function createPlatformSchema() {
   return object({

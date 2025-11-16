@@ -1,6 +1,6 @@
 import { type } from 'arktype'
-import { array, literal, number, object, string, union } from 'spur'
-import { array as arrayInline, literal as literalInline, number as numberInline, object as objectInline, string as stringInline, union as unionInline } from 'spur/inline'
+import { array, literal, number, object, string, union } from 'narro'
+import { array as arrayInline, literal as literalInline, number as numberInline, object as objectInline, string as stringInline, union as unionInline } from 'narro/inline'
 import * as v from 'valibot'
 import { bench, describe } from 'vitest'
 import { z } from 'zod'
@@ -105,8 +105,8 @@ const invalidOrder = {
   tags: ['priority', 'gift-wrap'],
 }
 
-// Spur async schema
-const spurAsyncUnbuild = object({
+// Narro async schema
+const narroAsyncUnbuild = object({
   customer: object({
     id: string().minLength(10),
     email: string().minLength(5),
@@ -149,9 +149,9 @@ const spurAsyncUnbuild = object({
   tags: array(string()).optional(),
 })
 
-const spurAsyncBuilt = await spurAsyncUnbuild.build()
+const narroAsyncBuilt = await narroAsyncUnbuild.build()
 
-const spurInlineUnbuild = objectInline({
+const narroInlineUnbuild = objectInline({
   customer: objectInline({
     id: stringInline().minLength(10),
     email: stringInline().minLength(5),
@@ -194,8 +194,8 @@ const spurInlineUnbuild = objectInline({
   tags: arrayInline(stringInline()).optional(),
 })
 
-// Spur inline schema
-const spurInlineBuilt = await objectInline({
+// Narro inline schema
+const narroInlineBuilt = await objectInline({
   customer: objectInline({
     id: stringInline().minLength(10),
     email: stringInline().minLength(5),
@@ -374,17 +374,17 @@ const arkTypeSchema = type({
 })
 
 describe('complex backend: valid parse', () => {
-  bench('spur unbuild async valid', async () => {
-    await spurAsyncUnbuild.safeParse(validOrder)
+  bench('narro unbuild async valid', async () => {
+    await narroAsyncUnbuild.safeParse(validOrder)
   })
-  bench('spur async valid', () => {
-    spurAsyncBuilt.safeParse(validOrder)
+  bench('narro async valid', () => {
+    narroAsyncBuilt.safeParse(validOrder)
   })
-  bench('spur inline unbuild valid', async () => {
-    await spurInlineUnbuild.safeParse(validOrder)
+  bench('narro inline unbuild valid', async () => {
+    await narroInlineUnbuild.safeParse(validOrder)
   })
-  bench('spur inline valid', () => {
-    spurInlineBuilt.safeParse(validOrder)
+  bench('narro inline valid', () => {
+    narroInlineBuilt.safeParse(validOrder)
   })
   bench('zod valid', () => {
     zodSchema.safeParse(validOrder)
@@ -398,17 +398,17 @@ describe('complex backend: valid parse', () => {
 })
 
 describe('complex backend: invalid parse', () => {
-  bench('spur unbuild async invalid', async () => {
-    await spurAsyncUnbuild.safeParse(invalidOrder)
+  bench('narro unbuild async invalid', async () => {
+    await narroAsyncUnbuild.safeParse(invalidOrder)
   })
-  bench('spur async invalid', () => {
-    spurAsyncBuilt.safeParse(invalidOrder)
+  bench('narro async invalid', () => {
+    narroAsyncBuilt.safeParse(invalidOrder)
   })
-  bench('spur inline unbuild invalid', async () => {
-    await spurInlineUnbuild.safeParse(invalidOrder)
+  bench('narro inline unbuild invalid', async () => {
+    await narroInlineUnbuild.safeParse(invalidOrder)
   })
-  bench('spur inline invalid', () => {
-    spurInlineBuilt.safeParse(invalidOrder)
+  bench('narro inline invalid', () => {
+    narroInlineBuilt.safeParse(invalidOrder)
   })
   bench('zod invalid', () => {
     zodSchema.safeParse(invalidOrder)

@@ -1,32 +1,61 @@
-## Spur
+# Narro
 
-Spur is a lightweight TypeScript schema validation library with a familiar, Zod-inspired API. It keeps bundle size tiny by loading constraint logic asynchronously only when a schema is built, so you get a fluent, chainable experience without paying for unused checks.
+Lightweight TypeScript schema validation library with a Zod-like API that keeps bundle sizes minimal.
 
-> Note: Spur is in early development with no official release yet. The API is not stable and may change in future builds.
+> **⚠️ Development Status:** Narro is in early development with no stable release yet. The API may change in future builds.
 
-### Why Spur
-- **Tiny bundles** – constraint logic is lazy-loaded on first build, so unused checks never ship.
-- **Ergonomic chains** – compose schemas with a straightforward, Zod-like API.
-- **Heuristic insights** – built-in scoring highlights the most plausible schema branch and pinpoints exactly what failed, without losing data when branches overlap.
+## Why Narro
 
-### Runtime modes
-- **`safeParse` (lazy)** – call `schema.safeParse(input)` and Spur will build the schema and run validation in one step. This keeps bundles minimal thanks to on-demand dynamic imports.
-- **`build()` (eager)** – build the schema once to load the required checks up front, then reuse the returned evaluator for hot paths.
-- **`spur/inline` (fully bundled)** – import from `spur/inline` when throughput beats bundle size; all checks ship together, so there are no dynamic imports at runtime.
+- **Tiny bundles** – constraint logic lazy-loads on first build, so unused checks never ship
+- **Zod-like API** – familiar, chainable schema composition
+- **Heuristic insights** – built-in scoring highlights the most plausible schema branch and pinpoints failures
+- **Performance options** – choose between minimal bundles or maximum throughput
 
-### Quick taste
+## Runtime Modes
+
+- **`safeParse` (lazy)** – validates with dynamic imports for minimal bundles
+- **`build()` (eager)** – preload checks upfront for reuse in hot paths
+- **`narro/inline`** – all checks bundled together for maximum throughput
+
+## Quick Start
+
 ```ts
-import { number } from 'spur'
+import * as n from 'narro'
 
-const ageSchema = number().min(0).max(130)
+const ageSchema = n.number().min(0).max(130)
 const report = await ageSchema.safeParse(input)
 
-if (report.passed) {
+if (report.success) {
   // use report.value
 }
 else {
-  console.log(report) // heuristics explain the most likely mismatch
+  // see why validation failed
 }
 ```
 
-For more details, explore the `packages/spur` directory or run the playground in `packages/playground`.
+## Project Structure
+
+This is a monorepo containing:
+
+- **`packages/narro`** – the main validation library
+- **`packages/bench`** – performance benchmarks
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run tests
+pnpm -r test
+
+# Lint
+pnpm lint
+
+# Release narro package
+pnpm release:narro
+```
+
+## License
+
+MIT
