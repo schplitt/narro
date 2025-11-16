@@ -24,6 +24,7 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: 24
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -37,9 +38,11 @@ jobs:
       - name: Update npm
         run: npm install -g npm@latest
 
-      - run: pnpx changelogithub
+      - run: pnpm dlx changelogithub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish spur to NPM
-        run: pnpm -r publish --access public --no-git-checks --filter ./packages/spur
+        run: pnpm --filter ./packages/spur publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
