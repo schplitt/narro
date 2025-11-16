@@ -42,7 +42,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish spur to NPM
-        run: pnpm --filter ./packages/spur publish --access public --no-git-checks
+      - name: Publish narro to NPM
+        run: pnpm --filter ./packages/narro publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,19 +1,19 @@
 {
-  "name": "spur",
+  "name": "narro",
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@10.15.1",
   "description": "Lightweight TypeScript-first schema validation library with Zod-like API",
   "author": "schplitt",
   "license": "MIT",
-  "homepage": "https://github.com/schplitt/spur/tree/main/packages/spur#readme",
+  "homepage": "https://github.com/schplitt/narro/tree/main/packages/narro#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/schplitt/spur.git",
-    "directory": "packages/spur"
+    "url": "https://github.com/schplitt/narro.git",
+    "directory": "packages/narro"
   },
   "bugs": {
-    "url": "https://github.com/schplitt/spur/issues"
+    "url": "https://github.com/schplitt/narro/issues"
   },
   "keywords": [
     "typescript",
@@ -21,7 +21,7 @@
     "schema",
     "parser",
     "data-validation",
-    "spur",
+    "narro",
     "zod-alternative",
     "valibot-alternative",
     "lightweight",

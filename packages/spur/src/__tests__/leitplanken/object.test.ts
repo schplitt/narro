@@ -33,8 +33,8 @@ describe('object schema', () => {
       name: string(),
     }).optional()
 
-    const value = await schema.parse({ name: 'Spur' })
-    expect(value).toEqual({ name: 'Spur' })
+    const value = await schema.parse({ name: 'Narro' })
+    expect(value).toEqual({ name: 'Narro' })
 
     const optionalResult = await schema.safeParse(undefined)
     expect(optionalResult.success).toBe(true)
@@ -139,8 +139,8 @@ describe('object schema', () => {
       nickname: string().optional(),
     })
 
-    await expect(schema.parse({ name: 'Spur' })).resolves.toEqual({ name: 'Spur' })
-    await expect(schema.parse({ name: 'Spur', nickname: 'S' })).resolves.toEqual({ name: 'Spur', nickname: 'S' })
+    await expect(schema.parse({ name: 'Narro' })).resolves.toEqual({ name: 'Narro' })
+    await expect(schema.parse({ name: 'Narro', nickname: 'S' })).resolves.toEqual({ name: 'Narro', nickname: 'S' })
   })
 
   it('allows for a complex nested object schema', async () => {
@@ -279,7 +279,7 @@ describe('object schema', () => {
         label: string(),
       }).strict()
 
-      const result = await schema.safeParse({ label: 'Spur', alias: 'Team' })
+      const result = await schema.safeParse({ label: 'Narro', alias: 'Team' })
 
       expect(result.success).toBe(false)
       expect('data' in result).toBe(false)
@@ -290,10 +290,10 @@ describe('object schema', () => {
         label: string(),
       }).strict()
 
-      const result = await schema.safeParse({ label: 'Spur' })
+      const result = await schema.safeParse({ label: 'Narro' })
 
       expect(result.success).toBe(true)
-      expect(result.data).toEqual({ label: 'Spur' })
+      expect(result.data).toEqual({ label: 'Narro' })
     })
 
     it('passthrough retains unknown keys', async () => {
@@ -301,10 +301,10 @@ describe('object schema', () => {
         label: string(),
       }).passthrough()
 
-      const result = await schema.safeParse({ label: 'Spur', alias: 'Team' })
+      const result = await schema.safeParse({ label: 'Narro', alias: 'Team' })
 
       expect(result.success).toBe(true)
-      expect(result.data).toEqual({ label: 'Spur', alias: 'Team' })
+      expect(result.data).toEqual({ label: 'Narro', alias: 'Team' })
     })
 
     it('strip removes unknown keys', async () => {
@@ -312,10 +312,10 @@ describe('object schema', () => {
         label: string(),
       }).strip()
 
-      const result = await schema.safeParse({ label: 'Spur', alias: 'Team' })
+      const result = await schema.safeParse({ label: 'Narro', alias: 'Team' })
 
       expect(result.success).toBe(true)
-      expect(result.data).toEqual({ label: 'Spur' })
+      expect(result.data).toEqual({ label: 'Narro' })
       expect(Object.prototype.hasOwnProperty.call(result.data, 'alias')).toBe(false)
     })
   })
@@ -364,10 +364,10 @@ describe('object schema', () => {
           name: string().optional(),
         })
 
-        const result = await schema.safeParse({ name: 'Spur' })
+        const result = await schema.safeParse({ name: 'Narro' })
 
         expect(result.success).toBe(true)
-        expect(result.data).toEqual({ name: 'Spur' })
+        expect(result.data).toEqual({ name: 'Narro' })
       })
 
       it('fails when property has invalid value', async () => {
@@ -418,10 +418,10 @@ describe('object schema', () => {
           name: string().exactOptional(),
         })
 
-        const result = await schema.safeParse({ name: 'Spur' })
+        const result = await schema.safeParse({ name: 'Narro' })
 
         expect(result.success).toBe(true)
-        expect(result.data).toEqual({ name: 'Spur' })
+        expect(result.data).toEqual({ name: 'Narro' })
       })
 
       it('fails when property has invalid value', async () => {
@@ -472,10 +472,10 @@ describe('object schema', () => {
           name: string().undefinable(),
         })
 
-        const result = await schema.safeParse({ name: 'Spur' })
+        const result = await schema.safeParse({ name: 'Narro' })
 
         expect(result.success).toBe(true)
-        expect(result.data).toEqual({ name: 'Spur' })
+        expect(result.data).toEqual({ name: 'Narro' })
       })
 
       it('fails when property has invalid value', async () => {
@@ -536,10 +536,10 @@ describe('object schema', () => {
           name: string().nullable(),
         })
 
-        const result = await schema.safeParse({ name: 'Spur' })
+        const result = await schema.safeParse({ name: 'Narro' })
 
         expect(result.success).toBe(true)
-        expect(result.data).toEqual({ name: 'Spur' })
+        expect(result.data).toEqual({ name: 'Narro' })
       })
 
       it('fails when property has invalid value', async () => {
@@ -591,10 +591,10 @@ describe('object schema', () => {
           name: string().nullish(),
         })
 
-        const result = await schema.safeParse({ name: 'Spur' })
+        const result = await schema.safeParse({ name: 'Narro' })
 
         expect(result.success).toBe(true)
-        expect(result.data).toEqual({ name: 'Spur' })
+        expect(result.data).toEqual({ name: 'Narro' })
       })
 
       it('fails when property has invalid value', async () => {
@@ -644,10 +644,10 @@ describe('object schema', () => {
           name: string(),
         })
 
-        const result = await schema.safeParse({ name: 'Spur' })
+        const result = await schema.safeParse({ name: 'Narro' })
 
         expect(result.success).toBe(true)
-        expect(result.data).toEqual({ name: 'Spur' })
+        expect(result.data).toEqual({ name: 'Narro' })
       })
 
       it('fails when property has invalid value', async () => {
@@ -700,10 +700,10 @@ describe('object schema', () => {
           name: string().default('Default'),
         })
 
-        const result = await schema.safeParse({ name: 'Spur' })
+        const result = await schema.safeParse({ name: 'Narro' })
 
         expect(result.success).toBe(true)
-        expect(result.data).toEqual({ name: 'Spur' })
+        expect(result.data).toEqual({ name: 'Narro' })
       })
 
       it('fails when property has invalid value', async () => {

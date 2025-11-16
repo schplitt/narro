@@ -1,21 +1,21 @@
 {
-  "name": "spur-monorepo",
+  "name": "narro-monorepo",
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@10.22.0",
-  "description": "Monorepo for Spur",
+  "description": "Monorepo for Narro",
   "author": "schplitt",
   "license": "MIT",
-  "homepage": "https://github.com/schplitt/spur#readme",
+  "homepage": "https://github.com/schplitt/narro#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/schplitt/spur.git"
+    "url": "https://github.com/schplitt/narro.git"
   },
   "bugs": {
-    "url": "https://github.com/schplitt/spur/issues"
+    "url": "https://github.com/schplitt/narro/issues"
   },
   "keywords": [
-    "spur",
+    "narro",
     "typescript",
     "schema",
     "validation",

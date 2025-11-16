@@ -1,10 +1,10 @@
-# Spur
+# Narro
 
 Lightweight TypeScript schema validation library with a Zod-like API that keeps bundle sizes minimal.
 
-> **⚠️ Development Status:** Spur is in early development with no stable release yet. The API may change in future builds.
+> **⚠️ Development Status:** Narro is in early development with no stable release yet. The API may change in future builds.
 
-## Why Spur
+## Why Narro
 
 - **Tiny bundles** – constraint logic lazy-loads on first build, so unused checks never ship
 - **Zod-like API** – familiar, chainable schema composition
@@ -15,12 +15,12 @@ Lightweight TypeScript schema validation library with a Zod-like API that keeps 
 
 - **`safeParse` (lazy)** – validates with dynamic imports for minimal bundles
 - **`build()` (eager)** – preload checks upfront for reuse in hot paths
-- **`spur/inline`** – all checks bundled together for maximum throughput
+- **`narro/inline`** – all checks bundled together for maximum throughput
 
 ## Quick Start
 
 ```ts
-import { number } from 'spur'
+import { number } from 'narro'
 
 const ageSchema = number().min(0).max(130)
 const report = await ageSchema.safeParse(input)
@@ -37,7 +37,7 @@ else {
 
 This is a monorepo containing:
 
-- **`packages/spur`** – the main validation library
+- **`packages/narro`** – the main validation library
 - **`packages/bench`** – performance benchmarks
 
 ## Development
@@ -52,8 +52,8 @@ pnpm -r test
 # Lint
 pnpm lint
 
-# Release spur package
-pnpm release:spur
+# Release narro package
+pnpm release:narro
 ```
 
 ## License

@@ -73,9 +73,9 @@ describe('array schema', () => {
       expect(undefinedReport.success).toBe(true)
       expect(undefinedReport.data).toBeUndefined()
 
-      const definedReport = await schema.safeParse(['spur'])
+      const definedReport = await schema.safeParse(['narro'])
       expect(definedReport.success).toBe(true)
-      expect(definedReport.data).toEqual(['spur'])
+      expect(definedReport.data).toEqual(['narro'])
     })
 
     it('supports nullable modifier', async () => {

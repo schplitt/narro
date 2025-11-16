@@ -6,9 +6,9 @@ describe('string schema', () => {
   it('accepts strings that satisfy length constraints', async () => {
     const schema = string().minLength(2).maxLength(5)
 
-    const value = await schema.parse('spur')
+    const value = await schema.parse('narro')
 
-    expect(value).toBe('spur')
+    expect(value).toBe('narro')
   })
 
   it('rejects strings that are too short', async () => {
@@ -40,11 +40,11 @@ describe('string schema', () => {
   })
 
   it('validates startsWith constraint', async () => {
-    const schema = string().startsWith('spur')
+    const schema = string().startsWith('narro')
 
-    await expect(schema.parse('spur-app')).resolves.toBe('spur-app')
+    await expect(schema.parse('narro-app')).resolves.toBe('narro-app')
 
-    const report = await schema.safeParse('app-spur')
+    const report = await schema.safeParse('app-narro')
     expect(report.success).toBe(false)
   })
 

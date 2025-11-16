@@ -27,7 +27,7 @@ importers:
       arktype:
         specifier: ^2.1.23
         version: 2.1.23
-      spur:
+      narro:
         specifier: workspace:*
         version: link:../spur
       valibot:
@@ -4622,7 +4622,7 @@ snapshots:
 
   tsdown@0.14.2(typescript@5.9.2):
     dependencies:
-      ansis: 4.1.0
+      ansis: 4.2.0
       cac: 6.7.14
       chokidar: 4.0.3
       debug: 4.4.1
@@ -4633,7 +4633,7 @@ snapshots:
       rolldown-plugin-dts: 0.15.10(rolldown@1.0.0-beta.50)(typescript@5.9.2)
       semver: 7.7.2
       tinyexec: 1.0.1
-      tinyglobby: 0.2.14
+      tinyglobby: 0.2.15
       tree-kill: 1.2.2
       unconfig: 7.3.3
     optionalDependencies:

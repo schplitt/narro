@@ -34,7 +34,7 @@ try {
     }
   }
 
-  let markdown = '_Performance comparison of Spur vs Zod, Valibot, and ArkType_\n\n'
+  let markdown = '_Performance comparison of Narro vs Zod, Valibot, and ArkType_\n\n'
 
   // Build lookup for main results
   const mainMap = new Map()

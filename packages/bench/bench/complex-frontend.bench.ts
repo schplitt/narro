@@ -1,7 +1,7 @@
 import { type } from 'arktype'
-import { array, boolean, literal, object, string, union } from 'spur'
+import { array, boolean, literal, object, string, union } from 'narro'
 
-import { array as arrayInline, boolean as booleanInline, literal as literalInline, object as objectInline, string as stringInline, union as unionInline } from 'spur/inline'
+import { array as arrayInline, boolean as booleanInline, literal as literalInline, object as objectInline, string as stringInline, union as unionInline } from 'narro/inline'
 import * as v from 'valibot'
 import { bench, describe } from 'vitest'
 import { z } from 'zod'
@@ -87,7 +87,7 @@ const invalidFormData = {
   referralCode: null,
 }
 
-// Spur async schema
+// Narro async schema
 const spurAsyncUnbuild = object({
   account: object({
     username: string().minLength(3).maxLength(30),
@@ -208,7 +208,7 @@ const spurInlineUnbuild = objectInline({
   referralCode: stringInline().nullable(),
 })
 
-// Spur inline schema
+// Narro inline schema
 const spurInlineBuilt = await objectInline({
   account: objectInline({
     username: stringInline().minLength(3).maxLength(30),
@@ -374,17 +374,17 @@ const arkTypeSchema = type({
 })
 
 describe('complex frontend: valid parse', () => {
-  bench('spur async unbuild valid', async () => {
+  bench('narro async unbuild valid', async () => {
     await spurAsyncUnbuild.safeParse(validFormData)
   })
-  bench('spur async valid', () => {
+  bench('narro async valid', () => {
     spurAsyncBuilt.safeParse(validFormData)
   })
 
-  bench('spur inline unbuild valid', async () => {
+  bench('narro inline unbuild valid', async () => {
     await spurInlineUnbuild.safeParse(validFormData)
   })
-  bench('spur inline valid', () => {
+  bench('narro inline valid', () => {
     spurInlineBuilt.safeParse(validFormData)
   })
   bench('zod valid', () => {
@@ -399,16 +399,16 @@ describe('complex frontend: valid parse', () => {
 })
 
 describe('complex frontend: invalid parse', () => {
-  bench('spur unbuild async invalid', async () => {
+  bench('narro unbuild async invalid', async () => {
     await spurAsyncUnbuild.safeParse(invalidFormData)
   })
-  bench('spur async invalid', () => {
+  bench('narro async invalid', () => {
     spurAsyncBuilt.safeParse(invalidFormData)
   })
-  bench('spur inline unbuild invalid', async () => {
+  bench('narro inline unbuild invalid', async () => {
     await spurInlineUnbuild.safeParse(invalidFormData)
   })
-  bench('spur inline invalid', () => {
+  bench('narro inline invalid', () => {
     spurInlineBuilt.safeParse(invalidFormData)
   })
   bench('zod invalid', () => {

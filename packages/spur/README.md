@@ -1,4 +1,4 @@
-# Spur
+# Narro
 
 Lightweight TypeScript schema validation library with a Zod-like API that keeps bundle sizes minimal.
 
@@ -6,18 +6,18 @@ Lightweight TypeScript schema validation library with a Zod-like API that keeps 
 
 - **Minimal runtime code** – constraint logic loads asynchronously on first build, so unused checks never ship
 - **Zod-like API** – familiar, chainable schema composition
-- **Inline mode** – import from `spur/inline` for performance-critical paths; all checks bundle together with no dynamic imports
+- **Inline mode** – import from `narro/inline` for performance-critical paths; all checks bundle together with no dynamic imports
 
 ## Installation
 
 ```bash
-npm install spur
+npm install narro
 ```
 
 ## Quick Start
 
 ```ts
-import * as s from 'spur'
+import * as s from 'narro'
 
 const userSchema = s.object({
   name: s.string().min(1),
@@ -38,11 +38,11 @@ else {
 
 - **`safeParse` (lazy)** – validates on-demand with dynamic imports for minimal bundles
 - **`build()` (eager)** – preload checks upfront for reuse in hot paths
-- **`spur/inline`** – all checks bundled together for maximum throughput
+- **`narro/inline`** – all checks bundled together for maximum throughput
 
 ## Development Status
 
-⚠️ **Spur is in active development with no stable release yet. Expect breaking changes.**
+⚠️ **Narro is in active development with no stable release yet. Expect breaking changes.**
 
 ## License
 
