@@ -20,16 +20,16 @@ Lightweight TypeScript schema validation library with a Zod-like API that keeps 
 ## Quick Start
 
 ```ts
-import { number } from 'narro'
+import * as n from 'narro'
 
-const ageSchema = number().min(0).max(130)
+const ageSchema = n.number().min(0).max(130)
 const report = await ageSchema.safeParse(input)
 
-if (report.passed) {
+if (report.success) {
   // use report.value
 }
 else {
-  console.log(report) // heuristics explain the most likely mismatch
+  // see why validation failed
 }
 ```
 
