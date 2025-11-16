@@ -15,31 +15,39 @@ describe('number schema', () => {
     const schema = number().min(10)
     const report = await schema.safeParse(5)
 
-    expect(report.passed).toBe(false)
-    expect('value' in report).toBe(false)
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
+  })
+
+  it('rejects numbers above the maximum', async () => {
+    const schema = number().max(5)
+    const report = await schema.safeParse(10)
+
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
   })
 
   it('rejects non-number inputs', async () => {
     const schema = number()
     const report = await schema.safeParse('not-a-number')
 
-    expect(report.passed).toBe(false)
-    expect('value' in report).toBe(false)
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
   })
 
   it('supports optional modifier', async () => {
     const schema = number().optional()
 
     const definedResult = await schema.safeParse(7)
-    expect(definedResult.passed).toBe(true)
-    if (definedResult.passed) {
-      expect(definedResult.value).toBe(7)
+    expect(definedResult.success).toBe(true)
+    if (definedResult.success) {
+      expect(definedResult.data).toBe(7)
     }
 
     const optionalResult = await schema.safeParse(undefined)
-    expect(optionalResult.passed).toBe(true)
-    if (optionalResult.passed) {
-      expect(optionalResult.value).toBeUndefined()
+    expect(optionalResult.success).toBe(true)
+    if (optionalResult.success) {
+      expect(optionalResult.data).toBeUndefined()
     }
   })
 
@@ -47,9 +55,9 @@ describe('number schema', () => {
     const schema = number().exactOptional()
 
     const report = await schema.safeParse(undefined)
-    expect(report.passed).toBe(true)
-    if (report.passed) {
-      expect(report.value).toBeUndefined()
+    expect(report.success).toBe(true)
+    if (report.success) {
+      expect(report.data).toBeUndefined()
     }
   })
 
@@ -57,15 +65,15 @@ describe('number schema', () => {
     const schema = number().undefinable()
 
     const undefinedResult = await schema.safeParse(undefined)
-    expect(undefinedResult.passed).toBe(true)
-    if (undefinedResult.passed) {
-      expect(undefinedResult.value).toBeUndefined()
+    expect(undefinedResult.success).toBe(true)
+    if (undefinedResult.success) {
+      expect(undefinedResult.data).toBeUndefined()
     }
 
     const zeroResult = await schema.safeParse(0)
-    expect(zeroResult.passed).toBe(true)
-    if (zeroResult.passed) {
-      expect(zeroResult.value).toBe(0)
+    expect(zeroResult.success).toBe(true)
+    if (zeroResult.success) {
+      expect(zeroResult.data).toBe(0)
     }
   })
 
@@ -73,28 +81,28 @@ describe('number schema', () => {
     const schema = number().nullable()
 
     const nullResult = await schema.safeParse(null)
-    expect(nullResult.passed).toBe(true)
-    if (nullResult.passed) {
-      expect(nullResult.value).toBeNull()
+    expect(nullResult.success).toBe(true)
+    if (nullResult.success) {
+      expect(nullResult.data).toBeNull()
     }
 
     const undefinedResult = await schema.safeParse(undefined)
-    expect(undefinedResult.passed).toBe(false)
+    expect(undefinedResult.success).toBe(false)
   })
 
   it('supports nullish modifier', async () => {
     const schema = number().nullish()
 
     const undefinedResult = await schema.safeParse(undefined)
-    expect(undefinedResult.passed).toBe(true)
-    if (undefinedResult.passed) {
-      expect(undefinedResult.value).toBeUndefined()
+    expect(undefinedResult.success).toBe(true)
+    if (undefinedResult.success) {
+      expect(undefinedResult.data).toBeUndefined()
     }
 
     const nullResult = await schema.safeParse(null)
-    expect(nullResult.passed).toBe(true)
-    if (nullResult.passed) {
-      expect(nullResult.value).toBeNull()
+    expect(nullResult.success).toBe(true)
+    if (nullResult.success) {
+      expect(nullResult.data).toBeNull()
     }
   })
 
@@ -116,7 +124,7 @@ describe('number schema', () => {
     const schema = number().optional().required()
 
     const report = await schema.safeParse(undefined)
-    expect(report.passed).toBe(false)
+    expect(report.success).toBe(false)
   })
 
   it('uses last optionality modifier wins semantics', async () => {
@@ -124,19 +132,19 @@ describe('number schema', () => {
     const optionalThenNullable = number().optional().nullable()
 
     const nullableThenOptionalUndefined = await nullableThenOptional.safeParse(undefined)
-    expect(nullableThenOptionalUndefined.passed).toBe(true)
-    if (nullableThenOptionalUndefined.passed) {
-      expect(nullableThenOptionalUndefined.value).toBeUndefined()
+    expect(nullableThenOptionalUndefined.success).toBe(true)
+    if (nullableThenOptionalUndefined.success) {
+      expect(nullableThenOptionalUndefined.data).toBeUndefined()
     }
     const nullableThenOptionalNull = await nullableThenOptional.safeParse(null)
-    expect(nullableThenOptionalNull.passed).toBe(false)
+    expect(nullableThenOptionalNull.success).toBe(false)
 
     const optionalThenNullableNull = await optionalThenNullable.safeParse(null)
-    expect(optionalThenNullableNull.passed).toBe(true)
-    if (optionalThenNullableNull.passed) {
-      expect(optionalThenNullableNull.value).toBeNull()
+    expect(optionalThenNullableNull.success).toBe(true)
+    if (optionalThenNullableNull.success) {
+      expect(optionalThenNullableNull.data).toBeNull()
     }
     const optionalThenNullableUndefined = await optionalThenNullable.safeParse(undefined)
-    expect(optionalThenNullableUndefined.passed).toBe(false)
+    expect(optionalThenNullableUndefined.success).toBe(false)
   })
 })

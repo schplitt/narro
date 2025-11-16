@@ -13,7 +13,7 @@ describe('undefined schema', () => {
     const schema = undefinedSchema()
     const report = await schema.safeParse('value')
 
-    expect(report.passed).toBe(false)
-    expect('value' in report).toBe(false)
+    expect(report.success).toBe(false)
+    expect('data' in report).toBe(false)
   })
 })

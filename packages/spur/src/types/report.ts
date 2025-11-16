@@ -1,50 +1,76 @@
 export type SchemaReport<T = any> = SchemaReportSuccess<T> | SchemaReportFailure
 
+/**
+ * Path for object structures
+ */
+export interface ObjectPropertyPath {
+  pathType: 'objectProperty'
+  key: string | symbol | number
+}
+
+/**
+ * Path for array-like structures like arrays or tuples
+ */
+export interface ArrayLikeElementPath {
+  pathType: 'arrayLikeElement'
+  index: number
+}
+
+/**
+ * When no path is present, it is a primitive value (string, number, ...) or the root of the schema
+ */
+export type SchemaPath = ObjectPropertyPath | ArrayLikeElementPath
+
 export interface SchemaReportSuccess<T> {
-  passed: true
+  success: true
 
-  value: T
+  data: T
 
-  /**
-   * To keep track of what checkables passed
-   */
-  passedIds: Set<symbol>
+  metaData: {
+    /**
+     * To keep track of what checkables passed
+     */
+    passedIds: Set<symbol>
 
-  /**
-   * Aggregated score of all checks
-   * Can be negative
-   */
-  score: number
+    /**
+     * Aggregated score of all checks
+     * Can be negative
+     */
+    score: number
 
-  // TODO: currently unsure what we should do with the child reports
-  // to be honest, they do not really have any use as we can see what failed due to heuristics
-  // but might be able i guess we should keep it for now
+    /**
+     * Union reports
+     * Only if present if a different "path" could be taken to validate the input
+     * e.g. in case of union schemas like `union([string(), number()])` or `.nullable()`
+     */
+    unionReports?: SchemaReport[]
 
-  /**
-   * Union reports
-   * Only if present if a different "path" could be taken to validate the input
-   * e.g. in case of union schemas like `union([string(), number()])` or `.nullable()`
-   */
-  unionReports?: SchemaReport[]
+    childReports?: SchemaReport[]
 
-  // TODO: in any schema of any kind i would need to know what the maximum score, BEFORE we compile it, so at build time, what means we have to have this in the return of the build function
-  // or we could tranverse up the tree WHEN we need it as this might not be needed all the time
+    path?: SchemaPath
+  }
 }
 
 export interface SchemaReportFailure {
-  passed: false
+  success: false
 
-  value?: undefined
+  data?: undefined
 
-  passedIds?: Set<symbol>
-  failedIds: Set<symbol>
+  metaData: {
+    passedIds?: Set<symbol>
+    failedIds: Set<symbol>
 
-  /**
-   * Aggregated score of all checks
-   * Can be negative
-   */
-  score: number
+    /**
+     * Aggregated score of all checks
+     * Can be negative
+     */
+    score: number
 
-  unionReports?: SchemaReport[]
+    unionReports?: SchemaReport[]
+
+    childReports?: SchemaReport[]
+
+    path?: SchemaPath
+  }
 
 }

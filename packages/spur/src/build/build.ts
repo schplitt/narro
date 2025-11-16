@@ -37,9 +37,11 @@ export function buildSchema<TOutput>(
     if (!sourceResult) {
       // here we build the sourceReport from the checkables
       sourceReport = {
-        passed: false,
-        score: 0,
-        failedIds,
+        success: false,
+        metaData: {
+          failedIds,
+          score: 0,
+        },
       }
     }
     else {
@@ -49,29 +51,31 @@ export function buildSchema<TOutput>(
       sourceReport = deduplicatedChildCheckables.reduce((acc, checkable) => {
         const result = checkable['~c'](input)
         if (result) {
-          acc.score += 1
-          acc.passedIds!.add(checkable['~id'])
+          acc.metaData.score += 1
+          acc.metaData.passedIds!.add(checkable['~id'])
         }
         else {
-          if (!(acc as SchemaReportFailure).failedIds) {
-            (acc as SchemaReportFailure).failedIds = new Set<symbol>()
+          if (!(acc as SchemaReportFailure).metaData.failedIds) {
+            (acc as SchemaReportFailure).metaData.failedIds = new Set<symbol>()
           }
-          (acc as SchemaReportFailure).failedIds.add(checkable['~id'])
+          (acc as SchemaReportFailure).metaData.failedIds.add(checkable['~id'])
 
-          acc.passed = false
+          acc.success = false
         }
         return acc
       }, {
-        passed: true,
-        value: input,
-        score: 1,
-        passedIds,
+        success: true,
+        data: input,
+        metaData: {
+          passedIds,
+          score: 1,
+        },
       } as SchemaReport<TOutput>)
+    }
 
-      // remove the value from the report if it did not pass
-      if (!sourceReport.passed) {
-        delete sourceReport.value
-      }
+    // remove the data from the report if it did not pass
+    if (!sourceReport.success) {
+      delete sourceReport.data
     }
 
     // now after the checks are done, we continue with the optionality checkable if present
@@ -82,8 +86,8 @@ export function buildSchema<TOutput>(
     safeParse,
     parse: (input) => {
       const report = safeParse(input)
-      if (report.passed) {
-        return report.value as TOutput
+      if (report.success) {
+        return report.data as TOutput
       }
       throw new Error('Input did not pass schema checks')
     },
