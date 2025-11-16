@@ -27,8 +27,9 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "build": "pnpm -r build",
     "release": "bumpp -r",
-    "prerelease": "eslint . && tsc --noEmit && vitest run"
+    "prerelease": "pnpm -r build && eslint . && pnpm -r test"
   },
   "dependencies": {
     "bumpp": "^10.3.1"
