@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import { array } from '../../leitplanken/array'
-import { number } from '../../leitplanken/number'
-import { object } from '../../leitplanken/object'
-import { string } from '../../leitplanken/string'
+import { array } from '../../schemas/array'
+import { number } from '../../schemas/number'
+import { object } from '../../schemas/object'
+import { string } from '../../schemas/string'
 
 describe('array schema', () => {
   it('parses arrays when every element matches the child schema', async () => {

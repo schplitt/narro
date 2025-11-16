@@ -2,7 +2,7 @@ import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
-import { boolean } from '../../leitplanken/boolean'
+import { boolean } from '../../schemas/boolean'
 
 describe('booleanSchema - basic types', () => {
   it('basic boolean schema', () => {

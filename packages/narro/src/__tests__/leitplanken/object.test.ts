@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { _null, _undefined, literal, number, string, union } from '../../index'
-import { object } from '../../leitplanken/object'
+import { object } from '../../schemas/object'
 
 describe('object schema', () => {
   it('accepts objects matching nested schemas', async () => {

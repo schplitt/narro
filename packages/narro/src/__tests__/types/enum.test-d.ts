@@ -1,6 +1,6 @@
 import type { InferInput, InferOutput } from '../../types/utils'
 import { describe, expectTypeOf, it } from 'vitest'
-import { enum_ } from '../../leitplanken/enum'
+import { enum_ } from '../../schemas/enum'
 
 describe('enumSchema - basic types', () => {
   it('string enum schema', () => {

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { literal, number, string, union } from '../../index'
-import { array } from '../../leitplanken/array'
-import { object } from '../../leitplanken/object'
+import { array } from '../../schemas/array'
+import { object } from '../../schemas/object'
 
 describe('union schema', () => {
   it('accepts values from any branch', async () => {
@@ -50,7 +50,7 @@ describe('union schema', () => {
     })
 
     await expect(schema.parse(5)).resolves.toBe(10)
-    await expect(schema.parse('narro')).resolves.toBe('SPUR')
+    await expect(schema.parse('narro')).resolves.toBe('NARRO')
   })
 
   describe('union optionality modifiers', () => {
