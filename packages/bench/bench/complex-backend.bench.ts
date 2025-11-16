@@ -106,7 +106,7 @@ const invalidOrder = {
 }
 
 // Narro async schema
-const spurAsyncUnbuild = object({
+const narroAsyncUnbuild = object({
   customer: object({
     id: string().minLength(10),
     email: string().minLength(5),
@@ -149,9 +149,9 @@ const spurAsyncUnbuild = object({
   tags: array(string()).optional(),
 })
 
-const spurAsyncBuilt = await spurAsyncUnbuild.build()
+const narroAsyncBuilt = await narroAsyncUnbuild.build()
 
-const spurInlineUnbuild = objectInline({
+const narroInlineUnbuild = objectInline({
   customer: objectInline({
     id: stringInline().minLength(10),
     email: stringInline().minLength(5),
@@ -195,7 +195,7 @@ const spurInlineUnbuild = objectInline({
 })
 
 // Narro inline schema
-const spurInlineBuilt = await objectInline({
+const narroInlineBuilt = await objectInline({
   customer: objectInline({
     id: stringInline().minLength(10),
     email: stringInline().minLength(5),
@@ -375,16 +375,16 @@ const arkTypeSchema = type({
 
 describe('complex backend: valid parse', () => {
   bench('narro unbuild async valid', async () => {
-    await spurAsyncUnbuild.safeParse(validOrder)
+    await narroAsyncUnbuild.safeParse(validOrder)
   })
   bench('narro async valid', () => {
-    spurAsyncBuilt.safeParse(validOrder)
+    narroAsyncBuilt.safeParse(validOrder)
   })
   bench('narro inline unbuild valid', async () => {
-    await spurInlineUnbuild.safeParse(validOrder)
+    await narroInlineUnbuild.safeParse(validOrder)
   })
   bench('narro inline valid', () => {
-    spurInlineBuilt.safeParse(validOrder)
+    narroInlineBuilt.safeParse(validOrder)
   })
   bench('zod valid', () => {
     zodSchema.safeParse(validOrder)
@@ -399,16 +399,16 @@ describe('complex backend: valid parse', () => {
 
 describe('complex backend: invalid parse', () => {
   bench('narro unbuild async invalid', async () => {
-    await spurAsyncUnbuild.safeParse(invalidOrder)
+    await narroAsyncUnbuild.safeParse(invalidOrder)
   })
   bench('narro async invalid', () => {
-    spurAsyncBuilt.safeParse(invalidOrder)
+    narroAsyncBuilt.safeParse(invalidOrder)
   })
   bench('narro inline unbuild invalid', async () => {
-    await spurInlineUnbuild.safeParse(invalidOrder)
+    await narroInlineUnbuild.safeParse(invalidOrder)
   })
   bench('narro inline invalid', () => {
-    spurInlineBuilt.safeParse(invalidOrder)
+    narroInlineBuilt.safeParse(invalidOrder)
   })
   bench('zod invalid', () => {
     zodSchema.safeParse(invalidOrder)
