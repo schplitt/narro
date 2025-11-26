@@ -1,4 +1,5 @@
 import type { CommonOptions, DefaultCommonOptions } from '../options/options'
+import type { ErrorFactory } from './helpers'
 import type { SchemaReport } from './report'
 import type { Prettify } from './utils'
 
@@ -19,11 +20,12 @@ export interface Checkable<TOutput, TInput = TOutput> {
    * @returns A report indicating whether the input passed the check
    */
   '~c': Check<TInput>
-
+  '~e': ErrorFactory
 }
 export interface SourceCheckable<TOutput, TInput = TOutput> {
   '~id': symbol
   '~c': SourceCheck<TOutput, TInput>
+  '~e': ErrorFactory
 }
 
 export interface BranchCheckable<TOutput> {

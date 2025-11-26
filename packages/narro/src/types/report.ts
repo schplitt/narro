@@ -5,7 +5,7 @@ export type SchemaReport<T = any> = SchemaReportSuccess<T> | SchemaReportFailure
  */
 export interface ObjectPropertyPath {
   pathType: 'objectProperty'
-  key: string | symbol | number
+  key: string
 }
 
 /**
@@ -71,6 +71,7 @@ export interface SchemaReportFailure {
     childReports?: SchemaReport[]
 
     path?: SchemaPath
-  }
 
+    getErrorMessages: () => string[]
+  }
 }

@@ -6,6 +6,7 @@ export function createLengthCheckable<TInput extends string | any[]>(length: num
   return {
     '~id': lengthSymbol,
     '~c': (v: TInput) => v.length === length,
+    '~e': (v: unknown) => `Expected length ${length} but received length ${(v as string | any[]).length}`,
   }
 }
 

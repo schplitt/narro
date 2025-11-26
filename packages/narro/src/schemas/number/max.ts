@@ -6,6 +6,7 @@ export function createMaxCheckable(max: number): Checkable<number> {
   return {
     '~id': maxSymbol,
     '~c': (v: number) => v <= max,
+    '~e': (v: unknown) => `Expected number <= ${max} but received ${v}`,
   }
 }
 
