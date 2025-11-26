@@ -3,12 +3,12 @@
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@10.15.1",
-  "description": "Benchmark suite comparing Spur with Zod and Valibot",
+  "description": "Benchmark suite comparing Narro with Zod and Valibot",
   "author": "schplitt",
   "license": "MIT",
   "keywords": [
     "benchmark",
-    "spur",
+    "narro",
     "zod",
     "valibot"
   ],
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "arktype": "^2.1.23",
-    "spur": "workspace:*",
+    "narro": "workspace:*",
     "valibot": "^1.1.0",
     "zod": "^4.1.11"
   },

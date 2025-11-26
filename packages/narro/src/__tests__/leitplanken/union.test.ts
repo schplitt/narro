@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import { literal, number, string, union } from '../../index'
-import { array } from '../../leitplanken/array'
-import { object } from '../../leitplanken/object'
+import { array } from '../../schemas/array'
+import { object } from '../../schemas/object'
 
 describe('union schema', () => {
   it('accepts values from any branch', async () => {
     const schema = union([number(), string()])
 
     await expect(schema.parse(42)).resolves.toBe(42)
-    await expect(schema.parse('spur')).resolves.toBe('spur')
+    await expect(schema.parse('narro')).resolves.toBe('narro')
   })
 
   it('rejects values outside all branches', async () => {
@@ -50,7 +50,7 @@ describe('union schema', () => {
     })
 
     await expect(schema.parse(5)).resolves.toBe(10)
-    await expect(schema.parse('spur')).resolves.toBe('SPUR')
+    await expect(schema.parse('narro')).resolves.toBe('NARRO')
   })
 
   describe('union optionality modifiers', () => {
@@ -69,9 +69,9 @@ describe('union schema', () => {
       expect(undefinedReport.success).toBe(true)
       expect(undefinedReport.data).toBeUndefined()
 
-      const definedReport = await schema.safeParse('spur')
+      const definedReport = await schema.safeParse('narro')
       expect(definedReport.success).toBe(true)
-      expect(definedReport.data).toBe('spur')
+      expect(definedReport.data).toBe('narro')
     })
 
     it('supports nullable modifier', async () => {

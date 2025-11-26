@@ -1,4 +1,4 @@
-# Spur Copilot Instructions
+# Narro Copilot Instructions
 
 ## Rules
 

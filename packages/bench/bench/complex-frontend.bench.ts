@@ -1,7 +1,7 @@
 import { type } from 'arktype'
-import { array, boolean, literal, object, string, union } from 'spur'
+import { array, boolean, literal, object, string, union } from 'narro'
 
-import { array as arrayInline, boolean as booleanInline, literal as literalInline, object as objectInline, string as stringInline, union as unionInline } from 'spur/inline'
+import { array as arrayInline, boolean as booleanInline, literal as literalInline, object as objectInline, string as stringInline, union as unionInline } from 'narro/inline'
 import * as v from 'valibot'
 import { bench, describe } from 'vitest'
 import { z } from 'zod'
@@ -87,8 +87,8 @@ const invalidFormData = {
   referralCode: null,
 }
 
-// Spur async schema
-const spurAsyncUnbuild = object({
+// Narro async schema
+const narroAsyncUnbuild = object({
   account: object({
     username: string().minLength(3).maxLength(30),
     email: string().minLength(5).maxLength(100),
@@ -128,7 +128,7 @@ const spurAsyncUnbuild = object({
   referralCode: string().nullable(),
 })
 
-const spurAsyncBuilt = await object({
+const narroAsyncBuilt = await object({
   account: object({
     username: string().minLength(3).maxLength(30),
     email: string().minLength(5).maxLength(100),
@@ -168,7 +168,7 @@ const spurAsyncBuilt = await object({
   referralCode: string().nullable(),
 }).build()
 
-const spurInlineUnbuild = objectInline({
+const narroInlineUnbuild = objectInline({
   account: objectInline({
     username: stringInline().minLength(3).maxLength(30),
     email: stringInline().minLength(5).maxLength(100),
@@ -208,8 +208,8 @@ const spurInlineUnbuild = objectInline({
   referralCode: stringInline().nullable(),
 })
 
-// Spur inline schema
-const spurInlineBuilt = await objectInline({
+// Narro inline schema
+const narroInlineBuilt = await objectInline({
   account: objectInline({
     username: stringInline().minLength(3).maxLength(30),
     email: stringInline().minLength(5).maxLength(100),
@@ -374,18 +374,18 @@ const arkTypeSchema = type({
 })
 
 describe('complex frontend: valid parse', () => {
-  bench('spur async unbuild valid', async () => {
-    await spurAsyncUnbuild.safeParse(validFormData)
+  bench('narro async unbuild valid', async () => {
+    await narroAsyncUnbuild.safeParse(validFormData)
   })
-  bench('spur async valid', () => {
-    spurAsyncBuilt.safeParse(validFormData)
+  bench('narro async valid', () => {
+    narroAsyncBuilt.safeParse(validFormData)
   })
 
-  bench('spur inline unbuild valid', async () => {
-    await spurInlineUnbuild.safeParse(validFormData)
+  bench('narro inline unbuild valid', async () => {
+    await narroInlineUnbuild.safeParse(validFormData)
   })
-  bench('spur inline valid', () => {
-    spurInlineBuilt.safeParse(validFormData)
+  bench('narro inline valid', () => {
+    narroInlineBuilt.safeParse(validFormData)
   })
   bench('zod valid', () => {
     zodSchema.safeParse(validFormData)
@@ -399,17 +399,17 @@ describe('complex frontend: valid parse', () => {
 })
 
 describe('complex frontend: invalid parse', () => {
-  bench('spur unbuild async invalid', async () => {
-    await spurAsyncUnbuild.safeParse(invalidFormData)
+  bench('narro unbuild async invalid', async () => {
+    await narroAsyncUnbuild.safeParse(invalidFormData)
   })
-  bench('spur async invalid', () => {
-    spurAsyncBuilt.safeParse(invalidFormData)
+  bench('narro async invalid', () => {
+    narroAsyncBuilt.safeParse(invalidFormData)
   })
-  bench('spur inline unbuild invalid', async () => {
-    await spurInlineUnbuild.safeParse(invalidFormData)
+  bench('narro inline unbuild invalid', async () => {
+    await narroInlineUnbuild.safeParse(invalidFormData)
   })
-  bench('spur inline invalid', () => {
-    spurInlineBuilt.safeParse(invalidFormData)
+  bench('narro inline invalid', () => {
+    narroInlineBuilt.safeParse(invalidFormData)
   })
   bench('zod invalid', () => {
     zodSchema.safeParse(invalidFormData)

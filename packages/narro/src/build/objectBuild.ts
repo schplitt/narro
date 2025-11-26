@@ -1,11 +1,11 @@
-import type { ObjectEntries } from '../leitplanken/object'
 import type { ObjectShape } from '../options/objectOptions'
+import type { ObjectEntries } from '../schemas/object'
 import type { SchemaReport, SchemaReportFailure } from '../types/report'
 import type { BranchCheckable, BranchCheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from '../types/schema'
-import { exactOptionalSymbol } from '../leitplanken/_shared/optionality/exactOptional'
-import { nullishSymbol } from '../leitplanken/_shared/optionality/nullish'
-import { undefinableSymbol } from '../leitplanken/_shared/optionality/undefinable'
-import { undefinedSymbol } from '../leitplanken/undefined/undefined'
+import { exactOptionalSymbol } from '../schemas/_shared/optionality/exactOptional'
+import { nullishSymbol } from '../schemas/_shared/optionality/nullish'
+import { undefinableSymbol } from '../schemas/_shared/optionality/undefinable'
+import { undefinedSymbol } from '../schemas/undefined/undefined'
 import { flattenUnionReportCandidates, mergeOptionality, selectPreferredUnionReport } from './utils'
 
 interface ObjectSchemas {

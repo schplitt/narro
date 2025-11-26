@@ -1,12 +1,32 @@
 {
-  "name": "spur",
+  "name": "narro",
   "type": "module",
   "version": "0.0.0",
   "packageManager": "pnpm@10.15.1",
-  "description": "Monorepo for Spur",
-  "author": "",
-  "license": "ISC",
-  "keywords": [],
+  "description": "Lightweight TypeScript-first schema validation library with Zod-like API",
+  "author": "schplitt",
+  "license": "MIT",
+  "homepage": "https://github.com/schplitt/narro/tree/main/packages/narro#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/schplitt/narro.git",
+    "directory": "packages/narro"
+  },
+  "bugs": {
+    "url": "https://github.com/schplitt/narro/issues"
+  },
+  "keywords": [
+    "typescript",
+    "validation",
+    "schema",
+    "parser",
+    "data-validation",
+    "narro",
+    "zod-alternative",
+    "valibot-alternative",
+    "lightweight",
+    "arktype-alternative"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -25,15 +45,18 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
+    "LICENSE",
+    "README.md",
     "dist"
   ],
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=20.0.0"
   },
   "scripts": {
     "typecheck": "vitest --typecheck",
     "test": "vitest run --typecheck",
-    "build": "tsdown"
+    "build": "tsdown",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@standard-schema/spec": "^1.0.0"

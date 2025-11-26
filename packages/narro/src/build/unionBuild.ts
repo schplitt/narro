@@ -119,4 +119,4 @@ export function buildUnionSchema<TOutput>(
 // - unionBuild.ts: consolidate unionReports recursively into a flat array, reselect best report after consolidation, and add a comment for future feature where we ensure metadata continues to track original branches.
 // - unionBuild.ts: when a promoted report fails downstream (e.g. object checkIds), iterate promoted + stored union reports to find the highest scoring passing candidate, demote failing ones, and update unionReports accordingly.
 // - objectBuild.ts: extend checkIds handling to walk the selected union report set, run checkIds against each candidate, adjust scores, remove invalid data, and bubble updated unionReports back into the chosen result.
-// - tests/__tests__/leitplanken: add unionBuild.test.ts covering union report consolidation edge cases and object schema interactions; add targeted object schema tests for optionality/union promotion scenarios.
+// - tests/__tests__/narro: add unionBuild.test.ts covering union report consolidation edge cases and object schema interactions; add targeted object schema tests for optionality/union promotion scenarios.

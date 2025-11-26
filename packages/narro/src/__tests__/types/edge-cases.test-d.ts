@@ -2,14 +2,14 @@ import type { InferInput, InferOutput } from '../../types/utils'
 
 import { describe, expectTypeOf, it } from 'vitest'
 
-import { array } from '../../leitplanken/array'
-import { boolean } from '../../leitplanken/boolean'
-import { enum_ } from '../../leitplanken/enum'
-import { literal } from '../../leitplanken/literal'
-import { number } from '../../leitplanken/number'
-import { object } from '../../leitplanken/object'
-import { string } from '../../leitplanken/string'
-import { union } from '../../leitplanken/union'
+import { array } from '../../schemas/array'
+import { boolean } from '../../schemas/boolean'
+import { enum_ } from '../../schemas/enum'
+import { literal } from '../../schemas/literal'
+import { number } from '../../schemas/number'
+import { object } from '../../schemas/object'
+import { string } from '../../schemas/string'
+import { union } from '../../schemas/union'
 
 describe('edge cases - extreme type complexity', () => {
   it('maximum nesting depth', () => {
