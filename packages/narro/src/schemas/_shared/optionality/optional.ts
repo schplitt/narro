@@ -1,6 +1,10 @@
+import type { ErrorFactory } from '../../../types/helpers'
 import type { BranchCheckable } from '../../../types/schema'
+import { stringifyIfNeeded } from '../../../helpers/stringifyIfNeeded'
 
 export const optionalSymbol = Symbol('optional')
+
+export const optionalErrorFactory: ErrorFactory = value => `Expected property to be optional (missing or undefined) but received value ${stringifyIfNeeded(value)}`
 
 export const optionalCheckable: BranchCheckable<undefined> = {
   '~id': optionalSymbol,
@@ -24,6 +28,7 @@ export const optionalCheckable: BranchCheckable<undefined> = {
       metaData: {
         failedIds: new Set([optionalSymbol]),
         score: 0,
+        getErrorMessages: () => [optionalErrorFactory(v)],
       },
     }
   },

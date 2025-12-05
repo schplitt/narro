@@ -6,6 +6,7 @@ export function createMaxLengthCheckable<TInput extends string | any[]>(maxLengt
   return {
     '~id': maxLengthSymbol,
     '~c': (v: TInput) => v.length <= maxLength,
+    '~e': (v: unknown) => `Expected length <= ${maxLength} but received length ${(v as string | any[]).length}`,
   }
 }
 

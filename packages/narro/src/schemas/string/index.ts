@@ -19,9 +19,9 @@ export interface StringSchema<TOutput = string, TInput = string, TCommonOptions 
 
 // NOTE: overload keeps default generics when schema is contextually typed inside
 // object/array/union entries. Without it TS infers <unknown, unknown, CommonOptions>.
-export function string(): StringSchema<string, string, DefaultCommonOptions>
-export function string<TOutput, TInput, TCommonOptions extends CommonOptions>(): StringSchema<TOutput, TInput, TCommonOptions>
-export function string<TOutput = string, TInput = string, TCommonOptions extends CommonOptions = DefaultCommonOptions>(): StringSchema<TOutput, TInput, TCommonOptions> {
+export function string(errorMessage?: string): StringSchema<string, string, DefaultCommonOptions>
+export function string<TOutput, TInput, TCommonOptions extends CommonOptions>(errorMessage?: string): StringSchema<TOutput, TInput, TCommonOptions>
+export function string<TOutput = string, TInput = string, TCommonOptions extends CommonOptions = DefaultCommonOptions>(_errorMessage: string = 'Test error'): StringSchema<TOutput, TInput, TCommonOptions> {
   let optionalityBranchCheckableImport: BranchCheckableImport<any> | undefined
 
   // eslint-disable-next-line ts/explicit-function-return-type

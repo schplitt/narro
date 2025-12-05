@@ -1,3 +1,4 @@
+import type { ErrorFactory } from '../types/helpers'
 import type { SchemaReport, SchemaReportFailure } from '../types/report'
 import type { BranchCheckable, BranchCheckableImport, Checkable, CheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from '../types/schema'
 import { deduplicateCheckables, mergeOptionality } from './utils'
@@ -30,17 +31,24 @@ export function buildSchema<TOutput>(
   function safeParse(input: unknown): SchemaReport<TOutput> {
     let sourceReport: SchemaReport<TOutput>
 
+    const errorFactories: ErrorFactory[] = []
+
     const sourceResult = sourceCheckable['~c'](input)
     // when the source is not of the type we expect, we cannot continue with the child checkables
     const failedIds = new Set<symbol>()
     failedIds.add(sourceCheckable['~id'])
     if (!sourceResult) {
+      // add the error factory of the source checkable to the list of error factories
+      errorFactories.push(sourceCheckable['~e'])
       // here we build the sourceReport from the checkables
       sourceReport = {
         success: false,
         metaData: {
           failedIds,
           score: 0,
+          getErrorMessages: () => {
+            return errorFactories.map(ef => ef(input))
+          },
         },
       }
     }
@@ -59,7 +67,8 @@ export function buildSchema<TOutput>(
             (acc as SchemaReportFailure).metaData.failedIds = new Set<symbol>()
           }
           (acc as SchemaReportFailure).metaData.failedIds.add(checkable['~id'])
-
+          // add the error factory of the failed checkable to the list of error factories
+          errorFactories.push(checkable['~e'])
           acc.success = false
         }
         return acc

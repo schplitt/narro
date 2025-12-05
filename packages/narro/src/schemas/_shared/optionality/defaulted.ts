@@ -1,7 +1,11 @@
+import type { ErrorFactory } from '../../../types/helpers'
 import type { SchemaReportFailure, SchemaReportSuccess } from '../../../types/report'
 import type { BranchCheckable, DefaultInput } from '../../../types/schema'
+import { stringifyIfNeeded } from '../../../helpers/stringifyIfNeeded'
 
 export const defaultedSymbol = Symbol('defaulted')
+
+export const defaultedErrorFactory: ErrorFactory = value => `Expected property to be defaulted (missing, undefined, or null) but received value ${stringifyIfNeeded(value)}`
 
 export function createDefaultedCheckable<TOutput>(d: DefaultInput<TOutput>): BranchCheckable<TOutput> {
   return {
@@ -28,6 +32,7 @@ export function createDefaultedCheckable<TOutput>(d: DefaultInput<TOutput>): Bra
         metaData: {
           failedIds: new Set([defaultedSymbol]),
           score: 0,
+          getErrorMessages: () => [defaultedErrorFactory(v)],
         },
       } satisfies SchemaReportFailure
     },

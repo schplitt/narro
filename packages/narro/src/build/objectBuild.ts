@@ -2,6 +2,7 @@ import type { ObjectShape } from '../options/objectOptions'
 import type { ObjectEntries } from '../schemas/object'
 import type { SchemaReport, SchemaReportFailure } from '../types/report'
 import type { BranchCheckable, BranchCheckableImport, EvaluableSchema, SourceCheckable, SourceCheckableImport } from '../types/schema'
+import { createBranchErrorMethod } from '../helpers/createBranchErrorMethod'
 import { exactOptionalSymbol } from '../schemas/_shared/optionality/exactOptional'
 import { nullishSymbol } from '../schemas/_shared/optionality/nullish'
 import { undefinableSymbol } from '../schemas/_shared/optionality/undefinable'
@@ -83,6 +84,7 @@ export function buildObjectSchema<TOutput extends object>(
         metaData: {
           score: 0,
           failedIds,
+          getErrorMessages: () => [sourceCheckable['~e'](input)],
         },
       }
     }
@@ -145,7 +147,6 @@ export function buildObjectSchema<TOutput extends object>(
       delete sourceReport.data
     }
 
-    // ---- PUT INTO OWN SHAPE FUNCTION ----
     else {
       // if it passed, we apply the shape transform
       switch (shapeTransform) {
@@ -170,24 +171,28 @@ export function buildObjectSchema<TOutput extends object>(
               break
             }
           }
-          if (!hasExtraKeys)
+          if (!hasExtraKeys) {
             break
+          }
           // we have an extra key, so we fail the report
           (sourceReport as any as SchemaReportFailure).success = false
           // we add the source checkable id to the failed ids
           if (!(sourceReport as any as SchemaReportFailure).metaData.failedIds) {
             (sourceReport as any as SchemaReportFailure).metaData.failedIds = new Set<symbol>()
           }
-          // TODO?: think about if we want extra IDs for the shapes
-          (sourceReport as any as SchemaReportFailure).metaData.failedIds.add(sourceCheckable['~id'])
+          (sourceReport as any as SchemaReportFailure).metaData.score -= 1;
+          (sourceReport as any as SchemaReportFailure).metaData.getErrorMessages = () => [
+            `Strict object has extra keys not defined in schema`,
+          ]
+
+          // TODO?: think about if we want extra IDs for the shapes as we have no identification later what went wrong here
+
           // we remove the value as it is now invalid
           delete (sourceReport as any as SchemaReportFailure).data
           break
         }
       }
     }
-
-    // ---- PUT INTO OWN SHAPE FUNCTION END ----
 
     return mergeOptionality(input, sourceReport, optionalityBranchCheckable)
   }
@@ -252,9 +257,12 @@ function validatePropertyCandidates(
       continue
     }
 
+    // as we check that optionality here we assume that
+
     const failureMeta: SchemaReportFailure['metaData'] = {
       score: candidate.metaData.score - failedIds.length,
       failedIds: new Set<symbol>(failedIds),
+      getErrorMessages: createBranchErrorMethod(failedIds, (source)[key as keyof typeof source], { keyPresent: key in source }),
     }
 
     if (candidate.metaData.passedIds && candidate.metaData.passedIds.size > 0) {

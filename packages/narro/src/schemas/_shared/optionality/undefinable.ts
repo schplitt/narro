@@ -1,6 +1,13 @@
+import type { ErrorFactory } from '../../../types/helpers'
 import type { BranchCheckable } from '../../../types/schema'
+import { stringifyIfNeeded } from '../../../helpers/stringifyIfNeeded'
 
 export const undefinableSymbol = Symbol('undefinable')
+
+export const undefinableErrorFactory: ErrorFactory = (value, info) => {
+  const keyInfo = info ? (info.keyPresent ? ' with key present' : ' with key missing') : ''
+  return `Expected property to be undefinable (key present with value undefined) but received value ${stringifyIfNeeded(value)}${keyInfo}`
+}
 
 export const undefinableCheckable: BranchCheckable<undefined> = {
   '~id': undefinableSymbol,
@@ -24,6 +31,7 @@ export const undefinableCheckable: BranchCheckable<undefined> = {
       metaData: {
         failedIds: new Set([undefinableSymbol]),
         score: 0,
+        getErrorMessages: () => [undefinableErrorFactory(v)],
       },
     }
   },

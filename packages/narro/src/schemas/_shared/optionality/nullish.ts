@@ -1,6 +1,13 @@
+import type { ErrorFactory } from '../../../types/helpers'
 import type { BranchCheckable } from '../../../types/schema'
+import { stringifyIfNeeded } from '../../../helpers/stringifyIfNeeded'
 
 export const nullishSymbol = Symbol('nullish')
+
+export const nullishErrorFactory: ErrorFactory = (value, info) => {
+  const keyInfo = info ? (info.keyPresent ? ' with key present' : ' with key missing') : ''
+  return `Expected property to be nullish (key present with value null or undefined) but received value ${stringifyIfNeeded(value)}${keyInfo}`
+}
 
 export const nullishCheckable: BranchCheckable<null | undefined> = {
   '~id': nullishSymbol,
@@ -24,6 +31,7 @@ export const nullishCheckable: BranchCheckable<null | undefined> = {
       metaData: {
         failedIds: new Set([nullishSymbol]),
         score: 0,
+        getErrorMessages: () => [nullishErrorFactory(v)],
       },
     }
   },
